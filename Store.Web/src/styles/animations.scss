@@ -1,0 +1,52 @@
+@layer utilities {
+    .animate-in {
+        animation: animate-in 0.5s ease-out;
+    }
+
+    .hover-lift {
+        @apply transition-transform duration-200;
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+
+    .press-animation {
+        @apply transition-transform duration-75;
+
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+
+    .shimmer {
+        background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+}
+
+@keyframes animate-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
