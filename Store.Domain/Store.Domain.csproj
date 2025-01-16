@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Cart\" />
+    <Folder Include="Entities\Customer\" />
+    <Folder Include="Entities\Product\" />
+    <Folder Include="Entities\Order\" />
+    <Folder Include="Events\Cart\" />
+    <Folder Include="Events\Integration\" />
+    <Folder Include="Events\Order\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+  </ItemGroup>
+
+</Project>
