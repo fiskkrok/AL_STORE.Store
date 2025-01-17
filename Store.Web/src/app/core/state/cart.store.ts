@@ -8,6 +8,7 @@ interface CartItem {
     price: number;
     quantity: number;
     imageUrl: string;
+    variantId?: string;
 }
 
 @Injectable({ providedIn: 'root' })

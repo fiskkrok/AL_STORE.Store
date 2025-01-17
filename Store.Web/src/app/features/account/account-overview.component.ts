@@ -11,4 +11,3 @@ import { Component } from '@angular/core';
 })
 export class AccountOverviewComponent { }
 
-// I'll add all the files that's in the project currently and we'll do an whole overview of where we are and what direction we should take next?

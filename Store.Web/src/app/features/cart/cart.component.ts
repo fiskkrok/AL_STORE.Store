@@ -2,11 +2,12 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartStore } from '../../core/state/cart.store';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CurrencyPipe],
   animations: [
     trigger('itemAnimation', [
       transition(':enter', [
@@ -83,12 +84,12 @@ import { animate, style, transition, trigger } from '@angular/animations';
                 </div>
                 <div class="flex justify-between">
                   <span>Shipping</span>
-                  <span>{{ shipping | currency }}</span>
+                  <span>{{ getFormattedShipping() }}</span>
                 </div>
                 <div class="border-t pt-2 mt-2">
                   <div class="flex justify-between font-medium">
                     <span>Total</span>
-                    <span>{{ totalPrice() + shipping | currency }}</span>
+                    <span>{{ getFormattedTotalPrice() }}</span>
                   </div>
                 </div>
               </div>
@@ -130,6 +131,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 })
 export class CartComponent {
   private cartStore = inject(CartStore);
+  private currencyPipe = inject(CurrencyPipe);
 
   cartItems = this.cartStore.cartItems;
   totalPrice = this.cartStore.totalPrice;
@@ -144,5 +146,13 @@ export class CartComponent {
 
   async removeItem(item: any) {
     await this.cartStore.removeItem(item.id);
+  }
+
+  getFormattedTotalPrice() {
+    return this.currencyPipe.transform(this.totalPrice() + this.shipping, 'USD');
+  }
+
+  getFormattedShipping() {
+    return this.currencyPipe.transform(this.shipping, 'USD');
   }
 }

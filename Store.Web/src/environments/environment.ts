@@ -1,16 +1,7 @@
+// src/environments/environment.ts
 export const environment = {
   production: false,
-
-  // API URLs
-  apiUrls: {
-    // Admin Portal API
-    shop: {
-      baseUrl: 'https://localhost:5001',
-
-    },
-    auth: {
-    },
-  },
+  useRealApi: false, // Toggle between mock and real API
   apiUrl: 'https://localhost:5001',
   auth0: {
     domain: 'your-auth0-domain',

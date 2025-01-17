@@ -1,0 +1,43 @@
+@layer utilities {
+
+    // Text styles
+    .h1 {
+        @apply text-4xl font-bold tracking-tight;
+    }
+
+    .h2 {
+        @apply text-3xl font-semibold tracking-tight;
+    }
+
+    .h3 {
+        @apply text-2xl font-semibold;
+    }
+
+    .h4 {
+        @apply text-xl font-semibold;
+    }
+
+    // Layout helpers
+    .page-container {
+        @apply min-h-[calc(100vh-var(--header-height))] pt-8 pb-16;
+    }
+
+    // Interactive states
+    .hover-lift {
+        @apply transition-transform duration-200 hover:-translate-y-0.5;
+    }
+
+    .press-effect {
+        @apply transition-transform active:scale-95;
+    }
+
+    // Animations
+    .animate-in {
+        @apply motion-safe:animate-fade-in motion-safe:animate-slide-up;
+    }
+
+    // Loading states
+    .loading-shimmer {
+        @apply animate-pulse bg-gray-200 dark:bg-gray-700;
+    }
+}

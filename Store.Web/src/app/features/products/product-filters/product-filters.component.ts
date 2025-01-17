@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProductStore } from '../../../core/state/product.store';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-product-filters',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CurrencyPipe],
   template: `
     <div class="space-y-4">
       <div>
@@ -64,6 +65,7 @@ import { ProductStore } from '../../../core/state/product.store';
 export class ProductFiltersComponent {
   private fb = inject(FormBuilder);
   private productStore = inject(ProductStore);
+  private currencyPipe = inject(CurrencyPipe);
 
   form = this.fb.group({
     minPrice: [null],
@@ -75,6 +77,13 @@ export class ProductFiltersComponent {
   constructor() {
     // Update filters when form changes
     this.form.valueChanges.subscribe(filters => {
+      // Format price range using CurrencyPipe
+      if (filters.minPrice) {
+        filters.minPrice = this.currencyPipe.transform(filters.minPrice, 'USD');
+      }
+      if (filters.maxPrice) {
+        filters.maxPrice = this.currencyPipe.transform(filters.maxPrice, 'USD');
+      }
       this.productStore.setFilters(filters);
     });
   }

@@ -6,14 +6,28 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ErrorDisplayComponent } from "../../../core/components/error-display/error-display.component";
 import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner/loading-spinner.component";
 import { ErrorService } from '../../../core/services/error.service';
+import { Product } from '../../../core/models/product.model';
+import { ContainerComponent } from '../../../core/components/layout/container.component';
+import { SectionComponent } from '../../../core/components/layout/section.component';
+import { GridComponent } from '../../../core/components/layout/grid.component';
+import { ProductCardComponent } from "../../../core/components/product/product-card.component";
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, ErrorDisplayComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, ErrorDisplayComponent, LoadingSpinnerComponent, ContainerComponent, SectionComponent, GridComponent, ProductCardComponent],
   template: `
    <app-error-display />
-
+   <div class="page-container">
+<app-container>
+        <app-section>
+          <!-- Page Header -->
+          <header class="mb-8 animate-in">
+            <h1 class="h1 text-brand-navy dark:text-white">Our Products</h1>
+            <p class="mt-2 text-lg text-brand-gray">
+              Quality essentials for the modern man
+            </p>
+          </header>
     <div class="container mx-auto p-4">
       <!-- Filters -->
       <div class="mb-4">
@@ -38,32 +52,16 @@ import { ErrorService } from '../../../core/services/error.service';
         </select>
       </div>
 
-      <!-- Product Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <app-grid>
         @for (product of products(); track product.id) {
-          <div class="relative border rounded-lg p-4 hover:shadow-lg transition">
-            @if (addingToCart[product.id]) {
-              <div class="absolute inset-0 bg-white/80 flex items-center justify-center">
-                <app-loading-spinner message="Adding to cart..." />
-              </div>
-            }
-            
-            <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-48 object-cover">
-            <h3 class="text-lg font-semibold mt-2">{{ product.name }}</h3>
-            <p class="text-gray-600">{{ product.price | currency }}</p>
-            <button 
-              class="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-              (click)="addToCart(product)"
-              [disabled]="product.stockLevel === 0 || addingToCart[product.id]"
-            >
-              @if (product.stockLevel > 0) {
-                Add to Cart
-              } @else {
-                Out of Stock
-              }
-            </button>
-          </div>
+          <app-product-card
+            [product]="product"
+            [loading]="loading()"
+            (onQuickView)="selectedProduct = product"
+            (onAddToCart)="addToCart($event)"
+          />
         }
+      </app-grid>
         
         @if (!loading() && products().length === 0) {
           <div class="col-span-full text-center p-8 bg-gray-50 rounded">
@@ -71,7 +69,10 @@ import { ErrorService } from '../../../core/services/error.service';
           </div>
         }
       </div>
+      </app-section>
+      </app-container>
     </div>
+
   `
 })
 export class ProductListComponent {
@@ -81,11 +82,16 @@ export class ProductListComponent {
   products = this.productStore.filteredProducts;
   loading = this.productStore.loading;
   addingToCart: Record<string, boolean> = {};
-
+  selectedProduct: Product | null = null;
   categories = signal([
     { id: '1', name: 'Electronics' },
     { id: '2', name: 'Clothing' },
-    // ... more categories
+    { id: '3', name: 'Home Goods' },
+    { id: '4', name: 'Toys' },
+    { id: '5', name: 'Books' },
+    { id: '6', name: 'Health & Beauty' },
+    { id: '7', name: 'Sports' }
+
   ]);
 
   // Set up effects for any side effects
@@ -125,4 +131,3 @@ export class ProductListComponent {
     }
   }
 }
-
