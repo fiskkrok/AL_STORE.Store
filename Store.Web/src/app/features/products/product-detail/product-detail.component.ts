@@ -94,12 +94,14 @@ import { Product, ProductImage } from '../../../core/models/product.model';
               <div>
                 <h1 class="text-3xl font-bold">{{ product()?.name }}</h1>
                 <div class="mt-4 flex items-baseline gap-4">
-                  <span class="text-3xl font-bold">{{ product()?.price | currency }}</span>
+                  <span>{{ product()?.price | currency }}</span>
+    <span>{{ product()?.compareAtPrice | currency }}</span>
+                  <!-- <span class="text-3xl font-bold">{{ product()?.price | currency }}</span>
                   @if (product()?.compareAtPrice) {
                     <span class="text-xl text-muted-foreground line-through">
                       {{ product()?.compareAtPrice | currency }}
                     </span>
-                  }
+                  } -->
                 </div>
               </div>
 
@@ -311,7 +313,7 @@ export class ProductDetailComponent {
   });
 
 
-  constructor(private currencyPipe: CurrencyPipe) {
+  constructor() {
     // Load product data
     effect(() => {
       const productId = this.route.snapshot.paramMap.get('id');

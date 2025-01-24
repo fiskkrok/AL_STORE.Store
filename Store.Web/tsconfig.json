@@ -11,9 +11,10 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022"

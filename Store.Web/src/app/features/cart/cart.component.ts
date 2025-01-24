@@ -8,6 +8,7 @@ import { CurrencyPipe } from '@angular/common';
   selector: 'app-cart',
   standalone: true,
   imports: [RouterLink, CurrencyPipe],
+  providers: [CurrencyPipe],
   animations: [
     trigger('itemAnimation', [
       transition(':enter', [
@@ -61,6 +62,12 @@ import { CurrencyPipe } from '@angular/common';
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                   </button>
                 </div>
+                <!-- <div class="text-sm text-muted-foreground">
+        {{ item.price * item.quantity | currency }}
+        @if (item.quantity > 1) {
+          <span>({{ item.price | currency }} each)</span>
+        } -->
+      <!-- </div> -->
 
                 <button 
                   class="p-2 hover:bg-destructive hover:text-destructive-foreground rounded"

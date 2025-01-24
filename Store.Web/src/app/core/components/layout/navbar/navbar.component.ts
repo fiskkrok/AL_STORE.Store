@@ -1,14 +1,21 @@
-import { Component, computed, inject, signal } from '@angular/core';
+// src/app/core/components/layout/navbar.component.ts
+import { NgIf, AsyncPipe } from '@angular/common';
+import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+
+import { CartDropdownComponent } from '../../../../features/cart/cart-dropdown/cart-dropdown.component';
 import { CartStore } from '../../../state/cart.store';
+import { AuthService } from '../../../services/auth.service';
+
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe, CartDropdownComponent],
   template: `
     <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div class="container flex h-14 items-center">
+        <!-- Brand and Navigation -->
         <div class="mr-4 flex">
           <a class="mr-6 flex items-center space-x-2" href="/">
             <span class="font-bold">STORE</span>
@@ -33,55 +40,152 @@ import { CartStore } from '../../../state/cart.store';
           </nav>
         </div>
 
+        <!-- Right Side Actions -->
         <div class="flex flex-1 items-center justify-end space-x-4">
+          <!-- Theme Toggle -->
           <div>
             <button 
-              class="inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 rounded-full"
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full"
               (click)="toggleTheme()"
             >
               @if (isDarkTheme()) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
               } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
               }
             </button>
           </div>
 
-          <a 
-            class="relative inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 rounded-full"
-            routerLink="/cart"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-            @if (cartItemCount() > 0) {
-              <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                {{cartItemCount()}}
-              </span>
-            }
-          </a>
+          <!-- Cart -->
+          <div class="relative cart-container">
+            <button 
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full hover:bg-accent"
+              (click)="toggleCart()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              @if (cartItemCount() > 0) {
+                <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
+                  {{cartItemCount()}}
+                </span>
+              }
+            </button>
 
-          <a 
-            class="relative inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 rounded-full"
-            routerLink="/account"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
-          </a>
+            <app-cart-dropdown [isOpen]="showCart()" />
+          </div>
+
+          <!-- Auth Section -->
+          <ng-container *ngIf="auth.user$ | async as user; else loginButton">
+            <div class="relative">
+              <button
+                class="flex items-center gap-2 hover:bg-accent p-2 rounded-lg"
+                (click)="toggleUserMenu()"
+              >
+                <img
+                  [src]="user.picture"
+                  [alt]="user.name"
+                  class="w-8 h-8 rounded-full"
+                />
+                <span class="text-sm">{{ user.name }}</span>
+              </button>
+
+              @if (showUserMenu()) {
+                <div class="absolute right-0 mt-2 w-48 bg-background rounded-lg shadow-lg border py-1">
+                  <a
+                    routerLink="/account"
+                    class="block px-4 py-2 text-sm hover:bg-accent"
+                  >
+                    Account Settings
+                  </a>
+                  <a
+                    routerLink="/orders"
+                    class="block px-4 py-2 text-sm hover:bg-accent"
+                  >
+                    Order History
+                  </a>
+                  <button
+                    (click)="auth.logout()"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
+                     class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              }
+            </div>
+          </ng-container>
+
+          <ng-template #loginButton>
+            <button
+              (click)="auth.login()"
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md"
+            >
+              Sign In
+            </button>
+          </ng-template>
         </div>
       </div>
     </header>
-  `,
+  `
 })
 export class NavbarComponent {
-  private cartStore = inject(CartStore);
-  cartItemCount = this.cartStore.totalItems;
-
+  auth = inject(AuthService);
+  private readonly cartStore = inject(CartStore);
   private theme = signal<'light' | 'dark'>('light');
+
   isDarkTheme = computed(() => this.theme() === 'dark');
+  cartItemCount = this.cartStore.totalItems;
+  showCart = signal(false);
+  showUserMenu = signal(false);
+
+  constructor() {
+    // Initialize theme based on system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      document.documentElement.classList.add('dark');
+      this.theme.set('dark');
+    }
+
+    // Show cart dropdown when item is added
+    effect(() => {
+      const recentItem = this.cartStore.recentlyAddedItem();
+      if (recentItem) {
+        this.showCart.set(true);
+
+        // Auto-hide after 3 seconds
+        setTimeout(() => this.showCart.set(false), 3000);
+      }
+    });
+  }
 
   toggleTheme() {
-    this.theme.update((current: string) => {
+    this.theme.update(current => {
       const newTheme = current === 'light' ? 'dark' : 'light';
       document.documentElement.classList.toggle('dark');
       return newTheme;
     });
+  }
+
+  toggleCart() {
+    this.showCart.update(show => !show);
+  }
+
+  toggleUserMenu() {
+    this.showUserMenu.update(show => !show);
+  }
+
+  // Close dropdowns when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    // Check if click was outside cart dropdown
+    const cartElement = (event.target as HTMLElement).closest('.cart-container');
+    if (!cartElement) {
+      this.showCart.set(false);
+    }
+
+    // Check if click was outside user menu
+    const userMenuElement = (event.target as HTMLElement).closest('.user-menu-container');
+    if (!userMenuElement) {
+      this.showUserMenu.set(false);
+    }
   }
 }

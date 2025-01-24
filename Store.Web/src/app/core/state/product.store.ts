@@ -38,7 +38,7 @@ export class ProductStore {
 
     constructor(private signalR: SignalRService) {
         // Subscribe to real-time product updates
-        this.signalR.subscribeToProductUpdates(this.handleProductUpdate.bind(this));
+        // this.signalR.subscribeToProductUpdates(this.handleProductUpdate.bind(this));
     }
 
     async getProduct(id: string): Promise<Product | null> {
@@ -72,12 +72,14 @@ export class ProductStore {
     }
 
     async loadProducts(): Promise<void> {
+        console.log('ProductStore: Starting to load products');
         this.isLoading.set(true);
         try {
             const products = await firstValueFrom(this.productService.getProducts());
+            console.log('ProductStore: Received products:', products);
             this.products.set(products);
         } catch (error) {
-            console.error('Error loading products:', error);
+            console.error('ProductStore: Error loading products:', error);
         } finally {
             this.isLoading.set(false);
         }

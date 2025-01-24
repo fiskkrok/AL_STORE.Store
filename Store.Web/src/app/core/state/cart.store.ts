@@ -1,7 +1,8 @@
+// src/app/core/state/cart.store.ts
 import { Injectable, computed, signal } from '@angular/core';
 import { SignalRService } from '../services/signalr.service';
 
-interface CartItem {
+export interface CartItem {
     id: string;
     productId: string;
     name: string;
@@ -13,45 +14,102 @@ interface CartItem {
 
 @Injectable({ providedIn: 'root' })
 export class CartStore {
-    updateQuantity(id: any, newQuantity: any) {
-        throw new Error('Method not implemented.');
-    }
-    removeItem(id: any) {
-        throw new Error('Method not implemented.');
-    }
+    // State
     private readonly items = signal<CartItem[]>([]);
     private readonly isLoading = signal(false);
+    private readonly recentItem = signal<CartItem | null>(null);
 
+    // Computed Values
     readonly cartItems = computed(() => this.items());
     readonly loading = computed(() => this.isLoading());
+    readonly recentlyAddedItem = computed(() => this.recentItem());
+
     readonly totalItems = computed(() =>
         this.items().reduce((sum, item) => sum + item.quantity, 0)
     );
+
     readonly totalPrice = computed(() =>
         this.items().reduce((sum, item) => sum + (item.price * item.quantity), 0)
     );
 
     constructor(private signalR: SignalRService) {
-        // Subscribe to real-time cart updates
         this.signalR.subscribeToCart(this.handleCartUpdate.bind(this));
+        this.loadCartFromStorage();
     }
 
-    async addItem(item: Omit<CartItem, 'id'>): Promise<void> {
+    private loadCartFromStorage() {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+            this.items.set(JSON.parse(savedCart));
+        }
+    }
+
+    private saveCartToStorage() {
+        localStorage.setItem('cart', JSON.stringify(this.items()));
+    }
+
+    async addItem(newItem: Omit<CartItem, 'id'>): Promise<CartItem> {
         this.isLoading.set(true);
         try {
-            // Optimistic update
-            const newItem = { ...item, id: crypto.randomUUID() };
-            this.items.update(items => [...items, newItem]);
+            const existingItemIndex = this.items().findIndex(item =>
+                item.productId === newItem.productId &&
+                item.variantId === newItem.variantId
+            );
 
-            // API call would go here
+            let addedItem: CartItem;
+
+            if (existingItemIndex !== -1) {
+                // Update quantity of existing item
+                const updatedItems = [...this.items()];
+                updatedItems[existingItemIndex] = {
+                    ...updatedItems[existingItemIndex],
+                    quantity: updatedItems[existingItemIndex].quantity + newItem.quantity
+                };
+                addedItem = updatedItems[existingItemIndex];
+                this.items.set(updatedItems);
+            } else {
+                // Add new item
+                addedItem = { ...newItem, id: crypto.randomUUID() };
+                this.items.update(items => [...items, addedItem]);
+            }
+
+            this.recentItem.set(addedItem);
+            this.saveCartToStorage();
+            return addedItem;
 
         } catch (error) {
-            // Rollback on error
-            this.items.update(items => items.filter(i => i.productId !== item.productId));
+            console.error('Error adding item to cart:', error);
             throw error;
         } finally {
             this.isLoading.set(false);
         }
+    }
+
+    async updateQuantity(itemId: string, quantity: number): Promise<void> {
+        if (quantity <= 0) {
+            await this.removeItem(itemId);
+            return;
+        }
+
+        this.items.update(items =>
+            items.map(item =>
+                item.id === itemId
+                    ? { ...item, quantity }
+                    : item
+            )
+        );
+        this.saveCartToStorage();
+    }
+
+    async removeItem(itemId: string): Promise<void> {
+        this.items.update(items => items.filter(item => item.id !== itemId));
+        this.saveCartToStorage();
+    }
+
+    clearCart(): void {
+        this.items.set([]);
+        this.recentItem.set(null);
+        localStorage.removeItem('cart');
     }
 
     private handleCartUpdate(update: any): void {
@@ -68,5 +126,6 @@ export class CartStore {
                 this.items.set([]);
                 break;
         }
+        this.saveCartToStorage();
     }
 }

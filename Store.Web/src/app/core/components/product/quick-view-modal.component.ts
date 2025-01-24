@@ -1,5 +1,5 @@
 // src/app/core/components/product/quick-view-modal.component.ts
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -62,7 +62,14 @@ import { ErrorService } from '../../services/error.service';
                   <h2 class="text-2xl font-semibold">{{ product().name }}</h2>
                   
                   <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-2xl font-bold">{{ product().price | currency }}</span>
+      <span class="text-2xl font-bold">
+        {{ totalPrice() | currency }}
+      </span>
+      @if (quantity() > 1) {
+        <span class="text-sm text-muted-foreground">
+          ({{ product().price | currency }} each)
+        </span>
+      }
                     @if (product().compareAtPrice) {
                       <span class="text-lg text-muted-foreground line-through">
                         {{ product().compareAtPrice | currency }}
@@ -100,7 +107,8 @@ import { ErrorService } from '../../services/error.service';
                     Quantity
                   </label>
                   <select 
-                    [(ngModel)]="quantity"
+                    [ngModel]="quantity()"
+  (ngModelChange)="quantity.set($event)"
                     class="w-full px-3 py-2 border rounded-md"
                     [disabled]="product().stockLevel === 0"
                   >
@@ -174,7 +182,6 @@ import { ErrorService } from '../../services/error.service';
 export class QuickViewModalComponent {
   private cartStore = inject(CartStore);
   private errorService = inject(ErrorService);
-  private currencyPipe = inject(CurrencyPipe);
 
   product = input.required<Product>();
   isOpen = input(false);
@@ -182,9 +189,15 @@ export class QuickViewModalComponent {
 
   selectedImage = 0;
   selectedVariant: string | null = null;
-  quantity = 1;
+  quantity = signal(1); // Convert to signal  
   isAddingToCart = false;
+  totalPrice = computed(() => {
+    const basePrice = this.selectedVariant
+      ? this.product().variants.find((v: { id: string | null; }) => v.id === this.selectedVariant)?.price
+      : this.product().price;
 
+    return (basePrice || 0) * this.quantity();
+  });
   async addToCart() {
     this.isAddingToCart = true;
 
@@ -196,7 +209,7 @@ export class QuickViewModalComponent {
         variantId: variant?.id,
         name: this.product().name,
         price: variant?.price ?? this.product().price, // Use raw number
-        quantity: this.quantity,
+        quantity: this.quantity(),
         imageUrl: this.product().images[0].url
       });
 

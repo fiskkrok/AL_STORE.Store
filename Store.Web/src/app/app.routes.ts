@@ -1,3 +1,4 @@
+// app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -6,6 +7,11 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./features/home/home.component')
       .then(m => m.HomeComponent)
+  },
+  {
+    path: 'auth/callback',
+    loadComponent: () => import('./features/auth/callback.component')
+      .then(m => m.AuthCallbackComponent)
   },
   {
     path: 'products',

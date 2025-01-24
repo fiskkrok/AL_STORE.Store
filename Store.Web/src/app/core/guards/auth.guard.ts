@@ -1,14 +1,19 @@
+// src/app/core/guards/auth.guard.ts
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from './../services/auth.service';
+import { Router, type CanActivateFn } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+export const authGuard: CanActivateFn = async (route, state) => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
 
-  if (!authService.isAuthenticated()) {
-    router.navigate(['/login']);
-    return false;
-  }
-  return true;
+    const isAuthenticated = await auth.isAuthenticated();
+
+    if (!isAuthenticated) {
+        // Save attempted URL and redirect to login
+        await auth.login(state.url);
+        return false;
+    }
+
+    return true;
 };

@@ -10,7 +10,8 @@ import { environment } from '../../../environments/environment';
 })
 export class ProductService {
   private mockData = inject(MockDataService);
-  private useRealApi = environment.useRealApi;
+  // private useRealApi = environment.useRealApi;
+  private useRealApi = false;
 
   getProduct(id: string): Observable<Product> {
     if (this.useRealApi) {
