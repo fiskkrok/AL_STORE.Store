@@ -1,9 +1,8 @@
 // src/app/core/services/product.service.ts
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Product, ProductFilter } from '../models/product.model';
+import { Product } from '../models/product.model';
 import { MockDataService } from './mock-data.service';
-import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

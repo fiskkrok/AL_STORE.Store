@@ -7,11 +7,9 @@ import { ProductStore } from '../../../core/state/product.store';
 import { CartStore } from '../../../core/state/cart.store';
 import { ErrorService } from '../../../core/services/error.service';
 import { ContainerComponent } from '../../../core/components/layout/container.component';
-import { SectionComponent } from '../../../core/components/layout/section.component';
 import { GridComponent } from '../../../core/components/layout/grid.component';
 import { ProductCardComponent } from '../../../core/components/product/product-card.component';
 
-import { QuickViewModalComponent } from '../../../core/components/product/quick-view-modal.component';
 import { SizeGuideComponent } from './size-guide.component';
 import { ReviewsComponent } from './reviews.component';
 import { Product, ProductImage } from '../../../core/models/product.model';
@@ -112,7 +110,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
               <!-- Variants Selection -->
               @if (product()?.variants?.length) {
                 <div>
-                  <label class="text-sm font-medium block mb-2">Select Option</label>
+                  <label for="" class="text-sm font-medium block mb-2">Select Option</label>
                   <select 
                     [(ngModel)]="selectedVariantId"
                     class="w-full px-4 py-2 border rounded-lg"
@@ -132,7 +130,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
 
               <!-- Quantity -->
               <div>
-                <label class="text-sm font-medium block mb-2">Quantity</label>
+                <label for="" class="text-sm font-medium block mb-2">Quantity</label>
                 <select 
                   [(ngModel)]="quantity"
                   class="w-full px-4 py-2 border rounded-lg"
@@ -260,8 +258,8 @@ import { Product, ProductImage } from '../../../core/models/product.model';
                   <app-product-card
                     [product]="product"
                     [loading]="false"
-                    (onQuickView)="openQuickView($event)"
-                    (onAddToCart)="addToCart()"
+                    (handleQuickView)="openQuickView($event)"
+                    (handleAddToCart)="addToCart()"
                   />
                 }
               </app-grid>
@@ -338,7 +336,7 @@ export class ProductDetailComponent {
         this.selectedImage.set(product?.images[0]);
       }
 
-    } catch (error) {
+    } catch {
       this.errorService.addError({
         code: 'PRODUCT_LOAD_ERROR',
         message: 'Failed to load product details'
@@ -379,7 +377,7 @@ export class ProductDetailComponent {
         code: 'CART_SUCCESS',
         message: 'Product added to cart successfully'
       });
-    } catch (error) {
+    } catch {
       this.errorService.addError({
         code: 'CART_ERROR',
         message: 'Failed to add item to cart. Please try again.'

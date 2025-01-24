@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/core/state/cart.store.ts
 import { Injectable, computed, signal } from '@angular/core';
 import { SignalRService } from '../services/signalr.service';

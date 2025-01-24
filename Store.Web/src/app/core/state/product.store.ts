@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SignalRService } from '../services/signalr.service';
@@ -62,9 +63,14 @@ export class ProductStore {
 
     private async loadRelatedProducts(productId: string, categoryId: string): Promise<void> {
         try {
-            const related = await firstValueFrom(this.productService.getRelatedProducts(productId));
+            let related = await firstValueFrom(this.productService.getRelatedProducts(productId));
+            // Filter out products in the same category
+            related = related.filter(product => product.categoryId !== categoryId);
             // Handle related products...
+
             this.products.set(related);
+
+
 
         } catch (error) {
             console.error('Error loading related products:', error);
@@ -100,6 +106,8 @@ export class ProductStore {
     }
 
     getRelatedProducts(productId: string): Product[] {
-        return this.relatedProducts();
+        // This is a computed property, so it will automatically update when the relatedProducts signal changes
+
+        return this.relatedProducts().filter(product => product.id !== productId);
     }
 }

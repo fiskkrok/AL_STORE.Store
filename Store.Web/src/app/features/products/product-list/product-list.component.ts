@@ -88,8 +88,8 @@ import { QuickViewModalComponent } from "../../../core/components/product/quick-
                   <app-product-card
                     [product]="product"
                     [loading]="false"
-                    (onQuickView)="selectedProduct = product"
-                    (onAddToCart)="addToCart($event)"
+                    (handleQuickView)="selectedProduct = product"
+                    (handleAddToCart)="addToCart(product)"
                   />
                 }
               </app-grid>
@@ -158,7 +158,7 @@ export class ProductListComponent implements OnInit {
   async loadProducts() {
     try {
       await this.productStore.loadProducts();
-    } catch (error) {
+    } catch {
       this.errorService.addError({
         code: 'LOAD_ERROR',
         message: 'Failed to load products'
@@ -173,7 +173,7 @@ export class ProductListComponent implements OnInit {
     this.productStore.setFilters({ categoryId });
   }
 
-  async addToCart(product: any): Promise<void> {
+  async addToCart(product: Product): Promise<void> {
     this.addingToCart[product.id] = true;
 
     try {
@@ -184,7 +184,7 @@ export class ProductListComponent implements OnInit {
         quantity: 1,
         imageUrl: product.imageUrl
       });
-    } catch (error) {
+    } catch {
       this.errorService.addError({
         code: 'CART_ERROR',
         message: 'Failed to add item to cart. Please try again.'

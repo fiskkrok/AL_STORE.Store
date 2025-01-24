@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/core/components/layout/navbar.component.ts
 import { NgIf, AsyncPipe } from '@angular/common';
 import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-import { CartDropdownComponent } from '../../../../features/cart/cart-dropdown/cart-dropdown.component';
+import { CartDropdownComponent } from '../../cart-dropdown/cart-dropdown.component';
 import { CartStore } from '../../../state/cart.store';
 import { AuthService } from '../../../services/auth.service';
+import { ThemeService } from '../../../services/theme.service';
 
 
 @Component({
@@ -105,7 +107,7 @@ import { AuthService } from '../../../services/auth.service';
                   <button
                     (click)="auth.logout()"
                     class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
-                     class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
+                      class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
                   >
                     Sign Out
                   </button>
@@ -130,39 +132,36 @@ import { AuthService } from '../../../services/auth.service';
 export class NavbarComponent {
   auth = inject(AuthService);
   private readonly cartStore = inject(CartStore);
-  private theme = signal<'light' | 'dark'>('light');
+  private autoHideTimeout: any;
+  private themeService = inject(ThemeService);
 
-  isDarkTheme = computed(() => this.theme() === 'dark');
+  isDarkTheme = computed(() => this.themeService.currentTheme() === 'dark');
   cartItemCount = this.cartStore.totalItems;
   showCart = signal(false);
   showUserMenu = signal(false);
 
   constructor() {
-    // Initialize theme based on system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark) {
-      document.documentElement.classList.add('dark');
-      this.theme.set('dark');
-    }
-
     // Show cart dropdown when item is added
     effect(() => {
       const recentItem = this.cartStore.recentlyAddedItem();
       if (recentItem) {
         this.showCart.set(true);
 
-        // Auto-hide after 3 seconds
-        setTimeout(() => this.showCart.set(false), 3000);
+        // Clear any existing timeout
+        if (this.autoHideTimeout) {
+          clearTimeout(this.autoHideTimeout);
+        }
+
+        // Set new timeout
+        this.autoHideTimeout = setTimeout(() => {
+          this.showCart.set(false);
+        }, 3000);
       }
     });
   }
 
   toggleTheme() {
-    this.theme.update(current => {
-      const newTheme = current === 'light' ? 'dark' : 'light';
-      document.documentElement.classList.toggle('dark');
-      return newTheme;
-    });
+    this.themeService.toggleTheme();
   }
 
   toggleCart() {

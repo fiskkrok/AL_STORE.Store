@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { FormBuilder, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 // Reviews component
 @Component({
@@ -84,12 +83,12 @@ import { DatePipe } from '@angular/common';
             <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium mb-1">Rating</label>
+                  <label for="rating" class="block text-sm font-medium mb-1">Rating</label>
                   <div class="flex gap-2">
                     @for (star of [1,2,3,4,5]; track star) {
                       <button 
                         type="button"
-                        (click)="setRating(star)"
+                        id="rating" (click)="setRating(star)"
                         class="focus:outline-none"
                       >
                         <svg 
@@ -105,8 +104,9 @@ import { DatePipe } from '@angular/common';
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium mb-1">Title</label>
+                  <label for="title" class="block text-sm font-medium mb-1">Title</label>
                   <input 
+                    id="title"
                     type="text"
                     formControlName="title"
                     class="w-full px-3 py-2 border rounded-md"
@@ -114,8 +114,9 @@ import { DatePipe } from '@angular/common';
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium mb-1">Review</label>
+                  <label for="comment" class="block text-sm font-medium mb-1">Review</label>
                   <textarea
+                    id="comment"
                     formControlName="comment"
                     rows="4"
                     class="w-full px-3 py-2 border rounded-md"

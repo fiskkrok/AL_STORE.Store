@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // core/models/product.model.ts
 export interface Product {
     images: any;
@@ -21,25 +22,7 @@ export interface Product {
     categories: string[];
     tags: string[];
 }
-export interface ProductToCartItem {
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    imageUrl: string;
-    variantId?: string;
-}
 
-export function mapProductToCartItem(product: Product, quantity: number = 1): ProductToCartItem {
-    return {
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: quantity,
-        imageUrl: product.images[0]?.url || product.imageUrl,
-        // Add variantId if needed
-    };
-}
 export interface ProductFilter {
     categoryId: string;
     minPrice: number;

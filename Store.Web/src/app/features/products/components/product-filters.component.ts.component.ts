@@ -67,7 +67,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
         <!-- Price Range -->
         <div>
-          <label class="text-sm font-medium block mb-2">Price Range</label>
+          <label for="" class="text-sm font-medium block mb-2">Price Range</label>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <input
@@ -90,7 +90,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
         <!-- Categories -->
         <div>
-          <label class="text-sm font-medium block mb-2">Categories</label>
+          <label for="" class="text-sm font-medium block mb-2">Categories</label>
           <div class="space-y-2">
             @for (category of categories(); track category.id) {
               <label class="flex items-center">

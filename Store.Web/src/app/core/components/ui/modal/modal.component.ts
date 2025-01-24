@@ -1,3 +1,4 @@
+
 import { Component, input, output } from '@angular/core';
 
 @Component({
@@ -5,20 +6,21 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     @if (isOpen()) {
-      <div 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+      <div class="fixed inset-0 z-50 bg-black/60"
         (click)="close.emit()"
-      >
-        <div 
-          class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg"
-          (click)="$event.stopPropagation()"
-        >
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        (keydown.escape)="close.emit()"
+        tabindex="-1" >
+        <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg"
+          (click)="$event.stopPropagation()"   tabindex="0" role="dialog" aria-labelledby="dialog-title" (keydown.space)="close.emit()" (keydown.enter)="close.emit()">
           <!-- Header -->
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold">{{ title() }}</h2>
             <button 
-              class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
-              (click)="close.emit()"
+              class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100" 
+              (click)="close.emit()" tabindex="0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>

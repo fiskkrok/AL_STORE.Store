@@ -35,7 +35,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             });
             break;
 
-          case 422:
+          case 422: {
             const validationErrors = error.error.errors;
             if (validationErrors) {
               errorService.addError({
@@ -45,6 +45,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               });
             }
             break;
+          }
 
           default:
             errorService.addError({

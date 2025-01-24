@@ -1,9 +1,9 @@
 // src/app/core/components/cart/cart-dropdown.component.ts
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
-import { fadeAnimation } from '../../../core/animations/fade.animation/fade.animation';
-import { CartStore } from '../../../core/state/cart.store';
+import { fadeAnimation } from '../../animations/fade.animation/fade.animation';
+import { CartStore } from '../../state/cart.store';
 
 
 @Component({
@@ -14,20 +14,21 @@ import { CartStore } from '../../../core/state/cart.store';
   template: `
     @if (isOpen()) {
       <div 
-        class="absolute right-0 mt-2 w-96 rounded-lg border bg-background shadow-lg"
+        class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[28rem] rounded-lg border bg-white shadow-lg"
         [@fade]
+        style="max-width: calc(100vw - 2rem);"
       >
         @if (recentlyAdded()) {
-          <div class="p-4 border-b bg-accent/20">
-            <div class="flex items-center gap-4">
+          <div class="p-3 sm:p-4 border-b bg-green-50">
+            <div class="flex items-center gap-3 sm:gap-4">
               <img 
                 [src]="recentlyAdded()?.imageUrl" 
                 [alt]="recentlyAdded()?.name"
-                class="w-16 h-16 object-cover rounded"
+                class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded"
               />
-              <div>
-                <p class="font-medium text-green-600">Added to Cart!</p>
-                <p class="text-sm">{{ recentlyAdded()?.name }}</p>
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-green-600 text-sm sm:text-base">Added to Cart!</p>
+                <p class="text-sm truncate">{{ recentlyAdded()?.name }}</p>
                 <p class="text-sm text-muted-foreground">
                   {{ recentlyAdded()?.quantity }} × {{ recentlyAdded()?.price | currency }}
                 </p>
@@ -37,16 +38,16 @@ import { CartStore } from '../../../core/state/cart.store';
         }
 
         @if (cartItems().length > 0) {
-          <div class="max-h-96 overflow-auto">
+          <div class="max-h-[60vh] sm:max-h-96 overflow-auto">
             @for (item of cartItems(); track item.id) {
-              <div class="flex items-center gap-4 p-4 hover:bg-accent/50">
+              <div class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-50">
                 <img 
                   [src]="item.imageUrl" 
                   [alt]="item.name"
-                  class="w-16 h-16 object-cover rounded"
+                  class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded"
                 />
-                <div class="flex-1">
-                  <p class="font-medium">{{ item.name }}</p>
+                <div class="min-w-0 flex-1">
+                  <p class="font-medium text-sm sm:text-base truncate">{{ item.name }}</p>
                   <p class="text-sm text-muted-foreground">
                     {{ item.quantity }} × {{ item.price | currency }}
                   </p>
@@ -55,8 +56,8 @@ import { CartStore } from '../../../core/state/cart.store';
             }
           </div>
 
-          <div class="border-t p-4">
-            <div class="flex justify-between mb-4">
+          <div class="border-t p-3 sm:p-4">
+            <div class="flex justify-between mb-3 sm:mb-4">
               <span class="font-medium">Subtotal</span>
               <span class="font-medium">{{ totalPrice() | currency }}</span>
             </div>
@@ -77,13 +78,24 @@ import { CartStore } from '../../../core/state/cart.store';
             </div>
           </div>
         } @else {
-          <div class="p-8 text-center">
+          <div class="p-6 sm:p-8 text-center">
             <p class="text-muted-foreground">Your cart is empty</p>
           </div>
         }
       </div>
     }
-  `
+  `,
+  styles: [`
+    :host {
+      position: absolute;
+      right: 1rem;
+      left: 1rem;
+      @media (min-width: 640px) {
+        left: auto;
+        width: 28rem;
+      }
+    }
+  `]
 })
 export class CartDropdownComponent {
   private cartStore = inject(CartStore);

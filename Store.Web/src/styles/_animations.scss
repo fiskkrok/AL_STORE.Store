@@ -1,3 +1,5 @@
+/* src/styles/_animations.scss */
+
 @layer utilities {
     .animate-in {
         animation: animate-in 0.5s ease-out;
@@ -27,26 +29,26 @@
         background-size: 200% 100%;
         animation: shimmer 1.5s infinite;
     }
-}
 
-@keyframes animate-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+    @keyframes animate-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
 
-@keyframes shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-
-    100% {
-        background-position: -200% 0;
+        100% {
+            background-position: -200% 0;
+        }
     }
 }

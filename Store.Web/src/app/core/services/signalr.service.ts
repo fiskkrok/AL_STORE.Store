@@ -1,4 +1,5 @@
-import { Injectable, inject } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';

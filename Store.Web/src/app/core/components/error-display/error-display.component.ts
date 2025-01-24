@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { ApiError } from '../../models/error.model';
 

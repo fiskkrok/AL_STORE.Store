@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, inject } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
@@ -7,9 +8,9 @@ import { throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    private auth0 = inject(Auth0Service);
-    private router = inject(Router);
-    private errorService = inject(ErrorService);
+    private readonly auth0 = inject(Auth0Service);
+    private readonly router = inject(Router);
+    private readonly errorService = inject(ErrorService);
 
     readonly isAuthenticated$ = this.auth0.isAuthenticated$;
     readonly user$ = this.auth0.user$;

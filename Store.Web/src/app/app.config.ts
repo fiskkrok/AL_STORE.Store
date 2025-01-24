@@ -1,4 +1,4 @@
-import { ApplicationConfig, isDevMode } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
@@ -28,7 +28,6 @@ export const appConfig: ApplicationConfig = {
           }
         ]
       },
-      // debug: isDevMode() // Enable debug logs in development
     })
   ]
 };

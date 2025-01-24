@@ -1,10 +1,10 @@
-import { Directive, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, Input, Output, AfterViewInit, OnDestroy } from '@angular/core';
 
 @Directive({
   selector: '[appIntersectionObserver]',
   standalone: true
 })
-export class IntersectionObserverDirective {
+export class IntersectionObserverDirective implements AfterViewInit, OnDestroy {
   @Input() threshold = 0.1;
   @Output() intersecting = new EventEmitter<boolean>();
 

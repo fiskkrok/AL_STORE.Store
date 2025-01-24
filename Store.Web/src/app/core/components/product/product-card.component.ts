@@ -3,47 +3,44 @@ import { Component, inject, input, output } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../models/product.model';
-import { IntersectionObserverDirective } from '../../../directives/intersection-observer.directive';
 import { CartItem, CartStore } from '../../state/cart.store';
 import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, IntersectionObserverDirective, RouterLink, CurrencyPipe],
-  providers: [CurrencyPipe],
+  imports: [CommonModule, RouterLink, CurrencyPipe],
   template: `
-    <div
-      class="group relative rounded-lg border bg-card overflow-hidden hover-lift press-effect"
-      [class.opacity-75]="loading()"
-    >
-      <!-- Image Container -->
-      <div class="relative aspect-square overflow-hidden bg-gray-100">
+    <div class="product-card">
+      <div class="relative">
         @if (!loading()) {
           <img
             [src]="product().images[0].url"
             [alt]="product().name"
-            class="object-cover w-full h-full transition duration-300 group-hover:scale-105"
+            class="product-image"
             loading="lazy"
           />
 
           <!-- Quick Actions -->
-          <div class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-            <div class="flex gap-2 translate-y-4 transition-transform group-hover:translate-y-0">
+          <div class="product-actions">
+            <div class="transform translate-y-4 transition-transform hover:translate-y-0 flex gap-2">
               <button
-                class="px-4 py-2 bg-white text-black rounded-md hover:bg-gray-100 transition"
-                (click)="onQuickView.emit(product())"
+                class="btn btn-secondary"
+                (click)="handleQuickView.emit(product())"
               >
                 Quick View
               </button>
               @if (product().stockLevel > 0) {
                 <button
-                  class="px-4 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition"
+                  class="btn btn-primary"
                   (click)="addToCart()"
                   [disabled]="loading() || isAddingToCart"
                 >
                   @if (isAddingToCart) {
-                    Adding...
+                    <span class="flex items-center gap-2">
+                      <span class="loading-spinner h-4 w-4"></span>
+                      Adding...
+                    </span>
                   } @else {
                     Add to Cart
                   }
@@ -52,38 +49,46 @@ import { ErrorService } from '../../services/error.service';
             </div>
           </div>
 
-          <!-- Tags -->
-          @if (product().compareAtPrice) {
-            <span class="absolute top-2 right-2 px-2 py-1 text-xs font-medium bg-red-500 text-white rounded">
-              SALE
-            </span>
-          }
+          <!-- Status Tags -->
+          <div class="absolute top-2 right-2 flex flex-col gap-2">
+            @if (product().compareAtPrice) {
+              <span class="badge badge-error">
+                SALE
+              </span>
+            }
+            @if (product().stockLevel <= 0) {
+              <span class="badge badge-secondary">
+                Out of Stock
+              </span>
+            } @else if (product().stockLevel < 5) {
+              <span class="badge badge-warning">
+                Low Stock
+              </span>
+            }
+          </div>
         } @else {
-          <div class="absolute inset-0 loading-shimmer"></div>
+          <div class="loading-shimmer w-full h-full"></div>
         }
       </div>
 
-      <!-- Product Info -->
-      <div class="p-4">
+      <div class="product-content">
         @if (!loading()) {
-          <div class="min-h-[6rem]">
-            <h3 class="font-medium text-base">
-              <a
-                [routerLink]="['/products', product().id]"
-                class="hover:text-brand-navy transition"
-              >
-                {{ product().name }}
-              </a>
-            </h3>
+          <h3 class="product-title">
+            <a
+              [routerLink]="['/products', product().id]"
+              class="hover:text-primary transition"
+            >
+              {{ product().name }}
+            </a>
+          </h3>
 
-            <p class="mt-1 text-sm text-muted-foreground line-clamp-2">
-              {{ product().description }}
-            </p>
-          </div>
+          <p class="product-description">
+            {{ product().description }}
+          </p>
 
-          <div class="mt-2 flex items-center justify-between">
+          <div class="flex items-center justify-between mt-4">
             <div class="flex items-baseline gap-2">
-              <span class="text-lg font-semibold">
+              <span class="product-price">
                 {{ product().price | currency }}
               </span>
               @if (product().compareAtPrice) {
@@ -92,13 +97,11 @@ import { ErrorService } from '../../services/error.service';
                 </span>
               }
             </div>
-
-            <!-- Stock Status -->
-            @if (product().stockLevel <= 0) {
-              <span class="text-sm text-red-500">Out of Stock</span>
-            } @else if (product().stockLevel < 5) {
-              <span class="text-sm text-amber-500">Low Stock</span>
-            }
+          </div>
+        } @else {
+          <div class="space-y-2">
+            <div class="loading-shimmer h-4 w-3/4"></div>
+            <div class="loading-shimmer h-4 w-1/2"></div>
           </div>
         }
       </div>
@@ -106,14 +109,14 @@ import { ErrorService } from '../../services/error.service';
   `
 })
 export class ProductCardComponent {
-  private cartStore = inject(CartStore);
-  private errorService = inject(ErrorService);
-
+  private readonly cartStore = inject(CartStore);
+  private readonly errorService = inject(ErrorService);
+  inView = input(false);
   product = input.required<Product>();
   loading = input(false);
 
-  onQuickView = output<Product>();
-  onAddToCart = output<CartItem>();
+  handleQuickView = output<Product>();
+  handleAddToCart = output<CartItem>();
 
   isAddingToCart = false;
   async addToCart() {
@@ -129,14 +132,14 @@ export class ProductCardComponent {
         imageUrl: this.product().images[0].url
       });
 
-      this.onAddToCart.emit(addedItem);
+      this.handleAddToCart.emit(addedItem);
 
       // Show success notification
       this.errorService.addError({
         code: 'CART_SUCCESS',
         message: 'Item added to cart successfully'
       });
-    } catch (error) {
+    } catch {
       this.errorService.addError({
         code: 'CART_ERROR',
         message: 'Failed to add item to cart. Please try again.'

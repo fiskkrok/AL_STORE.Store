@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { ProductCardComponent } from '../../../core/components/ui/product-card/product-card.component';
-import { QuickViewModalComponent } from '../../../core/components/ui/quick-view-modal/quick-view-modal.component';
 import { ProductStore } from '../../../core/state/product.store';
+import { QuickViewModalComponent } from '../../../core/components/product/quick-view-modal.component';
+import { ProductCardComponent } from '../../../core/components/product/product-card.component';
 
 @Component({
   selector: 'app-product-grid',
@@ -44,5 +44,5 @@ export class ProductGridComponent {
   products = this.productStore.filteredProducts;
   loading = this.productStore.loading;
   isAddingToCart: Record<string, boolean> = {};
-  selectedProduct = signal<any>(null);
+  selectedProduct = signal<unknown>(null);
 }
