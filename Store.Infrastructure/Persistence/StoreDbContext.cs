@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Store.Application.Common.Interfaces;
 using Store.Domain.Common;
 using MediatR;
+using Store.Domain.Entities.Product;
 
 namespace Store.Infrastructure.Persistence;
 public class StoreDbContext : DbContext, IStoreDbContext
@@ -27,6 +28,12 @@ public class StoreDbContext : DbContext, IStoreDbContext
         _dateTime = dateTime;
         _mediator = mediator;
     }
+
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<ProductSyncHistory> SyncHistory => Set<ProductSyncHistory>();
+
+
 
     DbSet<TEntity> IStoreDbContext.Set<TEntity>()
     {
@@ -62,15 +69,16 @@ public class StoreDbContext : DbContext, IStoreDbContext
         // Dispatch domain events after save
         foreach (var @event in events)
         {
-            // You'll need to inject IMediator or your event dispatcher here
             await _mediator.Publish(@event, cancellationToken);
         }
+
         return result;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.Ignore<BaseDomainEvent>();
         base.OnModelCreating(modelBuilder);
     }
 }

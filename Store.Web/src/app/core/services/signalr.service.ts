@@ -11,6 +11,7 @@ export class SignalRService {
   private hubConnection: HubConnection;
   private connectionState = new BehaviorSubject<boolean>(false);
   connectionState$ = this.connectionState.asObservable();
+  onStockUpdate = new BehaviorSubject<any>(null);
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()

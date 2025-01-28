@@ -18,14 +18,14 @@ import { ThemeService } from '../../../services/theme.service';
     <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div class="container flex h-14 items-center">
         <!-- Brand and Navigation -->
-        <div class="mr-4 flex">
-          <a class="mr-6 flex items-center space-x-2" href="/">
+        <div class="mr-4 flex" >
+          <a class="mr-6 flex items-center space-x-2 nav-link" href="/">
             <span class="font-bold">STORE</span>
           </a>
           
           <nav class="flex items-center space-x-6 text-sm font-medium">
             <a 
-              class="transition-colors hover:text-foreground/80" 
+              class="nav-link" 
               routerLink="/"
               routerLinkActive="text-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
@@ -33,7 +33,7 @@ import { ThemeService } from '../../../services/theme.service';
               Home
             </a>
             <a 
-              class="transition-colors hover:text-foreground/80" 
+              class="nav-link"
               routerLink="/products"
               routerLinkActive="text-foreground"
             >
@@ -47,7 +47,7 @@ import { ThemeService } from '../../../services/theme.service';
           <!-- Theme Toggle -->
           <div>
             <button 
-              class="inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full"
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full btn-secondary"
               (click)="toggleTheme()"
             >
               @if (isDarkTheme()) {
@@ -61,7 +61,7 @@ import { ThemeService } from '../../../services/theme.service';
           <!-- Cart -->
           <div class="relative cart-container">
             <button 
-              class="inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full hover:bg-accent"
+              class="btn-secondary inline-flex items-center justify-center text-sm font-medium transition-colors h-10 w-10 rounded-full hover:bg-accent"
               (click)="toggleCart()"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
@@ -79,7 +79,7 @@ import { ThemeService } from '../../../services/theme.service';
           <ng-container *ngIf="auth.user$ | async as user; else loginButton">
             <div class="relative">
               <button
-                class="flex items-center gap-2 hover:bg-accent p-2 rounded-lg"
+                class="flex items-center gap-2 hover:bg-accent p-2 rounded-lg btn-secondary"
                 (click)="toggleUserMenu()"
               >
                 <img

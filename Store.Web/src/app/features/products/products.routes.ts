@@ -1,15 +1,15 @@
-// features/products/products.routes.ts
+// src/app/features/products/products.routes.ts
 import { Routes } from '@angular/router';
-import { ProductListComponent } from './product-list/product-list.component';
-import { ProductDetailComponent } from './product-detail/product-detail.component';
 
 export const PRODUCT_ROUTES: Routes = [
     {
         path: '',
-        component: ProductListComponent
+        loadComponent: () => import('./pages/product-list/product-list.page')
+            .then(m => m.ProductListPageComponent),
     },
     {
         path: ':id',
-        component: ProductDetailComponent
+        loadComponent: () => import('./pages/product-detail/product-detail.page')
+            .then(m => m.ProductDetailPageComponent),
     }
 ];

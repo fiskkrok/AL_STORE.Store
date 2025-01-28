@@ -1,61 +1,83 @@
+using Duende.AccessTokenManagement;
+
+using FastEndpoints;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+
+using Store.API.Configuration;
+using Store.API.Middleware;
 using Store.Application.Configuration;
+using Store.Application.Mappings;
+using Store.Infrastructure;
 using Store.Infrastructure.Configuration;
+using Store.Infrastructure.Persistence;
+
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Remove or reconcile any direct calls to AddOpenApi and use our custom documentation method
+builder.Services.AddSwaggerDocumentation();
 
 var frontendBaseUrl = builder.Configuration.GetSection("Frontend:BaseUrl").Value;
-
+builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
 builder.Services.AddHttpClient("FrontendClient", client =>
 {
     client.BaseAddress = new Uri(frontendBaseUrl!);
 });
+builder.Services.AddClientCredentialsTokenManagement()
+    .AddClient("admin-api", client =>
+    {
+        client.TokenEndpoint = $"{builder.Configuration["IdentityServer:Authority"]}/connect/token";
+        client.ClientId = builder.Configuration["AdminApi:ClientId"];
+        client.ClientSecret = builder.Configuration["AdminApi:ClientSecret"];
+        client.Scope = "products.read categories.read";
+    });
+builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["AdminApi:BaseUrl"]!);
+    })
+    .AddHttpMessageHandler(provider =>
+    {
+        var tokenService = provider.GetRequiredService<IClientCredentialsTokenManagementService>();
+        return new ClientCredentialsTokenHandler(tokenService, "admin-api");
+    });
 
-// Add services from assemblies
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddAuth(builder.Configuration);
+builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Duration = TimeSpan.FromMinutes(5))
+    .WithSerializer(new FusionCacheSystemTextJsonSerializer())
+    .WithDistributedCache(
+        new RedisCache(new RedisCacheOptions { Configuration = "localhost:6379" }))
+    .AsHybridCache();
+
+builder.Services.AddResponseCompression();
+builder.Services.AddFastEndpoints().AddOpenApi();
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration)
+    .AddProductServices(builder.Configuration)
+    .AddAuth(builder.Configuration)
+    .AddRealTimeServices(builder.Configuration)
+    .AddBackgroundJobs();
 
 var app = builder.Build();
-// Read frontend URI from configuration
 
-// Add HttpClient service
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseResponseCompression();
+app.UseFastEndpoints();
+app.UseHttpsRedirection();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
-
+app.UseRealTimeServices();
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

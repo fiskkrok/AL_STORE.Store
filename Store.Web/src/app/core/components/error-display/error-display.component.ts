@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { ApiError } from '../../models/error.model';
 
@@ -33,11 +33,11 @@ import { ApiError } from '../../models/error.model';
 })
 export class ErrorDisplayComponent {
   private errorService = inject(ErrorService);
-
+  error = input.required<string>();
   errors = this.errorService.currentErrors;
   hasErrors = this.errorService.hasErrors;
-
   removeError(error: ApiError) {
     this.errorService.removeError(error);
   }
+
 }

@@ -6,15 +6,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using Store.Application.Common.Interfaces;
 
 namespace Store.Infrastructure.Caching;
 
-public interface ICacheService
-{
-    Task<T?> GetAsync<T>(string key);
-    Task SetAsync<T>(string key, T value, TimeSpan? expiry = null);
-    Task RemoveAsync(string key);
-}
+
 
 public class RedisCacheService : ICacheService
 {

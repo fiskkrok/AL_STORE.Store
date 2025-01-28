@@ -249,7 +249,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
             </div>
           </div>
 
-          <!-- Related Products -->
+          <!-- Related Products
           @if (relatedProducts().length) {
             <section class="py-12 border-t">
               <h2 class="text-2xl font-bold mb-6">You May Also Like</h2>
@@ -264,7 +264,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
                 }
               </app-grid>
             </section>
-          }
+          } -->
         </app-container>
       }
     </div>
@@ -303,12 +303,12 @@ export class ProductDetailComponent {
     return product.stockLevel > 0;
   });
 
-  relatedProducts = computed(() => {
-    const currentProduct = this.product();
-    if (!currentProduct) return [];
+  // relatedProducts = computed(() => {
+  //   const currentProduct = this.product();
+  //   if (!currentProduct) return [];
 
-    return this.productStore.getRelatedProducts(currentProduct.id);
-  });
+  //   return this.productStore.getRelatedProducts(currentProduct.id);
+  // });
 
 
   constructor() {

@@ -1,28 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using Store.API.Examples;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.Examples;
+using System.Reflection;
+
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Store.API.Configuration;
+
 public static class SwaggerConfiguration
 {
-    public static IServiceCollection AddSwaggerConfig(this IServiceCollection services)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
-        services.AddSwaggerGen(c =>
+        // Register examples from the assembly where ProductListResponseExample is defined
+        services.AddSwaggerExamplesFromAssemblyOf<ProductListResponseExample>();
+
+        services.AddSwaggerGen(static c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = "Store API",
                 Version = "v1",
-                Description = "Store API for e-commerce operations"
+                Description = "Store API for e-commerce operations",
+                Contact = new OpenApiContact
+                {
+                    Name = "API Support",
+                    Email = "support@store.com"
+                }
             });
 
+            // Add JWT bearer definition
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = "JWT Authorization header using the Bearer scheme",
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
@@ -44,9 +60,26 @@ public static class SwaggerConfiguration
                     Array.Empty<string>()
                 }
             });
+
+            // Include XML comments
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath);
+
+            // Example filters and custom schema filters
+            c.ExampleFilters();
+            c.OperationFilter<ExamplesOperationFilter>();
+            c.SchemaFilter<EnumSchemaFilter>();
         });
 
         return services;
     }
 }
 
+internal class ExamplesOperationFilter : IOperationFilter
+{
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    {
+        // Implementation of the Apply method
+    }
+}

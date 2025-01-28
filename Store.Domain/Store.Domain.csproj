@@ -9,11 +9,11 @@
   <ItemGroup>
     <Folder Include="Entities\Cart\" />
     <Folder Include="Entities\Customer\" />
-    <Folder Include="Entities\Product\" />
     <Folder Include="Entities\Order\" />
     <Folder Include="Events\Cart\" />
     <Folder Include="Events\Integration\" />
     <Folder Include="Events\Order\" />
+    <Folder Include="Events\Product\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,18 +4,28 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Duende.AccessTokenManagement" Version="3.1.1" />
+    <PackageReference Include="FastEndpoints" Version="5.33.0" />
+    <PackageReference Include="FastEndpoints.Swagger" Version="5.33.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.Examples" Version="4.1.0" />
+    <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Filters\" />
-    <Folder Include="Middleware\" />
-    <Folder Include="Endpoints\" />
   </ItemGroup>
 
   <ItemGroup>

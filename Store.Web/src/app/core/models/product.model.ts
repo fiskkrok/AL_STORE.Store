@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // core/models/product.model.ts
 export interface Product {
+    createdAt: string | number | Date;
     images: any;
     variants: any;
     id: string;
@@ -24,19 +25,15 @@ export interface Product {
 }
 
 export interface ProductFilter {
-    categoryId: string;
-    minPrice: number;
-    maxPrice: number;
-    search?: string;
-    categoryIds?: string[];
-    priceRange?: {
+    search: string;
+    categoryIds: string[];
+    priceRange: {
         min: number;
         max: number;
     };
-    brands?: string[];
-    attributes?: Record<string, string[]>;
-    inStock?: boolean;
-    sortBy?: 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'rating';
+    sizes: string[];
+    inStock: boolean;
+    sortBy: 'featured' | 'price_asc' | 'price_desc' | 'newest';
 }
 
 export interface ProductImage {

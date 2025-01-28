@@ -121,4 +121,12 @@
             @apply rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100;
         }
     }
+
+    .nav-link {
+        @apply transition-colors text-foreground/40 hover:text-foreground;
+
+        &-active {
+            @apply text-foreground;
+        }
+    }
 }

@@ -34,7 +34,8 @@ export class MockDataService {
         count: 12
       },
       categories: ['mens', 'shirts'],
-      tags: ['classic', 'formal']
+      tags: ['classic', 'formal'],
+      createdAt: new Date()
     },
     {
       id: '2',
@@ -64,7 +65,8 @@ export class MockDataService {
         count: 18
       },
       categories: ['mens', 'jeans'],
-      tags: ['casual', 'denim']
+      tags: ['casual', 'denim'],
+      createdAt: new Date()
     }
   ];
 

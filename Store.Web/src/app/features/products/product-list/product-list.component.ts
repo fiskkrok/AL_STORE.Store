@@ -24,7 +24,6 @@ import { QuickViewModalComponent } from "../../../core/components/product/quick-
     QuickViewModalComponent
   ],
   template: `
-    <app-error-display />
     <div class="page-container">
       <app-container>
         <app-section>
@@ -130,6 +129,7 @@ export class ProductListComponent implements OnInit {
   private cartStore = inject(CartStore);
   private errorService = inject(ErrorService);
   products = this.productStore.filteredProducts;
+
   loading = this.productStore.loading;
   addingToCart: Record<string, boolean> = {};
   selectedProduct: Product | null = null;
@@ -166,11 +166,11 @@ export class ProductListComponent implements OnInit {
     }
   }
   onSearch(term: string): void {
-    this.productStore.setFilters({ search: term });
+    this.productStore.setFilter({ search: term });
   }
 
   onCategoryChange(categoryId: string): void {
-    this.productStore.setFilters({ categoryId });
+    this.productStore.setFilter({ categoryIds: [categoryId] });
   }
 
   async addToCart(product: Product): Promise<void> {

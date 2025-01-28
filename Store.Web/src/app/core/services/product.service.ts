@@ -8,6 +8,9 @@ import { MockDataService } from './mock-data.service';
   providedIn: 'root'
 })
 export class ProductService {
+  getCategories(): Observable<unknown> {
+    throw new Error('Method not implemented.');
+  }
   private mockData = inject(MockDataService);
   // private useRealApi = environment.useRealApi;
   private useRealApi = false;
