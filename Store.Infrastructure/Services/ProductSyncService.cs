@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using AutoMapper;
 
 using Microsoft.EntityFrameworkCore;
@@ -13,106 +14,118 @@ using Store.Domain.Entities.Product;
 using Store.Domain.Enums;
 using Store.Domain.ValueObjects;
 using Store.Infrastructure.Persistence;
+using Store.Infrastructure.Services.Models;
 
 namespace Store.Infrastructure.Services;
-public class ProductSyncService
+
+public class ProductSyncService(
+    ILogger<ProductSyncService> logger,
+    StoreDbContext dbContext,
+    IAdminApiClient adminClient,
+    IDomainEventService domainEventService,
+    IMapper mapper)
 {
-    private readonly IAdminApiClient _adminClient;
-    private readonly StoreDbContext _dbContext;
-    private readonly ILogger<ProductSyncService> _logger;
-    private readonly IMapper _mapper;
-
-    public ProductSyncService(
-        IAdminApiClient adminClient,
-        StoreDbContext dbContext,
-        IMapper mapper,
-        ILogger<ProductSyncService> logger)
-    {
-        _adminClient = adminClient;
-        _dbContext = dbContext;
-        _mapper = mapper;
-        _logger = logger;
-    }
-
     public async Task SyncProductsAsync(CancellationToken ct = default)
     {
-        using var scope = _logger.BeginScope(new Dictionary<string, object>
-        {
-            ["SyncOperation"] = "ProductSync",
-            ["StartedAt"] = DateTime.UtcNow
-        });
+        var syncHistory = new ProductSyncHistory(
+            Guid.NewGuid().ToString(),
+            DateTime.UtcNow);
 
         try
         {
-            _logger.LogInformation("Starting product sync operation");
+            logger.LogInformation("Starting product sync. BatchId: {BatchId}", syncHistory.BatchId);
 
-            // Get last sync timestamp
-            var lastSync = await GetLastSuccessfulSyncTimestamp(ct);
-            _logger.LogInformation("Last successful sync: {LastSync}", lastSync);
-
-            // Get products from admin API
-            var bulkResponse = await _adminClient.GetAllProductsAsync(lastSync, ct);
-            _logger.LogInformation("Retrieved {Count} products from admin API",
-                bulkResponse.Products.Count);
-
-            // Begin transaction
-            await using var transaction = await _dbContext.Database
-                .BeginTransactionAsync(ct);
-
-            try
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                var syncHistory = new ProductSyncHistory(
-                    bulkResponse.BatchId,
-                    DateTime.UtcNow);
-
-                var processedCount = 0;
-                foreach (var productDto in bulkResponse.Products)
+                using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+                try
                 {
-                    try
-                    {
-                        await SyncProductAsync(productDto, ct);
-                        processedCount++;
+                    var lastSync = await GetLastSuccessfulSyncTimestamp(ct);
+                    var bulkResponse = await adminClient.GetAllProductsAsync(lastSync, ct);
 
-                        if (processedCount % 100 == 0)
-                        {
-                            _logger.LogInformation("Processed {Count} products", processedCount);
-                        }
-                    }
-                    catch (Exception ex)
+                    // Process in batches to avoid memory issues
+                    foreach (var batch in bulkResponse.Products.Chunk(100))
                     {
-                        _logger.LogError(ex,
-                            "Error processing product {ProductId}", productDto.Id);
-                        // Continue with next product
+                        await ProcessProductBatch(mapper.Map<IEnumerable<ProductDto>>(batch), ct);
+                        logger.LogInformation("Processed batch of {Count} products", batch.Length);
                     }
+
+                    syncHistory.Complete(bulkResponse.Products.Count);
+                    dbContext.SyncHistory.Add(syncHistory);
+                    await dbContext.SaveChangesAsync(ct);
+
+                    await transaction.CommitAsync(ct);
+
+                    logger.LogInformation("Product sync completed. BatchId: {BatchId}", syncHistory.BatchId);
+                    await domainEventService.PublishAsync(
+                        new ProductSyncCompletedEvent(syncHistory.BatchId, new ProductSyncMetrics(bulkResponse.Products.Count)));
                 }
 
-                syncHistory.Complete(processedCount);
-                await _dbContext.SyncHistory.AddAsync(syncHistory, ct);
-                await _dbContext.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
-
-                _logger.LogInformation(
-                    "Successfully synced {Count} products from batch {BatchId}",
-                    processedCount,
-                    bulkResponse.BatchId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                throw new ApplicationException("Product sync failed during processing", ex);
-            }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during product sync transaction");
+                    await transaction.RollbackAsync(ct);
+                    throw;
+                }
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Product sync operation failed");
-            throw;
+            syncHistory.Fail(ex.Message);
+            dbContext.SyncHistory.Add(syncHistory);
+            await dbContext.SaveChangesAsync(ct);
+
+            logger.LogError(ex,
+                "Product sync failed. BatchId: {BatchId}, Error: {Error}",
+                syncHistory.BatchId,
+                ex.Message);
+
+            throw new ProductSyncException("Product sync failed", ex);
         }
     }
+
+    private async Task ProcessProductBatch(IEnumerable<ProductDto> products, CancellationToken ct)
+    {
+        foreach (var productDto in products)
+        {
+            var existingProduct = await dbContext.Products
+                .Include(p => p.Variants)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
+
+            if (existingProduct == null)
+            {
+                await CreateProduct(productDto, ct);
+            }
+            else
+            {
+                await UpdateProduct(existingProduct, productDto, ct);
+            }
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task UpdateProduct(Product existingProduct, ProductDto productDto, CancellationToken ct)
+    {
+        mapper.Map(productDto, existingProduct);
+        dbContext.Products.Update(existingProduct);
+        logger.LogInformation("Updated existing product {ProductId}", productDto.Id);
+    }
+
+    private async Task CreateProduct(ProductDto productDto, CancellationToken ct)
+    {
+        var newProduct = mapper.Map<Product>(productDto);
+        await dbContext.Products.AddAsync(newProduct, ct);
+        logger.LogInformation("Added new product {ProductId}", productDto.Id);
+    }
+
 
     private async Task<DateTime?> GetLastSuccessfulSyncTimestamp(
         CancellationToken ct)
     {
-        return await _dbContext.SyncHistory
+        return await dbContext.SyncHistory
             .Where(x => x.Status == SyncStatus.Completed)
             .OrderByDescending(x => x.CompletedAt)
             .Select(x => x.CompletedAt)
@@ -122,23 +135,51 @@ public class ProductSyncService
     private async Task SyncProductAsync(AdminProductDto productDto,
         CancellationToken ct)
     {
-        var existingProduct = await _dbContext.Products
+        var existingProduct = await dbContext.Products
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
 
         if (existingProduct == null)
         {
-            var newProduct = _mapper.Map<Product>(productDto);
-            await _dbContext.Products.AddAsync(newProduct, ct);
-            _logger.LogInformation("Added new product {ProductId}", productDto.Id);
+            var newProduct = mapper.Map<Product>(productDto);
+            await dbContext.Products.AddAsync(newProduct, ct);
+            logger.LogInformation("Added new product {ProductId}", productDto.Id);
         }
         else
         {
-            _mapper.Map(productDto, existingProduct);
-            _dbContext.Products.Update(existingProduct);
-            _logger.LogInformation("Updated existing product {ProductId}",
+            mapper.Map(productDto, existingProduct);
+            dbContext.Products.Update(existingProduct);
+            logger.LogInformation("Updated existing product {ProductId}",
                 productDto.Id);
         }
+    }
+   
+    //private async Task EnsureCategoriesExist(IEnumerable<Guid> categoryIds)
+    //{
+    //    var existingIds = await _dbContext.Categories
+    //        .Where(c => categoryIds.Contains(c.Id))
+    //        .Select(c => c.Id)
+    //        .ToListAsync();
+
+    //    var missingIds = categoryIds.Except(existingIds);
+    //    if (missingIds.Any())
+    //    {
+    //        // Option 1: Call Admin API to get category details
+    //        var categoryDetails = await _adminClient.GetCategoriesAsync(missingIds);
+    //        foreach (var category in categoryDetails)
+    //        {
+    //            await CreateOrUpdateCategory(category);
+    //        }
+
+    //    }
+    //}
+}
+
+public class ProductSyncException : Exception
+{
+    public ProductSyncException(string productSyncFailed, Exception exception)
+    {
+        throw new NotImplementedException();
     }
 }

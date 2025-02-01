@@ -9,13 +9,40 @@ using Store.Domain.Common;
 namespace Store.Domain.ValueObjects;
 public class Money : BaseValueObject
 {
-    public decimal Amount { get; private set; }
-    public string Currency { get; private set; }
+    private const int DecimalPrecision = 2;
+    private const int MaxDigits = 18;
+
+    public decimal Amount { get; }
+    public string Currency { get; }
 
     private Money(decimal amount, string currency)
     {
-        Amount = amount;
+        // Round to ensure consistent precision
+        Amount = decimal.Round(amount, DecimalPrecision, MidpointRounding.AwayFromZero);
         Currency = currency;
+    }
+
+    public static Result<Money> Create(decimal amount, string currency)
+    {
+        if (currency.Length != 3)
+            return Result<Money>.Failure(new Error("400", "Invalid currency code"));
+
+        if (amount < 0)
+            return Result<Money>.Failure(new Error("400", "Amount cannot be negative"));
+
+        // Check for overflow/precision issues
+        try
+        {
+            var roundedAmount = decimal.Round(amount, DecimalPrecision);
+            if (roundedAmount >= (decimal)Math.Pow(10, MaxDigits - DecimalPrecision))
+                return Result<Money>.Failure(new Error("400", "Amount too large"));
+
+            return Result<Money>.Success(new Money(roundedAmount, currency.ToUpper()));
+        }
+        catch (OverflowException)
+        {
+            return Result<Money>.Failure(new Error("400", "Amount out of range"));
+        }
     }
 
     public static Money FromDecimal(decimal amount, string currency = "USD")

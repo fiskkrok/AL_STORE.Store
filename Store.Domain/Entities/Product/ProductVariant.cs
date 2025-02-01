@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Store.Domain.Common;
+using Store.Domain.Events.Product;
 using Store.Domain.Exceptions;
 using Store.Domain.ValueObjects;
 
 namespace Store.Domain.Entities.Product;
+
 public class ProductVariant : BaseEntity
 {
     public string Sku { get; private set; } = string.Empty;
@@ -20,7 +22,9 @@ public class ProductVariant : BaseEntity
     private readonly List<ProductVariantAttribute> _attributes = new();
     public IReadOnlyCollection<ProductVariantAttribute> Attributes => _attributes.AsReadOnly();
 
-    private ProductVariant() { }
+    private ProductVariant()
+    {
+    }
 
     public ProductVariant(
         string sku,
@@ -43,5 +47,15 @@ public class ProductVariant : BaseEntity
 
         StockLevel = newStockLevel;
     }
+
+
+    public void Update(string variantSku, string variantName, Money variantPrice, int variantStockLevel)
+    {
+        Sku = variantSku;
+        Name = variantName;
+        Price = variantPrice;
+        StockLevel = variantStockLevel;
+    }
+
 }
 

@@ -79,7 +79,7 @@ import { IntersectionObserverDirective } from '../../../directives/intersection-
 export class ProductGridComponent {
   private readonly productStore = inject(ProductStore);
   private readonly cartStore = inject(CartStore);
-  products = this.productStore.filteredProducts;
+  products = this.productStore.products;
   loading = this.productStore.loading;
   isAddingToCart: Record<string, boolean> = {};
   selectedProduct = signal<Product | null>(null);

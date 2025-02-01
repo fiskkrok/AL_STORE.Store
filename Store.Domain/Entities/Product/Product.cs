@@ -1,4 +1,5 @@
 ﻿using Store.Domain.Common;
+using Store.Domain.Events.Product;
 using Store.Domain.Exceptions;
 using Store.Domain.ValueObjects;
 
@@ -14,7 +15,7 @@ public class Product : BaseAuditableEntity
     public string Sku { get; private set; } = string.Empty;
     public string? Barcode { get; private set; } // New
     public Money Price { get; private set; } = Money.Zero();
-    public Money? CompareAtPrice { get; private set; } // New
+    public Money? CompareAtPrice { get; set; } // New
     public int StockLevel { get; private set; }
     public int? LowStockThreshold { get; private set; } // New
     public bool IsActive { get; private set; }
@@ -89,10 +90,40 @@ public class Product : BaseAuditableEntity
         _images.AddRange(images);
     }
 
+    //public void UpdateVariants(IEnumerable<ProductVariant> variants)
+    //{
+    //    _variants.Clear();
+    //    _variants.AddRange(variants);
+    //}
     public void UpdateVariants(IEnumerable<ProductVariant> variants)
     {
-        _variants.Clear();
-        _variants.AddRange(variants);
+        // Remove variants that no longer exist
+        var variantIds = variants.Select(v => v.Id).ToList();
+        var removedVariants = _variants.Where(v => !variantIds.Contains(v.Id)).ToList();
+        foreach (var variant in removedVariants)
+        {
+            _variants.Remove(variant);
+        }
+
+        // Update or add variants
+        foreach (var variant in variants)
+        {
+            var existingVariant = _variants.FirstOrDefault(v => v.Id == variant.Id);
+            if (existingVariant != null)
+            {
+                existingVariant.Update(
+                    variant.Sku,
+                    variant.Name,
+                    variant.Price,
+                    variant.StockLevel);
+            }
+            else
+            {
+                _variants.Add(variant);
+            }
+        }
+
+        AddDomainEvent(new ProductVariantsUpdatedEvent(this.Id, variantIds));
     }
 }
 

@@ -27,23 +27,16 @@ public static class SwaggerConfiguration
             {
                 Title = "Store API",
                 Version = "v1",
-                Description = "Store API for e-commerce operations",
-                Contact = new OpenApiContact
-                {
-                    Name = "API Support",
-                    Email = "support@store.com"
-                }
+                Description = "Store API for e-commerce operations"
             });
 
-            // Add JWT bearer definition
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            // Add API Key definition
+            c.AddSecurityDefinition("ApiKey store-sync-f67d322c-4128-4e8e-9c03-e5e2416b8d4f", new OpenApiSecurityScheme
             {
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Name = "X-API-Key",
                 In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT"
+                Description = "API Key authentication"
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -54,12 +47,13 @@ public static class SwaggerConfiguration
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
+                            Id = "ApiKey"
                         }
                     },
                     Array.Empty<string>()
                 }
             });
+
 
             // Include XML comments
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

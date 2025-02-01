@@ -12,13 +12,13 @@ using Store.Application.Mappings;
 using Store.Infrastructure;
 using Store.Infrastructure.Configuration;
 using Store.Infrastructure.Persistence;
+using Store.Infrastructure.Persistence.Seeding;
 
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Remove or reconcile any direct calls to AddOpenApi and use our custom documentation method
 builder.Services.AddSwaggerDocumentation();
 
 var frontendBaseUrl = builder.Configuration.GetSection("Frontend:BaseUrl").Value;
@@ -35,16 +35,21 @@ builder.Services.AddClientCredentialsTokenManagement()
         client.ClientSecret = builder.Configuration["AdminApi:ClientSecret"];
         client.Scope = "products.read categories.read";
     });
-builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
-    {
-        client.BaseAddress = new Uri(builder.Configuration["AdminApi:BaseUrl"]!);
-    })
-    .AddHttpMessageHandler(provider =>
-    {
-        var tokenService = provider.GetRequiredService<IClientCredentialsTokenManagementService>();
-        return new ClientCredentialsTokenHandler(tokenService, "admin-api");
-    });
 
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>  // Note: AddDefaultPolicy instead of AddPolicy
+    {
+        builder
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition"); // Add if you need to expose headers
+    });
+});
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Duration = TimeSpan.FromMinutes(5))
     .WithSerializer(new FusionCacheSystemTextJsonSerializer())
     .WithDistributedCache(
@@ -65,6 +70,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<IStoreSeeder>();
+    await seeder.SeedAsync();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

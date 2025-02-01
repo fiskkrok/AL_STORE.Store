@@ -1,8 +1,15 @@
 ﻿
 
+using Azure.Core;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
 using Polly;
 using Polly.Extensions.Http;
 using Store.Infrastructure.Services;
@@ -17,16 +24,15 @@ public static class ProductServicesDependencyInjection
         var apiKey = configuration["AdminApi:ApiKey"]
                      ?? throw new InvalidOperationException("Admin API Key not configured");
 
+        // Remove the token handler, just use API key
         services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
         {
             client.BaseAddress = new Uri(configuration["AdminApi:BaseUrl"]!);
-        })
-            .AddHttpMessageHandler(() => new ApiKeyAuthenticationHandler(apiKey))
-            .AddPolicyHandler(GetRetryPolicy(services))
+            // Add API key directly to default headers
+            client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+        }).AddPolicyHandler(GetRetryPolicy(services))
             .AddPolicyHandler(GetCircuitBreakerPolicy());
-
         services.AddScoped<ProductSyncService>();
-
         return services;
     }
 
@@ -58,20 +64,63 @@ public static class ProductServicesDependencyInjection
     }
 }
 
-public class ApiKeyAuthenticationHandler : DelegatingHandler
+public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    private readonly string _apiKey;
+    private const string ApiKeyHeaderName = "X-API-Key";
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<ApiKeyAuthenticationHandler> _logger;
 
-    public ApiKeyAuthenticationHandler(string apiKey)
+    public ApiKeyAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock,
+        IConfiguration configuration)
+        : base(options, logger, encoder, clock)
     {
-        _apiKey = apiKey;
+        _configuration = configuration;
+        _logger = logger.CreateLogger<ApiKeyAuthenticationHandler>();
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        request.Headers.Add("X-API-Key", _apiKey);
-        return await base.SendAsync(request, cancellationToken);
+        _logger.LogInformation("Handling API key authentication");
+
+        if (!Request.Headers.TryGetValue(ApiKeyHeaderName, out var apiKeyHeaderValues))
+        {
+            _logger.LogWarning("API Key header is missing");
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
+        var providedApiKey = apiKeyHeaderValues.ToString();
+        var validApiKey = _configuration["AdminApi:ApiKey"];
+
+        _logger.LogInformation("Provided API Key: {ProvidedKey}", providedApiKey);
+        _logger.LogInformation("Configured API Key: {ConfiguredKey}", validApiKey);
+
+        if (string.IsNullOrEmpty(validApiKey))
+        {
+            _logger.LogError("API Key is not configured");
+            return Task.FromResult(AuthenticateResult.Fail("API Key is not configured"));
+        }
+
+        if (providedApiKey != validApiKey)
+        {
+            _logger.LogWarning("Invalid API Key provided");
+            return Task.FromResult(AuthenticateResult.Fail("Invalid API Key"));
+        }
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, "Store API"),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+
+        var identity = new ClaimsIdentity(claims, Scheme.Name);
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, Scheme.Name);
+
+        _logger.LogInformation("API Key authentication successful");
+        return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

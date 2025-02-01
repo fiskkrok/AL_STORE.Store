@@ -31,7 +31,7 @@ import { ErrorService } from '../../services/error.service';
             <!-- Image Gallery -->
             <div class="relative aspect-square rounded-lg overflow-hidden">
               <img 
-                [src]="product().images[selectedImage]?.url" 
+                [src]="product().images[selectedImage].url" 
                 [alt]="product().name"
                 class="product-image"
               />
@@ -73,7 +73,7 @@ import { ErrorService } from '../../services/error.service';
               <p class="text-muted-foreground">{{ product().description }}</p>
 
               <!-- Variants Selection -->
-              @if (product().variants?.length) {
+              @if (product().variants.length) {
                 <div class="form-group">
                   <label class="form-label">Select Option</label>
                   <select 

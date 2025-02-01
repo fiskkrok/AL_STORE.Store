@@ -40,7 +40,31 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .HasMaxLength(3)
                 .IsRequired();
         });
+        builder.Property(p => p.ShortDescription)
+            .HasMaxLength(500);
 
+        builder.Property(p => p.Barcode)
+            .HasMaxLength(50);
+
+        builder.OwnsOne(p => p.CompareAtPrice, priceBuilder =>
+        {
+            priceBuilder.Property(m => m.Amount)
+                .HasColumnName("CompareAtPrice")
+                .HasPrecision(18, 2);
+
+            priceBuilder.Property(m => m.Currency)
+                .HasColumnName("CompareAtPriceCurrency")
+                .HasMaxLength(3);
+        });
+
+        builder.Property(p => p.LowStockThreshold);
+
+        builder.Property(p => p.Tags)
+            .HasConversion(
+                v => string.Join(',', v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+            )
+            .HasMaxLength(500);
         builder.HasIndex(p => p.Slug)
             .IsUnique();
 

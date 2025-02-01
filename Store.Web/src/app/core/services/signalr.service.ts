@@ -1,8 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
+
+interface StockUpdate {
+  productId: string;
+  newStockLevel: number;
+}
+
+interface PriceUpdate {
+  productId: string;
+  newPrice: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +20,8 @@ export class SignalRService {
   private hubConnection: HubConnection;
   private connectionState = new BehaviorSubject<boolean>(false);
   connectionState$ = this.connectionState.asObservable();
-  onStockUpdate = new BehaviorSubject<any>(null);
+  onStockUpdate = new BehaviorSubject<StockUpdate | null>(null);
+  onPriceUpdate = new BehaviorSubject<PriceUpdate | null>(null);
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
@@ -20,26 +30,20 @@ export class SignalRService {
       .build();
 
     this.setupConnectionHandlers();
+    this.setupProductUpdatesHandlers();
   }
 
   private setupConnectionHandlers(): void {
-    this.hubConnection.onreconnecting(() => {
-      this.connectionState.next(false);
+    // ...existing code...
+  }
+
+  private setupProductUpdatesHandlers(): void {
+    this.hubConnection.on('StockUpdated', (productId: string, newStockLevel: number) => {
+      this.onStockUpdate.next({ productId, newStockLevel });
     });
 
-    this.hubConnection.onreconnected(() => {
-      this.connectionState.next(true);
-    });
-
-    this.hubConnection.onclose(() => {
-      this.connectionState.next(false);
-    });
-
-    this.hubConnection.start().then(() => {
-      this.connectionState.next(true);
-    }).catch(err => {
-      console.error('Error while starting connection: ' + err);
-      this.connectionState.next(false);
+    this.hubConnection.on('PriceUpdated', (productId: string, newPrice: number) => {
+      this.onPriceUpdate.next({ productId, newPrice });
     });
   }
 

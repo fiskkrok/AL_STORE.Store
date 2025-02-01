@@ -7,10 +7,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductStore } from '../../../core/state/product.store';
 
 @Component({
-    selector: 'app-product-search',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    template: `
+  selector: 'app-product-search',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
     <div class="relative">
       <input
         type="search"
@@ -49,23 +49,23 @@ import { ProductStore } from '../../../core/state/product.store';
   `
 })
 export class ProductSearchComponent {
-    private store = inject(ProductStore);
+  private store = inject(ProductStore);
 
-    searchControl = new FormControl('');
+  searchControl = new FormControl('');
 
-    constructor() {
-        // Subscribe to search changes
-        this.searchControl.valueChanges.pipe(
-            takeUntilDestroyed(),
-            debounceTime(300),
-            distinctUntilChanged(),
-            filter(term => term !== null)  // Handle undefined/null
-        ).subscribe(term => {
-            this.store.setFilter({ search: term || '' });
-        });
-    }
+  constructor() {
+    // Subscribe to search changes
+    this.searchControl.valueChanges.pipe(
+      takeUntilDestroyed(),
+      debounceTime(300),
+      distinctUntilChanged(),
+      filter(term => term !== null)  // Handle undefined/null
+    ).subscribe(term => {
+      this.store.setFilter({ search: term || '' });
+    });
+  }
 
-    clearSearch(): void {
-        this.searchControl.setValue('');
-    }
+  clearSearch(): void {
+    this.searchControl.setValue('');
+  }
 }

@@ -58,7 +58,7 @@ import { ProductSearchComponent } from '../../components/product-search.componen
           <!-- Filters -->
           <!-- Mobile Header -->
           <aside class="lg:block" 
-[class.hidden]="!showMobileFilters"
+            [class.hidden]="!showMobileFilters"
             [class.fixed]="showMobileFilters"
             [class.inset-0]="showMobileFilters"
             [class.z-50]="showMobileFilters"
@@ -99,7 +99,7 @@ import { ProductSearchComponent } from '../../components/product-search.componen
                 }
               </div>
             } @else if (error()) {
-              <app-error-display [error]="error()" />
+              <app-error-display [error]="error() || ''" />
             } @else {
               <app-product-grid />
             }
@@ -113,16 +113,7 @@ export class ProductListPageComponent {
   private store = inject(ProductStore);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  categories = signal([
-    { id: '1', name: 'Electronics' },
-    { id: '2', name: 'Clothing' },
-    { id: '3', name: 'Home Goods' },
-    { id: '4', name: 'Toys' },
-    { id: '5', name: 'Books' },
-    { id: '6', name: 'Health & Beauty' },
-    { id: '7', name: 'Sports' }
 
-  ]);
 
   // UI State
   showMobileFilters = false;
@@ -138,7 +129,7 @@ export class ProductListPageComponent {
       const params = this.route.snapshot.queryParams;
 
       if (params['category']) {
-        this.store.setFilter({ categoryIds: [params['category']] });
+        this.store.setFilter({ categories: [params['category']] });
       }
       if (params['search']) {
         this.store.setFilter({ search: params['search'] });
@@ -150,16 +141,16 @@ export class ProductListPageComponent {
 
     // Sync URL with filters
     effect(() => {
-      const filters = this.store.filter();
+      const filters = this.store.filters();
       const queryParams: Record<string, string> = {};
 
-      if (filters.categoryIds.length) {
-        queryParams['category'] = filters.categoryIds[0];
+      if (filters.categories?.length) {
+        queryParams['category'] = filters.categories[0];
       }
       if (filters.search) {
         queryParams['search'] = filters.search;
       }
-      if (filters.sortBy !== 'featured') {
+      if (filters.sortBy && filters.sortBy !== 'featured' as 'price_asc' | 'price_desc' | 'newest' | 'featured') {
         queryParams['sort'] = filters.sortBy;
       }
 

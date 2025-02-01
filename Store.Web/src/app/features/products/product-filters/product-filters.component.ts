@@ -4,8 +4,13 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ProductFilter } from '../../../core/models/product.model';
+import { GetProductsRequest } from '../../../core/models/product.model';
 import { ProductStore } from '../../../core/state/product.store';
+interface ActiveFilter {
+  id: string;
+  label: string;
+  type: 'search' | 'category' | 'price' | 'stock' | 'sort';
+}
 
 @Component({
   selector: 'app-product-filters',
@@ -43,24 +48,26 @@ import { ProductStore } from '../../../core/state/product.store';
         <div class="form-group">
           <label class="form-label">Search</label>
           <div class="relative">
-            <input
-              type="search"
-              [formControl]="searchControl"
-              placeholder="Search products..."
-              class="form-input pl-10"
-            >
-            <svg 
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
-            </svg>
+           <input
+        type="search"
+        [formControl]="searchControl"
+        class="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-primary
+               focus:border-transparent bg-background"
+        placeholder="Search products..."
+      >
+      <svg
+        class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.3-4.3"/>
+      </svg>
           </div>
         </div>
 
@@ -186,16 +193,15 @@ export class ProductFiltersComponent {
   minPriceControl = new FormControl<number | null>(null);
   maxPriceControl = new FormControl<number | null>(null);
   inStockControl = new FormControl(false);
-  sortControl = new FormControl<ProductFilter['sortBy']>('featured');
+  sortControl = new FormControl<GetProductsRequest['sortBy']>('newest');
 
   // Store selectors
   categories = this.store.availableCategories;
   priceRange = this.store.priceRange;
 
-  // Active filters
-  hasActiveFilters = computed(() => this.activeFilters().length > 0);
+  // Active filters computation
   activeFilters = computed(() => {
-    const filters: { id: string; label: string; type: string }[] = [];
+    const filters: ActiveFilter[] = [];
 
     if (this.searchControl.value) {
       filters.push({
@@ -243,8 +249,14 @@ export class ProductFiltersComponent {
     return filters;
   });
 
+  hasActiveFilters = computed(() => this.activeFilters().length > 0);
+
   constructor() {
-    // Setup form control subscriptions
+    this.setupControlSubscriptions();
+  }
+
+  private setupControlSubscriptions(): void {
+    // Search
     this.searchControl.valueChanges.pipe(
       takeUntilDestroyed(),
       debounceTime(300),
@@ -253,40 +265,33 @@ export class ProductFiltersComponent {
       this.updateFilters({ search: term || '' });
     });
 
+    // Price range
     this.minPriceControl.valueChanges.pipe(
       takeUntilDestroyed(),
       debounceTime(300)
     ).subscribe(value => {
-      this.updateFilters({
-        priceRange: {
-          min: value || 0,
-          max: this.maxPriceControl.value || 0
-        }
-      });
+      this.updateFilters({ minPrice: value || undefined });
     });
 
     this.maxPriceControl.valueChanges.pipe(
       takeUntilDestroyed(),
       debounceTime(300)
     ).subscribe(value => {
-      this.updateFilters({
-        priceRange: {
-          min: this.minPriceControl.value || 0,
-          max: value || 0
-        }
-      });
+      this.updateFilters({ maxPrice: value || undefined });
     });
 
+    // Stock status
     this.inStockControl.valueChanges.pipe(
       takeUntilDestroyed()
     ).subscribe(checked => {
-      this.updateFilters({ inStock: checked! });
+      this.updateFilters({ inStock: checked || undefined });
     });
 
+    // Sort
     this.sortControl.valueChanges.pipe(
       takeUntilDestroyed()
     ).subscribe(value => {
-      this.updateFilters({ sortBy: value! });
+      this.updateFilters({ sortBy: value || undefined });
     });
   }
 
@@ -300,10 +305,10 @@ export class ProductFiltersComponent {
       this.selectedCategories = this.selectedCategories.filter(id => id !== categoryId);
     }
 
-    this.updateFilters({ categoryIds: this.selectedCategories });
+    this.updateFilters({ categories: this.selectedCategories });
   }
 
-  removeFilter(filter: { id: string; type: string }): void {
+  removeFilter(filter: ActiveFilter): void {
     switch (filter.type) {
       case 'search':
         this.searchControl.setValue('');
@@ -311,7 +316,7 @@ export class ProductFiltersComponent {
       case 'category':
         this.selectedCategories = this.selectedCategories
           .filter(id => !filter.id.includes(id));
-        this.updateFilters({ categoryIds: this.selectedCategories });
+        this.updateFilters({ categories: this.selectedCategories });
         break;
       case 'price':
         if (filter.id === 'min-price') {
@@ -331,12 +336,12 @@ export class ProductFiltersComponent {
     this.minPriceControl.setValue(null);
     this.maxPriceControl.setValue(null);
     this.inStockControl.setValue(false);
-    this.sortControl.setValue('featured');
+    this.sortControl.setValue('newest');
     this.selectedCategories = [];
     this.store.resetFilters();
   }
 
-  private updateFilters(updates: Partial<ProductFilter>): void {
+  private updateFilters(updates: Partial<GetProductsRequest>): void {
     this.store.setFilter(updates);
   }
 }

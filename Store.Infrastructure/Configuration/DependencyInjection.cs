@@ -11,6 +11,7 @@ using Store.Infrastructure.BackgroundJobs;
 using Store.Infrastructure.Caching;
 using Store.Infrastructure.Identity;
 using Store.Infrastructure.Persistence;
+using Store.Infrastructure.Persistence.Seeding;
 using Store.Infrastructure.RealTime;
 using Store.Infrastructure.Services;
 
@@ -32,7 +33,8 @@ public static class DependencyInjection
         services.AddSingleton<IDateTime, DateTimeService>();
         services.AddScoped<IDomainEventService, DomainEventService>();
         services.AddScoped<ICurrentUser, CurrentUserService>();
-
+        services.AddScoped<ICategorySeeder, CategorySeeder>();
+        services.AddScoped<IStoreSeeder, StoreSeeder>();
         // Redis Configuration
         services.AddStackExchangeRedisCache(options =>
         {
@@ -49,29 +51,6 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddAuth(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.Authority = configuration["Auth0:Authority"];
-            options.Audience = configuration["Auth0:Audience"];
-        });
-
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("RequireCustomerRole", policy =>
-                policy.RequireClaim("scope", "customer"));
-        });
-
-        return services;
-    }
 
     public static IServiceCollection AddRealTimeServices(
         this IServiceCollection services,

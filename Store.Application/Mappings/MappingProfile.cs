@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+
+using Store.Application.Mappings.Products;
 using Store.Application.Products.Models;
 using Store.Domain.Entities.Product;
 using Store.Domain.ValueObjects;
@@ -10,9 +12,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<AdminProductDto, Product>()
-            .ForMember(d => d.StockLevel, o => o.MapFrom(s => s.Stock))
-            .ForMember(d => d.Price, o => o.MapFrom(s =>
-                Money.FromDecimal(s.Price, s.Currency)));
+            .ConfigureProductMapping();
         CreateMap<Product, ProductDto>()
             .ForMember(d => d.Price, o => o.MapFrom(s => s.Price.Amount))
             .ForMember(d => d.Currency, o => o.MapFrom(s => s.Price.Currency))
