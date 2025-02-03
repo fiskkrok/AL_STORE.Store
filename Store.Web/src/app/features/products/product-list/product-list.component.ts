@@ -126,11 +126,14 @@ import { QuickViewModalComponent } from "../../../core/components/product/quick-
 })
 export class ProductListComponent implements OnInit {
   private productStore = inject(ProductStore);
+
+  products = this.productStore.products;
+  loading = this.productStore.loading;
+  currentPage = this.productStore.currentPage;
+  totalPages = this.productStore.totalPages;
   private cartStore = inject(CartStore);
   private errorService = inject(ErrorService);
-  products = this.productStore.filteredProducts;
 
-  loading = this.productStore.loading;
   addingToCart: Record<string, boolean> = {};
   selectedProduct: Product | null = null;
   categories = signal([
@@ -159,10 +162,10 @@ export class ProductListComponent implements OnInit {
     try {
       await this.productStore.loadProducts();
     } catch {
-      this.errorService.addError({
-        code: 'LOAD_ERROR',
-        message: 'Failed to load products'
-      });
+      this.errorService.addError(
+        'LOAD_ERROR',
+        'Failed to load products'
+      );
     }
   }
   onSearch(term: string): void {
@@ -170,7 +173,7 @@ export class ProductListComponent implements OnInit {
   }
 
   onCategoryChange(categoryId: string): void {
-    this.productStore.setFilter({ categoryIds: [categoryId] });
+    this.productStore.setFilter({ categories: categoryId ? [categoryId] : [] });
   }
 
   async addToCart(product: Product): Promise<void> {
@@ -182,13 +185,13 @@ export class ProductListComponent implements OnInit {
         name: product.name,
         price: product.price,
         quantity: 1,
-        imageUrl: product.imageUrl
+        imageUrl: product.images[0]?.url
       });
     } catch {
-      this.errorService.addError({
-        code: 'CART_ERROR',
-        message: 'Failed to add item to cart. Please try again.'
-      });
+      this.errorService.addError(
+        'CART_ERROR',
+        'Failed to add item to cart. Please try again.'
+      );
     } finally {
       this.addingToCart[product.id] = false;
     }

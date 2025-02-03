@@ -21,12 +21,22 @@ export interface Product {
     };
 }
 
+export interface ProductListRequest {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    categories?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    sortBy?: string;
+}
+
 export interface ProductListResponse {
     items: Product[];
     total: number;
     page: number;
     pageSize: number;
-    filters: ProductFilters;
 }
 
 export interface ProductImage {

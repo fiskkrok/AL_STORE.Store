@@ -4,50 +4,43 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { SignalRService } from '../services/signalr.service';
 import { ProductService } from '../services/product.service';
-import { GetProductsRequest, Product, ProductListResponse } from '../models/product.model';
-import { BaseStore } from './base.store';
+import { GetProductsRequest, Product, ProductListRequest, ProductListResponse } from '../models/product.model';
+
 
 interface ProductState {
     products: Product[];
-    filteredProducts: Product[];
-    categories: Category[];
-    filters: GetProductsRequest;
+    total: number;
+    currentPage: number;
+    pageSize: number;
     loading: boolean;
     error: string | null;
-    selectedProduct: Product | null;
-}
-
-interface Category {
-    id: string;
-    name: string;
+    filters: ProductListRequest;
 }
 
 const initialState: ProductState = {
     products: [],
-    filteredProducts: [],
-    categories: [],
-    filters: {
-        page: 1,
-        pageSize: 20,
-        sortBy: 'newest'
-    },
+    total: 0,
+    currentPage: 1,
+    pageSize: 20,
     loading: false,
     error: null,
-    selectedProduct: null
+    filters: {}
 };
 
 @Injectable({ providedIn: 'root' })
-export class ProductStore extends BaseStore {
+export class ProductStore {
     private productService = inject(ProductService);
     private signalR = inject(SignalRService);
     private state = signal<ProductState>(initialState);
 
     // Selectors
-    products = signal<Product[]>([]);
-    readonly categories = computed(() => this.state().categories);
-    readonly selectedProduct = computed(() => this.state().selectedProduct);
-    readonly filters = computed(() => this.state().filters);
-    readonly filteredProducts = computed(() => this.state().filteredProducts);
+    readonly products = computed(() => this.state().products);
+    readonly loading = computed(() => this.state().loading);
+    readonly error = computed(() => this.state().error);
+    readonly currentPage = computed(() => this.state().currentPage);
+    readonly totalPages = computed(() =>
+        Math.ceil(this.state().total / this.state().pageSize)
+    );
 
     // Computed values
     readonly priceRange = computed(() => {
@@ -58,103 +51,53 @@ export class ProductStore extends BaseStore {
         };
     });
 
-    readonly availableCategories = computed(() => {
-        const filtered = new Set(this.filteredProducts().map(p => p.categoryId));
-        return this.state().categories.map(cat => ({
-            ...cat,
-            count: this.state().products.filter(p => p.categoryId === cat.id).length,
-            disabled: !filtered.has(cat.id)
-        }));
-    });
+    async loadProducts(request: ProductListRequest = {}): Promise<void> {
+        this.state.update(s => ({ ...s, loading: true, error: null }));
 
-    constructor() {
-        super();
-        this.setupRealtimeUpdates();
-    }
-
-    async loadProducts(): Promise<void> {
-        this.setLoading(true);
         try {
             const response = await firstValueFrom(
-                this.productService.getProducts(this.state().filters)
+                this.productService.getProducts({
+                    ...this.state().filters,
+                    ...request
+                })
             );
-            this.updateProducts(response);
+
+            this.state.update(s => ({
+                ...s,
+                products: response.items,
+                total: response.total,
+                currentPage: response.page,
+                pageSize: response.pageSize,
+                loading: false
+            }));
         } catch (error) {
-            this.setError(error instanceof Error ? error.message : 'Failed to load products');
-        } finally {
-            this.setLoading(false);
+            this.state.update(s => ({
+                ...s,
+                loading: false,
+                error: error instanceof Error ? error.message : 'Failed to load products'
+            }));
         }
     }
 
-    setFilter(updates: Partial<GetProductsRequest>): void {
+    setFilter(updates: Partial<ProductListRequest>): void {
         this.state.update(s => ({
             ...s,
             filters: {
                 ...s.filters,
-                ...updates,
-                page: updates.page || 1
-            }
+                ...updates
+            },
+            currentPage: 1 // Reset to first page when filters change
         }));
+
         this.loadProducts();
     }
 
-    resetFilters(): void {
-        this.state.update(s => ({
-            ...s,
-            filters: {
-                page: 1,
-                pageSize: 20,
-                sortBy: 'newest'
-            }
-        }));
-        this.loadProducts();
-    }
+    goToPage(page: number): void {
+        if (page === this.state().currentPage) return;
 
-
-
-    private updateProducts(response: ProductListResponse): void {
-        this.state.update(s => ({
-            ...s,
-            products: response.items,
-            filteredProducts: response.items,
-            error: null
-        }));
-    }
-
-    private setupRealtimeUpdates(): void {
-        // Stock updates
-        this.signalR.onStockUpdate?.pipe(
-            takeUntilDestroyed(),
-            debounceTime(100),
-            distinctUntilChanged()
-        )?.subscribe(update => {
-            if (!update) return;
-            this.state.update(s => ({
-                ...s,
-                products: s.products.map(p =>
-                    p.id === update.productId
-                        ? { ...p, stockLevel: update.newStockLevel }
-                        : p
-                )
-            }));
+        this.loadProducts({
+            ...this.state().filters,
+            page
         });
-
-        // Price updates
-        this.signalR.onPriceUpdate?.pipe(
-            takeUntilDestroyed(),
-            debounceTime(100),
-            distinctUntilChanged()
-        )?.subscribe(update => {
-            if (!update) return;
-            this.state.update(s => ({
-                ...s,
-                products: s.products.map(p =>
-                    p.id === update.productId
-                        ? { ...p, price: update.newPrice }
-                        : p
-                )
-            }));
-        });
-
     }
 }

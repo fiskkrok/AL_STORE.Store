@@ -22,7 +22,7 @@ import { CurrencyPipe } from '@angular/common';
   ],
   template: `
     <div class="container mx-auto px-4 py-8">
-      <h1 class="text-2xl font-bold mb-8">Your Cart</h1>
+      <h1 class="text-2xl dark:text-white font-bold mb-8">Your Cart</h1>
 
       @if (cartItems().length > 0) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -30,7 +30,7 @@ import { CurrencyPipe } from '@angular/common';
           <div class="md:col-span-2 space-y-4">
             @for (item of cartItems(); track item.id) {
               <div 
-                class="flex items-center space-x-4 border rounded-lg p-4 bg-card"
+                class="flex items-center space-x-4 border rounded-lg p-4 bg-card dark:text-white"
                 [@itemAnimation]
               >
                 <img 
@@ -41,7 +41,7 @@ import { CurrencyPipe } from '@angular/common';
                 
                 <div class="flex-1">
                   <h3 class="font-medium">{{ item.name }}</h3>
-                  <p class="text-sm text-muted-foreground">{{ item.price | currency }}</p>
+                  <p class="text-sm text-muted-foreground dark:text-white">{{ item.price | currency }}</p>
                 </div>
 
                 <div class="flex items-center space-x-2">
@@ -53,7 +53,7 @@ import { CurrencyPipe } from '@angular/common';
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
                   </button>
                   
-                  <span class="w-8 text-center">{{ item.quantity }}</span>
+                  <span class="w-8 text-center dark:text-white">{{ item.quantity }}</span>
                   
                   <button 
                     class="p-1 hover:bg-accent rounded"
@@ -76,21 +76,21 @@ import { CurrencyPipe } from '@angular/common';
           <!-- Order Summary -->
           <div class="space-y-6">
             <div class="border rounded-lg p-6 bg-card">
-              <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+              <h2 class="text-lg font-semibold mb-4 dark:text-white">Order Summary</h2>
               
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{{ totalPrice() | currency }}</span>
+                  <span class=" dark:text-white">Subtotal</span>
+                  <span class=" dark:text-white">{{ totalPrice() | currency }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>Shipping</span>
-                  <span>{{ getFormattedShipping() }}</span>
+                  <span class=" dark:text-white">Shipping</span>
+                  <span class=" dark:text-white">{{ getFormattedShipping() }}</span>
                 </div>
                 <div class="border-t pt-2 mt-2">
                   <div class="flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>{{ getFormattedTotalPrice() }}</span>
+                    <span class=" dark:text-white">Total</span>
+                    <span class=" dark:text-white">{{ getFormattedTotalPrice() }}</span>
                   </div>
                 </div>
               </div>

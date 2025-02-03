@@ -14,8 +14,9 @@ import { CartItem } from '../../state/cart.store';
       <!-- Image Container -->
       <div class="relative aspect-square overflow-hidden">
         @if (!loading()) {
+          <!-- [src]="product().images[0]?.url" -->
           <img
-            [src]="product().images[0].url"
+            [src]="imageUrl()"
             [alt]="product().name"
             class="product-image"
             loading="lazy"
@@ -140,6 +141,15 @@ import { CartItem } from '../../state/cart.store';
   `
 })
 export class ProductCardComponent {
+  imageUrl = computed<string>(() => {
+    if (this.product().images && this.product().images.length > 0 && this.product().images[0].url) {
+      return this.product().images[0].url;
+    }
+    // Use product.id to select an image deterministically if possible
+    const num = parseInt(this.product().id, 10);
+    const n = !isNaN(num) ? (num % 29) + 1 : Math.floor(Math.random() * 29) + 1;
+    return `assets/Pics/${n}.webp`;
+  });
   // Inputs
   product = input.required<Product>();
   loading = input(false);
@@ -164,13 +174,12 @@ export class ProductCardComponent {
 
   addToCart(): void {
     if (!this.isInStock()) return;
-
     this.handleAddToCart.emit({
       productId: this.product().id,
       name: this.product().name,
       price: this.product().price,
       quantity: 1,
-      imageUrl: this.product().images[0].url,
+      imageUrl: this.imageUrl(),
       id: ''
     });
   }

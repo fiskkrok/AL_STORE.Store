@@ -28,6 +28,7 @@ public class Product : BaseAuditableEntity
     private readonly List<ProductVariant> _variants = new();
     public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
 
+
     public Product(
         string name,
         string slug,

@@ -1,16 +1,19 @@
 // src/app/app.config.ts
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, ErrorHandler } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAuth0, authHttpInterceptorFn } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { GlobalErrorHandler } from './core/error-handling/global-error-handler';
+import { apiErrorInterceptor } from './core/interceptors/api-error.intercepter';
+// import { retryStrategyInterceptor } from './core/interceptors/retry-strategy.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authHttpInterceptorFn])
+      withInterceptors([authHttpInterceptorFn, apiErrorInterceptor])
     ),
     provideAuth0({
       domain: environment.auth0.domain,
@@ -37,6 +40,10 @@ export const appConfig: ApplicationConfig = {
           }
         ]
       },
-    })
+    }),
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler
+    }
   ]
 };

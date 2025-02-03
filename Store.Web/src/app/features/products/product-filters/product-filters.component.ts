@@ -72,11 +72,11 @@ interface ActiveFilter {
         </div>
 
         <!-- Categories -->
-        <div class="form-group">
+        <!-- <div class="form-group">
           <label class="form-label">Categories</label>
           <div class="space-y-2">
             @for (category of categories(); track category.id) {
-              <label class="flex items-center">
+              <label class="flex form-label items-center">
                 <input
                   type="checkbox"
                   [value]="category.id"
@@ -92,7 +92,7 @@ interface ActiveFilter {
               </label>
             }
           </div>
-        </div>
+        </div> -->
 
         <!-- Price Range -->
         <div class="form-group">
@@ -124,7 +124,7 @@ interface ActiveFilter {
 
         <!-- Stock Status -->
         <div class="form-group">
-          <label class="flex items-center">
+          <label  class="form-label flex items-center">
             <input
               type="checkbox"
               [formControl]="inStockControl"
@@ -196,7 +196,7 @@ export class ProductFiltersComponent {
   sortControl = new FormControl<GetProductsRequest['sortBy']>('newest');
 
   // Store selectors
-  categories = this.store.availableCategories;
+  // categories = this.store.availableCategories;
   priceRange = this.store.priceRange;
 
   // Active filters computation
@@ -211,16 +211,16 @@ export class ProductFiltersComponent {
       });
     }
 
-    this.selectedCategories.forEach(catId => {
-      const category = this.categories().find(c => c.id === catId);
-      if (category) {
-        filters.push({
-          id: `category-${category.id}`,
-          label: category.name,
-          type: 'category'
-        });
-      }
-    });
+    // this.selectedCategories.forEach(catId => {
+    //   const category = this.categories().find(c => c.id === catId);
+    //   if (category) {
+    //     filters.push({
+    //       id: `category-${category.id}`,
+    //       label: category.name,
+    //       type: 'category'
+    //     });
+    //   }
+    // });
 
     if (this.minPriceControl.value !== null) {
       filters.push({
@@ -338,7 +338,6 @@ export class ProductFiltersComponent {
     this.inStockControl.setValue(false);
     this.sortControl.setValue('newest');
     this.selectedCategories = [];
-    this.store.resetFilters();
   }
 
   private updateFilters(updates: Partial<GetProductsRequest>): void {

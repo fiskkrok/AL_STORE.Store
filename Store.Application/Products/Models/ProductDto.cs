@@ -15,6 +15,6 @@ public class ProductDto : BaseDto
     public bool IsActive { get; set; }
     public Guid CategoryId { get; set; }
     public IEnumerable<ProductImageDto> Images { get; set; }
-    public ProductImageDto? PrimaryImage => Images.FirstOrDefault(x => x.IsPrimary);
+    public ProductImageDto? PrimaryImage => Images?.FirstOrDefault(x => x.IsPrimary) ?? new ProductImageDto();
     public IEnumerable<ProductVariant> Variants { get; set; }
 }

@@ -32,21 +32,26 @@ export class CartStore {
     readonly totalPrice = computed(() =>
         this.items().reduce((sum, item) => sum + (item.price * item.quantity), 0)
     );
-
+    private readonly STORAGE_KEY = 'shopping-cart';
     constructor(private signalR: SignalRService) {
         this.signalR.subscribeToCart(this.handleCartUpdate.bind(this));
         this.loadCartFromStorage();
     }
 
     private loadCartFromStorage() {
-        const savedCart = localStorage.getItem('cart');
+        const savedCart = localStorage.getItem(this.STORAGE_KEY);
         if (savedCart) {
-            this.items.set(JSON.parse(savedCart));
+            try {
+                const parsedCart = JSON.parse(savedCart);
+                this.items.set(parsedCart);
+            } catch (error) {
+                console.error('Failed to load cart from storage:', error);
+            }
         }
     }
 
     private saveCartToStorage() {
-        localStorage.setItem('cart', JSON.stringify(this.items()));
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.items()));
     }
 
     async addItem(newItem: Omit<CartItem, 'id'>): Promise<CartItem> {

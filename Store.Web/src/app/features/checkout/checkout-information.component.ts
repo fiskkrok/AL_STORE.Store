@@ -3,14 +3,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'app-checkout-information',
-    standalone: true,
-    imports: [ReactiveFormsModule],
-    template: `
+  selector: 'app-checkout-information',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-1" for="email">
+          <label class="block dark:text-white form-label text-sm font-medium mb-1" for="email">
             Email
           </label>
           <input
@@ -27,7 +27,7 @@ import { Router } from '@angular/router';
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1" for="firstName">
+            <label class="block dark:text-white form-label text-sm font-medium mb-1" for="firstName">
               First Name
             </label>
             <input
@@ -39,7 +39,7 @@ import { Router } from '@angular/router';
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1" for="lastName">
+            <label class="block dark:text-white form-label text-sm font-medium mb-1" for="lastName">
               Last Name
             </label>
             <input
@@ -52,7 +52,7 @@ import { Router } from '@angular/router';
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1" for="address">
+          <label class="block dark:text-white form-label text-sm font-medium mb-1" for="address">
             Address
           </label>
           <input
@@ -65,7 +65,7 @@ import { Router } from '@angular/router';
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1" for="city">
+            <label class="block dark:text-white form-label text-sm font-medium mb-1" for="city">
               City
             </label>
             <input
@@ -77,7 +77,7 @@ import { Router } from '@angular/router';
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1" for="postalCode">
+            <label class="block dark:text-white form-label text-sm font-medium mb-1" for="postalCode">
               Postal Code
             </label>
             <input
@@ -113,29 +113,29 @@ import { Router } from '@angular/router';
   `
 })
 export class CheckoutInformationComponent {
-    private fb = inject(FormBuilder);
-    private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
 
-    form = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        firstName: ['', Validators.required],
-        lastName: ['', Validators.required],
-        address: ['', Validators.required],
-        city: ['', Validators.required],
-        postalCode: ['', Validators.required]
-    });
+  form = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    address: ['', Validators.required],
+    city: ['', Validators.required],
+    postalCode: ['', Validators.required]
+  });
 
-    submitting = false;
+  submitting = false;
 
-    async onSubmit() {
-        if (this.form.valid) {
-            this.submitting = true;
-            try {
-                // Save shipping information
-                await this.router.navigate(['/checkout/shipping']);
-            } finally {
-                this.submitting = false;
-            }
-        }
+  async onSubmit() {
+    if (this.form.valid) {
+      this.submitting = true;
+      try {
+        // Save shipping information
+        await this.router.navigate(['/checkout/shipping']);
+      } finally {
+        this.submitting = false;
+      }
     }
+  }
 }

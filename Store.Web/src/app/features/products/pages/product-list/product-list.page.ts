@@ -27,7 +27,7 @@ import { ProductSearchComponent } from '../../components/product-search.componen
         <div class="container py-4">
           <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 class="text-2xl font-bold tracking-tight">Products</h1>
+              <h1 class="text-2xl dark:text-white font-bold tracking-tight">Products</h1>
               <p class="mt-1 text-sm text-muted-foreground">
                 {{ totalProducts() }} products available
               </p>
@@ -99,7 +99,7 @@ import { ProductSearchComponent } from '../../components/product-search.componen
                 }
               </div>
             } @else if (error()) {
-              <app-error-display [error]="error() || ''" />
+              <app-error-display />
             } @else {
               <app-product-grid />
             }
@@ -113,7 +113,7 @@ export class ProductListPageComponent {
   private store = inject(ProductStore);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
+  totalProducts = computed(() => this.store.products().length);
 
   // UI State
   showMobileFilters = false;
@@ -121,7 +121,7 @@ export class ProductListPageComponent {
   // Store Selectors
   loading = this.store.loading;
   error = this.store.error;
-  totalProducts = computed(() => this.store.filteredProducts().length);
+  // totalProducts = computed(() => this.store.filteredProducts().length);
 
   constructor() {
     // Handle route parameters
@@ -140,26 +140,26 @@ export class ProductListPageComponent {
     });
 
     // Sync URL with filters
-    effect(() => {
-      const filters = this.store.filters();
-      const queryParams: Record<string, string> = {};
+    // effect(() => {
+    //   const filters = this.store.filters();
+    //   const queryParams: Record<string, string> = {};
 
-      if (filters.categories?.length) {
-        queryParams['category'] = filters.categories[0];
-      }
-      if (filters.search) {
-        queryParams['search'] = filters.search;
-      }
-      if (filters.sortBy && filters.sortBy !== 'featured' as 'price_asc' | 'price_desc' | 'newest' | 'featured') {
-        queryParams['sort'] = filters.sortBy;
-      }
+    //   if (filters.categories?.length) {
+    //     queryParams['category'] = filters.categories[0];
+    //   }
+    //   if (filters.search) {
+    //     queryParams['search'] = filters.search;
+    //   }
+    //   if (filters.sortBy && filters.sortBy !== 'featured' as 'price_asc' | 'price_desc' | 'newest' | 'featured') {
+    //     queryParams['sort'] = filters.sortBy;
+    //   }
 
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams,
-        replaceUrl: true
-      });
-    });
+    //   this.router.navigate([], {
+    //     relativeTo: this.route,
+    //     queryParams,
+    //     replaceUrl: true
+    //   });
+    // });
 
     // Load initial data
     this.store.loadProducts();

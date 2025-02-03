@@ -16,9 +16,9 @@ import { ErrorService } from '../../services/error.service';
       <div class="modal animate-in">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="text-lg font-semibold">Quick View</h3>
+            <h3 class="text-lg font-semibold dark:text-white">Quick View</h3>
             <button 
-              class="modal-close"
+              class="modal-close dark:text-white"
               (click)="close.emit()"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -30,8 +30,9 @@ import { ErrorService } from '../../services/error.service';
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Image Gallery -->
             <div class="relative aspect-square rounded-lg overflow-hidden">
+              <!-- [src]="product().images[selectedImage].url"  -->
               <img 
-                [src]="product().images[selectedImage].url" 
+                [src]="this.imageUrl()"
                 [alt]="product().name"
                 class="product-image"
               />
@@ -52,9 +53,9 @@ import { ErrorService } from '../../services/error.service';
             <!-- Product Details -->
             <div class="space-y-6">
               <div>
-                <h2 class="text-2xl font-semibold">{{ product().name }}</h2>
+                <h2 class="text-2xl dark:text-white font-semibold">{{ product().name }}</h2>
                 <div class="mt-2 flex items-baseline gap-2">
-                  <span class="text-2xl font-bold">
+                  <span class="text-2xl dark:text-white font-bold">
                     {{ totalPrice() | currency }}
                   </span>
                   @if (quantity() > 1) {
@@ -99,7 +100,7 @@ import { ErrorService } from '../../services/error.service';
                 <select 
                   [ngModel]="quantity()"
                   (ngModelChange)="quantity.set($event)"
-                  class="form-input"
+                  class="form-input dark:text-white"
                   [disabled]="product().stockLevel === 0"
                 >
                   @for (num of [1,2,3,4,5]; track num) {
@@ -129,7 +130,7 @@ import { ErrorService } from '../../services/error.service';
 
                 <a 
                   [routerLink]="['/products', product().id]"
-                  class="btn btn-outline w-full"
+                  class="btn btn-outline w-full dark:text-white"
                 >
                   View Full Details
                 </a>
@@ -165,7 +166,15 @@ import { ErrorService } from '../../services/error.service';
 export class QuickViewModalComponent {
   private cartStore = inject(CartStore);
   private errorService = inject(ErrorService);
-
+  imageUrl = computed<string>(() => {
+    if (this.product().images && this.product().images.length > 0 && this.product().images[0].url) {
+      return this.product().images[0].url;
+    }
+    // Use product.id to select an image deterministically if possible
+    const num = parseInt(this.product().id, 10);
+    const n = !isNaN(num) ? (num % 29) + 1 : Math.floor(Math.random() * 29) + 1;
+    return `assets/Pics/${n}.webp`;
+  });
   product = input.required<Product>();
   isOpen = input(false);
   close = output<void>();
@@ -193,15 +202,15 @@ export class QuickViewModalComponent {
         name: this.product().name,
         price: variant?.price ?? this.product().price, // Use raw number
         quantity: this.quantity(),
-        imageUrl: this.product().images[0].url
+        // imageUrl: this.product().images[0].url
+        imageUrl: this.imageUrl(),
       });
 
       this.close.emit();
     } catch {
-      this.errorService.addError({
-        code: 'CART_ERROR',
-        message: 'Failed to add item to cart. Please try again.'
-      });
+      this.errorService.addError(
+        'CART_ERROR',
+        'Failed to add item to cart. Please try again.');
     } finally {
       this.isAddingToCart = false;
     }

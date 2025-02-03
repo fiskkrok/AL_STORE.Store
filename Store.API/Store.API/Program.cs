@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Duende.AccessTokenManagement;
 
 using FastEndpoints;
@@ -19,7 +21,6 @@ using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSwaggerDocumentation();
 
 var frontendBaseUrl = builder.Configuration.GetSection("Frontend:BaseUrl").Value;
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
@@ -36,7 +37,8 @@ builder.Services.AddClientCredentialsTokenManagement()
         client.Scope = "products.read categories.read";
     });
 
-
+builder.Services.AddFastEndpoints()
+    .AddOpenApi();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -50,6 +52,7 @@ builder.Services.AddCors(options =>
             .WithExposedHeaders("Content-Disposition"); // Add if you need to expose headers
     });
 });
+builder.Services.AddSwaggerDocumentation();
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Duration = TimeSpan.FromMinutes(5))
     .WithSerializer(new FusionCacheSystemTextJsonSerializer())
     .WithDistributedCache(
@@ -57,7 +60,7 @@ builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Dur
     .AsHybridCache();
 
 builder.Services.AddResponseCompression();
-builder.Services.AddFastEndpoints().AddOpenApi();
+
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration)
@@ -76,7 +79,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Add logging middleware
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+    logger.LogInformation("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path); // Added
+    await next.Invoke();
+    logger.LogInformation("Finished handling request."); // Added
+});
 
+app.UseCors();
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();

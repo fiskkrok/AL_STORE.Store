@@ -110,7 +110,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
               <!-- Variants Selection -->
               @if (product()?.variants?.length) {
                 <div>
-                  <label for="" class="text-sm font-medium block mb-2">Select Option</label>
+                  <label for="" class="text-sm form-label font-medium block mb-2">Select Option</label>
                   <select 
                     [(ngModel)]="selectedVariantId"
                     class="w-full px-4 py-2 border rounded-lg"
@@ -130,7 +130,7 @@ import { Product, ProductImage } from '../../../core/models/product.model';
 
               <!-- Quantity -->
               <div>
-                <label for="" class="text-sm font-medium block mb-2">Quantity</label>
+                <label for="" class="text-sm form-label font-medium block mb-2">Quantity</label>
                 <select 
                   [(ngModel)]="quantity"
                   class="w-full px-4 py-2 border rounded-lg"

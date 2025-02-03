@@ -1,28 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 // src/app/core/services/product.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
-import { AuthService } from './auth.service';
-import {
-  Product,
-  ProductListResponse,
-  GetProductsRequest,
-  SyncStatus
-} from '../models/product.model';
-import { environment } from '../../../environments/environment';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
+import { Product, ProductListRequest, ProductListResponse } from '../models/product.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
-  private auth = inject(AuthService);
+  private apiConfig = inject(ApiConfigService);
 
-  private readonly storeApiUrl = `${environment.apiUrl}/api/store/products`;
-  private readonly adminApiUrl = `${environment.apiUrl}/api/admin/products`;
+  getProducts(request: ProductListRequest = {}): Observable<ProductListResponse> {
+    const url = this.apiConfig.getEndpointUrl('products/list');
 
-  getProducts(request: GetProductsRequest = {}): Observable<ProductListResponse> {
+    // Build query parameters
     let params = new HttpParams()
       .set('page', request.page?.toString() || '1')
       .set('pageSize', request.pageSize?.toString() || '20');
@@ -53,48 +46,19 @@ export class ProductService {
       params = params.set('sortBy', request.sortBy);
     }
 
-    return this.http.get<ProductListResponse>(this.storeApiUrl, { params })
-      .pipe(
-        catchError(this.handleError)
-      );
+    // Add API Key header
+    const headers = new HttpHeaders()
+      .set('X-API-Key', this.apiConfig.config.apiKey);
+
+    return this.http.get<ProductListResponse>(url, { params, headers });
   }
 
-  getProductDetail(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.storeApiUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
+  getProduct(id: string): Observable<Product> {
+    const url = this.apiConfig.getEndpointUrl('products/detail', { id });
 
-  // Admin functionality - requires proper authentication
-  triggerProductSync(): Observable<SyncStatus> {
-    if (!this.auth.isAdmin()) {
-      return throwError(() => new Error('Unauthorized: Admin access required'));
-    }
+    const headers = new HttpHeaders()
+      .set('X-API-Key', this.apiConfig.config.apiKey);
 
-    return this.http.post<void>(`${this.adminApiUrl}/sync`, {})
-      .pipe(
-        map(() => ({ status: 'success' as const })),
-        catchError(error => throwError(() => ({
-          status: 'error' as const,
-          message: error.message || 'Failed to trigger product sync'
-        })))
-      );
-  }
-
-  private handleError(error: any) {
-    let errorMessage = 'An error occurred';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = error.error.message;
-    } else {
-      // Server-side error
-      errorMessage = error.status === 0
-        ? 'Unable to connect to the server'
-        : error.error?.message || error.message || errorMessage;
-    }
-
-    return throwError(() => new Error(errorMessage));
+    return this.http.get<Product>(url, { headers });
   }
 }

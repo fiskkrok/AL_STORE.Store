@@ -8,7 +8,8 @@ using AutoMapper;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
+using Polly;
+using Polly.Retry;
 using Store.Application.Products.Models;
 using Store.Domain.Entities.Product;
 using Store.Domain.Enums;
@@ -18,13 +19,41 @@ using Store.Infrastructure.Services.Models;
 
 namespace Store.Infrastructure.Services;
 
-public class ProductSyncService(
-    ILogger<ProductSyncService> logger,
-    StoreDbContext dbContext,
-    IAdminApiClient adminClient,
-    IDomainEventService domainEventService,
-    IMapper mapper)
+public class ProductSyncService
 {
+    private readonly ILogger<ProductSyncService> _logger;
+    private readonly StoreDbContext _dbContext;
+    private readonly IAdminApiClient _adminClient;
+    private readonly IDomainEventService _domainEventService;
+    private readonly IMapper _mapper;
+    private readonly AsyncRetryPolicy<BulkProductsResponse> _retryPolicy;
+
+    public ProductSyncService(
+        ILogger<ProductSyncService> logger,
+        StoreDbContext dbContext,
+        IAdminApiClient adminClient,
+        IDomainEventService domainEventService,
+        IMapper mapper)
+    {
+        _logger = logger;
+        _dbContext = dbContext;
+        _adminClient = adminClient;
+        _domainEventService = domainEventService;
+        _mapper = mapper;
+
+        // Define retry policy
+        _retryPolicy = Policy<BulkProductsResponse>
+            .Handle<HttpRequestException>()
+            .Or<TimeoutException>()
+            .WaitAndRetryAsync(3, retryAttempt =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                onRetry: (exception, timeSpan, retryCount, context) =>
+                {
+                    _logger.LogWarning(exception.Exception,
+                        "Retry {RetryCount} of {MaxRetries} after {Delay}s delay due to {Message}",
+                        retryCount, 3, timeSpan.TotalSeconds, exception.Exception.Message);
+                });
+    }
     public async Task SyncProductsAsync(CancellationToken ct = default)
     {
         var syncHistory = new ProductSyncHistory(
@@ -33,38 +62,59 @@ public class ProductSyncService(
 
         try
         {
-            logger.LogInformation("Starting product sync. BatchId: {BatchId}", syncHistory.BatchId);
+            using var scope = _logger.BeginScope(
+                new Dictionary<string, object>
+                {
+                    ["BatchId"] = syncHistory.BatchId,
+                    ["Operation"] = "ProductSync"
+                });
 
-            var strategy = dbContext.Database.CreateExecutionStrategy();
+            _logger.LogInformation("Starting product sync");
+
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+                using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
                 try
                 {
                     var lastSync = await GetLastSuccessfulSyncTimestamp(ct);
-                    var bulkResponse = await adminClient.GetAllProductsAsync(lastSync, ct);
 
-                    // Process in batches to avoid memory issues
+                    // Use retry policy for API call
+                    var bulkResponse = await _retryPolicy.ExecuteAsync(async () =>
+                        await _adminClient.GetAllProductsAsync(lastSync, ct));
+
+                    // Process in batches
                     foreach (var batch in bulkResponse.Products.Chunk(100))
                     {
-                        await ProcessProductBatch(mapper.Map<IEnumerable<ProductDto>>(batch), ct);
-                        logger.LogInformation("Processed batch of {Count} products", batch.Length);
+                        await ProcessProductBatchWithRetry(
+                            _mapper.Map<IEnumerable<ProductDto>>(batch),
+                            syncHistory,
+                            ct);
+
+                        _logger.LogInformation(
+                            "Processed batch of {Count} products",
+                            batch.Length);
                     }
 
                     syncHistory.Complete(bulkResponse.Products.Count);
-                    dbContext.SyncHistory.Add(syncHistory);
-                    await dbContext.SaveChangesAsync(ct);
+                    _dbContext.SyncHistory.Add(syncHistory);
+                    await _dbContext.SaveChangesAsync(ct);
 
                     await transaction.CommitAsync(ct);
 
-                    logger.LogInformation("Product sync completed. BatchId: {BatchId}", syncHistory.BatchId);
-                    await domainEventService.PublishAsync(
-                        new ProductSyncCompletedEvent(syncHistory.BatchId, new ProductSyncMetrics(bulkResponse.Products.Count)));
-                }
+                    _logger.LogInformation(
+                        "Product sync completed successfully. Processed {Count} products",
+                        bulkResponse.Products.Count);
 
+                    await _domainEventService.PublishAsync(
+                        new ProductSyncCompletedEvent(
+                            syncHistory.BatchId,
+                            new ProductSyncMetrics(bulkResponse.Products.Count)));
+                }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error during product sync transaction");
+                    _logger.LogError(ex,
+                        "Error during product sync transaction. Rolling back.");
                     await transaction.RollbackAsync(ct);
                     throw;
                 }
@@ -72,85 +122,124 @@ public class ProductSyncService(
         }
         catch (Exception ex)
         {
-            syncHistory.Fail(ex.Message);
-            dbContext.SyncHistory.Add(syncHistory);
-            await dbContext.SaveChangesAsync(ct);
+            var errorMessage = ex switch
+            {
+                HttpRequestException httpEx =>
+                    $"API communication error: {httpEx.Message}",
+                DbUpdateException dbEx =>
+                    $"Database update error: {dbEx.Message}",
+                _ => $"Unexpected error: {ex.Message}"
+            };
 
-            logger.LogError(ex,
+            syncHistory.Fail(errorMessage);
+            _dbContext.SyncHistory.Add(syncHistory);
+            await _dbContext.SaveChangesAsync(ct);
+
+            _logger.LogError(ex,
                 "Product sync failed. BatchId: {BatchId}, Error: {Error}",
                 syncHistory.BatchId,
-                ex.Message);
+                errorMessage);
 
-            throw new ProductSyncException("Product sync failed", ex);
+            throw new ProductSyncException(
+                "Product sync failed",
+                ex);
         }
     }
 
-    private async Task ProcessProductBatch(IEnumerable<ProductDto> products, CancellationToken ct)
+    private async Task ProcessProductBatchWithRetry(
+        IEnumerable<ProductDto> products,
+        ProductSyncHistory syncHistory,
+        CancellationToken ct)
     {
-        foreach (var productDto in products)
+        var retryPolicy = Policy
+            .Handle<Exception>()
+            .WaitAndRetryAsync(3, retryAttempt =>
+                TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                onRetry: (exception, timeSpan, retryCount, context) =>
+                {
+                    _logger.LogWarning(exception,
+                        "Retry {RetryCount} processing batch after {Delay}s delay",
+                        retryCount, timeSpan.TotalSeconds);
+                });
+
+        await retryPolicy.ExecuteAsync(async () =>
         {
-            var existingProduct = await dbContext.Products
-                .Include(p => p.Variants)
-                .Include(p => p.Images)
-                .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
-
-            if (existingProduct == null)
+            foreach (var productDto in products)
             {
-                await CreateProduct(productDto, ct);
+                try
+                {
+                    var existingProduct = await _dbContext.Products
+                        .Include(p => p.Variants)
+                        .Include(p => p.Images)
+                        .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
+
+                    if (existingProduct == null)
+                    {
+                        await CreateProduct(productDto, ct);
+                    }
+                    else
+                    {
+                        await UpdateProduct(existingProduct, productDto, ct);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Error processing product {ProductId}",
+                        productDto.Id);
+                    throw;
+                }
             }
-            else
-            {
-                await UpdateProduct(existingProduct, productDto, ct);
-            }
-        }
 
-        await dbContext.SaveChangesAsync(ct);
+            await _dbContext.SaveChangesAsync(ct);
+        });
     }
-
-    private async Task UpdateProduct(Product existingProduct, ProductDto productDto, CancellationToken ct)
-    {
-        mapper.Map(productDto, existingProduct);
-        dbContext.Products.Update(existingProduct);
-        logger.LogInformation("Updated existing product {ProductId}", productDto.Id);
-    }
-
-    private async Task CreateProduct(ProductDto productDto, CancellationToken ct)
-    {
-        var newProduct = mapper.Map<Product>(productDto);
-        await dbContext.Products.AddAsync(newProduct, ct);
-        logger.LogInformation("Added new product {ProductId}", productDto.Id);
-    }
-
 
     private async Task<DateTime?> GetLastSuccessfulSyncTimestamp(
         CancellationToken ct)
     {
-        return await dbContext.SyncHistory
+        return await _dbContext.SyncHistory
             .Where(x => x.Status == SyncStatus.Completed)
             .OrderByDescending(x => x.CompletedAt)
             .Select(x => x.CompletedAt)
             .FirstOrDefaultAsync(ct);
     }
 
+    private async Task UpdateProduct(Product existingProduct, ProductDto productDto, CancellationToken ct)
+    {
+        _mapper.Map(productDto, existingProduct);
+        _dbContext.Products.Update(existingProduct);
+        _logger.LogInformation("Updated existing product {ProductId}", productDto.Id);
+    }
+
+    private async Task CreateProduct(ProductDto productDto, CancellationToken ct)
+    {
+        var newProduct = _mapper.Map<Product>(productDto);
+        await _dbContext.Products.AddAsync(newProduct, ct);
+        _logger.LogInformation("Added new product {ProductId}", productDto.Id);
+    }
+
+
+
     private async Task SyncProductAsync(AdminProductDto productDto,
         CancellationToken ct)
     {
-        var existingProduct = await dbContext.Products
+        var existingProduct = await _dbContext.Products
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
 
         if (existingProduct == null)
         {
-            var newProduct = mapper.Map<Product>(productDto);
-            await dbContext.Products.AddAsync(newProduct, ct);
-            logger.LogInformation("Added new product {ProductId}", productDto.Id);
+            var newProduct = _mapper.Map<Product>(productDto);
+            await _dbContext.Products.AddAsync(newProduct, ct);
+            _logger.LogInformation("Added new product {ProductId}", productDto.Id);
         }
         else
         {
-            mapper.Map(productDto, existingProduct);
-            dbContext.Products.Update(existingProduct);
-            logger.LogInformation("Updated existing product {ProductId}",
+            _mapper.Map(productDto, existingProduct);
+            _dbContext.Products.Update(existingProduct);
+            _logger.LogInformation("Updated existing product {ProductId}",
                 productDto.Id);
         }
     }

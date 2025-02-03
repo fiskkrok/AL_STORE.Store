@@ -13,7 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
       <div class="flex items-center justify-between">
         <div>
           <div class="flex items-center">
-            <span class="text-2xl font-bold">{{ averageRating }}</span>
+            <span class="text-2xl dark:text-white font-bold">{{ averageRating }}</span>
             <div class="ml-2">
               <div class="flex gap-0.5">
                 @for (star of [1,2,3,4,5]; track star) {
@@ -83,7 +83,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
             <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
               <div class="space-y-4">
                 <div>
-                  <label for="rating" class="block text-sm font-medium mb-1">Rating</label>
+                  <label for="rating" class="block form-label text-sm font-medium mb-1">Rating</label>
                   <div class="flex gap-2">
                     @for (star of [1,2,3,4,5]; track star) {
                       <button 
@@ -104,7 +104,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
                 </div>
 
                 <div>
-                  <label for="title" class="block text-sm font-medium mb-1">Title</label>
+                  <label for="title" class="block form-label text-sm font-medium mb-1">Title</label>
                   <input 
                     id="title"
                     type="text"
@@ -114,7 +114,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
                 </div>
 
                 <div>
-                  <label for="comment" class="block text-sm font-medium mb-1">Review</label>
+                  <label for="comment" class="block form-label text-sm font-medium mb-1">Review</label>
                   <textarea
                     id="comment"
                     formControlName="comment"
