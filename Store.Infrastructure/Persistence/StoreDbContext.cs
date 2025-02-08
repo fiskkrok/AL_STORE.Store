@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Store.Application.Common.Interfaces;
 using Store.Domain.Common;
 using MediatR;
+using Store.Domain.Entities.Customer;
 using Store.Domain.Entities.Product;
 
 namespace Store.Infrastructure.Persistence;
@@ -31,6 +32,7 @@ public class StoreDbContext : DbContext, IStoreDbContext
 
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CustomerProfile> CustomerProfile => Set<CustomerProfile>();
     public DbSet<ProductSyncHistory> SyncHistory => Set<ProductSyncHistory>();
 
 
@@ -44,15 +46,16 @@ public class StoreDbContext : DbContext, IStoreDbContext
     {
         foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
         {
+            // TODO: Ändra till riktig användare guid här sen
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedBy = _currentUser.Id;
+                    entry.Entity.CreatedBy = _currentUser.Id ?? Guid.NewGuid().ToString();
                     entry.Entity.Created = _dateTime.UtcNow;
                     break;
 
                 case EntityState.Modified:
-                    entry.Entity.LastModifiedBy = _currentUser.Id;
+                    entry.Entity.LastModifiedBy = _currentUser.Id ?? Guid.NewGuid().ToString();
                     entry.Entity.LastModified = _dateTime.UtcNow;
                     break;
             }

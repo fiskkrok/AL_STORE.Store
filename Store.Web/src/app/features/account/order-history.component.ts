@@ -1,12 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-order-history',
-  template: `
-    <div class="container mx-auto p-4">
-      <h1 class="text-2xl dark:text-white font-bold mb-6">Order History</h1>
-      <p>Here is your order history.</p>
-    </div>
-  `
+  standalone: true,
+  template: `<div class="order-history">Order History Content</div>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderHistoryComponent { }

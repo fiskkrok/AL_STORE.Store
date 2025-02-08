@@ -15,6 +15,7 @@ using Store.Domain.Entities.Product;
 using Store.Domain.Enums;
 using Store.Domain.ValueObjects;
 using Store.Infrastructure.Persistence;
+using Store.Infrastructure.Services.Exceptions;
 using Store.Infrastructure.Services.Models;
 
 namespace Store.Infrastructure.Services;
@@ -263,12 +264,4 @@ public class ProductSyncService
 
     //    }
     //}
-}
-
-public class ProductSyncException : Exception
-{
-    public ProductSyncException(string productSyncFailed, Exception exception)
-    {
-        throw new NotImplementedException();
-    }
 }

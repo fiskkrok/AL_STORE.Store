@@ -14,9 +14,3 @@ public class NotFoundException : Exception
 }
 
 // Store.Domain/Exceptions/ConflictException.cs
-public class ConflictException : Exception
-{
-    public ConflictException(string message) : base(message)
-    {
-    }
-}

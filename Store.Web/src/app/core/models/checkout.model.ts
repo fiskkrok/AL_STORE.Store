@@ -24,3 +24,26 @@ export interface KlarnaResponse {
     orderId: string;
     status: 'complete' | 'incomplete' | 'failed';
 }
+
+export interface CheckoutSessionRequest {
+    items: {
+        productId: string;
+        productName: string;
+        sku: string;
+        quantity: number;
+        unitPrice: number;
+    }[];
+    currency: string;
+    locale: string;
+    customer: {
+        email: string;
+        phone?: string;
+        shippingAddress: {
+            street: string;
+            city: string;
+            state: string;
+            country: string;
+            postalCode: string;
+        }
+    }
+}

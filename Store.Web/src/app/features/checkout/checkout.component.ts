@@ -6,15 +6,16 @@ import { ErrorService } from '../../core/services/error.service';
 import { klarnaHelpers } from '../../core/config/klarna.config';
 import { firstValueFrom } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-checkout',
   imports: [CurrencyPipe],
   template: `
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-8 dark:text-white">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Order Summary -->
-        <div class="space-y-4">
+        <div class="space-y-4 ">
           <h2 class="text-2xl font-bold">Order Summary</h2>
           
           @for (item of cartItems(); track item.id) {
@@ -33,16 +34,16 @@ import { CurrencyPipe } from '@angular/common';
             </div>
           }
 
-          <div class="border-t pt-4 space-y-2">
-            <div class="flex justify-between">
+          <div class="border-t pt-4 space-y-2 ">
+            <div class="flex justify-between ">
               <span>Subtotal</span>
               <span>{{ subtotal() | currency:'SEK' }}</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between ">
               <span>VAT (25%)</span>
               <span>{{ tax() | currency:'SEK' }}</span>
             </div>
-            <div class="flex justify-between font-bold">
+            <div class="flex justify-between font-bold ">
               <span>Total</span>
               <span>{{ total() | currency:'SEK' }}</span>
             </div>
@@ -70,9 +71,9 @@ import { CurrencyPipe } from '@angular/common';
   `
 })
 export class CheckoutComponent {
-  private cartStore = inject(CartStore);
-  private checkoutService = inject(CheckoutService);
-  private errorService = inject(ErrorService);
+  private readonly cartStore = inject(CartStore);
+  private readonly checkoutService = inject(CheckoutService);
+  private readonly errorService = inject(ErrorService);
 
   cartItems = this.cartStore.cartItems;
   subtotal = this.cartStore.totalPrice;
@@ -82,7 +83,7 @@ export class CheckoutComponent {
   loading = signal(false);
   error = signal<string | null>(null);
   sessionId: string | null = null;
-  router: any;
+  router = inject(Router);
 
   constructor() {
     // Initialize Klarna when cart items change
@@ -100,7 +101,17 @@ export class CheckoutComponent {
 
     try {
       const session = await firstValueFrom(
-        this.checkoutService.createKlarnaSession(this.cartItems())
+        this.checkoutService.createKlarnaSession(this.cartItems(), {
+          // Add the necessary customer information here
+          email: 'customer@example.com',
+          shippingAddress: {
+            street: 'Tradgardsgatan 6C',
+            city: 'Norrköping',
+            state: 'Ostergotland',
+            country: 'SE',
+            postalCode: '60222'
+          }
+        })
       );
 
       // Initialize Klarna
@@ -144,7 +155,7 @@ export class CheckoutComponent {
       script.src = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = () => reject();
+      script.onerror = () => reject(new Error('Failed to load Klarna script'));
       document.body.appendChild(script);
     });
   }
@@ -176,10 +187,10 @@ export class CheckoutComponent {
                 queryParams: { orderId: result.orderId }
               });
             } else {
-              reject(new Error(result.error || 'Authorization failed'));
+              reject(new Error(result.error ?? 'Authorization failed'));
             }
           } catch (err) {
-            reject(err);
+            reject(err as Error);
           }
         });
       });

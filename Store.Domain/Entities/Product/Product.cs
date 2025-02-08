@@ -127,19 +127,3 @@ public class Product : BaseAuditableEntity
         AddDomainEvent(new ProductVariantsUpdatedEvent(this.Id, variantIds));
     }
 }
-
-public class ProductUpdatedEvent : BaseDomainEvent
-{
-    public ProductUpdatedEvent(Product product)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class StockUpdatedEvent : BaseDomainEvent
-{
-    public StockUpdatedEvent(Guid id, int newStockLevel, bool b)
-    {
-        throw new NotImplementedException();
-    }
-}

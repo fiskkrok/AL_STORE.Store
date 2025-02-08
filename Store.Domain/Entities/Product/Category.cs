@@ -61,16 +61,3 @@ public class Category : BaseAuditableEntity
         AddDomainEvent(new CategoryUpdatedEvent(this));
     }
 }
-
-public class CategoryUpdatedEvent : BaseDomainEvent
-{
-    public CategoryUpdatedEvent(Category category)
-    {
-        Category = category;
-
-    }
-
-    public Category Category { get; set; }
-
-}
-

@@ -13,6 +13,8 @@ public abstract class BaseEntity
     public bool IsDeleted { get; private set; }
     public DateTime? DeletedAt { get; private set; }
     public string? DeletedBy { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+
 
     public IReadOnlyCollection<BaseDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 

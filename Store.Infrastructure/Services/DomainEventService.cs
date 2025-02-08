@@ -1,16 +1,13 @@
 ﻿using MediatR;
+
 using Microsoft.Extensions.Logging;
+
 using Store.Application.Common.Interfaces;
-using Store.Domain.Common; // Add this using directive
+using Store.Domain.Common;
+using Store.Infrastructure.Services.Events;
 
 namespace Store.Infrastructure.Services
 {
-    public interface IDomainEventService
-    {
-        Task PublishAsync(BaseDomainEvent domainEvent);
-        INotification GetNotificationCorrespondingToDomainEvent(BaseDomainEvent domainEvent);
-    }
-
     public class DomainEventService : IDomainEventService
     {
         private readonly ILogger<DomainEventService> _logger;

@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft.EntityFrameworkCore; // Add this using directive
+using Microsoft.EntityFrameworkCore;
+using Store.Application.Contracts; // Add this using directive
 
 namespace Store.Infrastructure.Persistence;
 
-public interface IUnitOfWork
-{
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-}
+
 
 public class UnitOfWork : IUnitOfWork, IDisposable // Implement IDisposable
 {

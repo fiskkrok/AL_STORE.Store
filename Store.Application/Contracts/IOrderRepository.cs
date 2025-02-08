@@ -3,8 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Store.Domain.Entities.Order;
 
 namespace Store.Application.Contracts;
-internal interface IOrderRepository
+public interface IOrderRepository
 {
+    Task<Order?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default);
+    Task<Order?> GetWithPaymentSessionsAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<Order>> GetCustomerOrdersAsync(string customerId, CancellationToken ct = default);
+    Task<string> GenerateOrderNumberAsync(CancellationToken ct = default);
+    Task AddAsync(Order order, CancellationToken ct = default);
+    void Update(Order order);
 }

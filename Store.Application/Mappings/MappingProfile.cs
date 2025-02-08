@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 
-using Store.Application.Mappings.Products;
 using Store.Application.Products.Models;
 using Store.Domain.Entities.Product;
 using Store.Domain.ValueObjects;

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Store.Domain.Common;
-
 namespace Store.Infrastructure.Services.Models;
 public class ProductSyncMetrics(int productsCount)
 {
@@ -35,17 +33,5 @@ public class ProductSyncMetrics(int productsCount)
     public void Complete()
     {
         EndTime = DateTime.UtcNow;
-    }
-}
-
-public class ProductSyncCompletedEvent : BaseDomainEvent
-{
-    public string BatchId { get; }
-    public ProductSyncMetrics Metrics { get; }
-
-    public ProductSyncCompletedEvent(string batchId, ProductSyncMetrics metrics)
-    {
-        BatchId = batchId;
-        Metrics = metrics;
     }
 }

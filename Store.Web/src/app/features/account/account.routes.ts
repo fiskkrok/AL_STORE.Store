@@ -17,11 +17,11 @@ export const ACCOUNT_ROUTES: Routes = [
                 loadComponent: () => import('./order-history.component')
                     .then(m => m.OrderHistoryComponent)
             },
-            // {
-            //     path: 'profile',
-            //     loadComponent: () => import('./profile-settings/profile-settings.component')
-            //         .then(m => m.ProfileSettingsComponent)
-            // }
+            {
+                path: 'profile-management',
+                loadComponent: () => import('./profile-management.component')
+                    .then(m => m.ProfileManagementComponent)
+            }
         ]
     }
 ];

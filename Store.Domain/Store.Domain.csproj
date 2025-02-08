@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Entities\Cart\" />
-    <Folder Include="Entities\Customer\" />
-    <Folder Include="Entities\Order\" />
     <Folder Include="Events\Cart\" />
     <Folder Include="Events\Integration\" />
     <Folder Include="Events\Order\" />
@@ -17,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
   </ItemGroup>
 
 </Project>

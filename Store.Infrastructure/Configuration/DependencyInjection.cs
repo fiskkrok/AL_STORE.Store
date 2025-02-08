@@ -7,10 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
 using Store.Application.Common.Interfaces;
+using Store.Application.Contracts;
 using Store.Infrastructure.BackgroundJobs;
 using Store.Infrastructure.Caching;
 using Store.Infrastructure.Identity;
 using Store.Infrastructure.Persistence;
+using Store.Infrastructure.Persistence.Repositories;
 using Store.Infrastructure.Persistence.Seeding;
 using Store.Infrastructure.RealTime;
 using Store.Infrastructure.Services;
@@ -35,6 +37,11 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICategorySeeder, CategorySeeder>();
         services.AddScoped<IStoreSeeder, StoreSeeder>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IPaymentSessionRepository, PaymentSessionRepository>();
+        services.AddScoped<IKlarnaService, KlarnaService>();
+        services.AddScoped<IIdempotencyService, IdempotencyService>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
         // Redis Configuration
         services.AddStackExchangeRedisCache(options =>
         {
