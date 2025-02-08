@@ -8,16 +8,6 @@ export const ACCOUNT_ROUTES: Routes = [
         canActivate: [authGuard],
         children: [
             {
-                path: '',
-                loadComponent: () => import('./account-overview.component')
-                    .then(m => m.AccountOverviewComponent)
-            },
-            {
-                path: 'orders',
-                loadComponent: () => import('./order-history.component')
-                    .then(m => m.OrderHistoryComponent)
-            },
-            {
                 path: 'profile-management',
                 loadComponent: () => import('./profile-management.component')
                     .then(m => m.ProfileManagementComponent)
