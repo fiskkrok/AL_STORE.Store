@@ -46,10 +46,10 @@ interface ActiveFilter {
       >
         <!-- Search -->
         <div class="form-group">
-          <label class="form-label">Search</label>
+          <label for="search" class="form-label">Search</label>
           <div class="relative">
            <input
-        type="search"
+        id="search" type="search"
         [formControl]="searchControl"
         class="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-primary
                focus:border-transparent bg-background"
@@ -96,10 +96,11 @@ interface ActiveFilter {
 
         <!-- Price Range -->
         <div class="form-group">
-          <label class="form-label">Price Range</label>
+          <label class="form-label" for="minPriceControl">Price Range</label>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <input
+              id="minPriceControl"
                 type="number"
                 [formControl]="minPriceControl"
                 placeholder="Min"
@@ -136,8 +137,9 @@ interface ActiveFilter {
 
         <!-- Sort -->
         <div class="form-group">
-          <label class="form-label">Sort By</label>
+          <label class="form-label" for="sortControl" >Sort By</label>
           <select
+            id="sortControl"
             [formControl]="sortControl"
             class="form-select"
           >

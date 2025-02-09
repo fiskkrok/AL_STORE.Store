@@ -31,6 +31,7 @@ public class CustomerProfileConfiguration : IEntityTypeConfiguration<CustomerPro
                 .HasColumnName("Email")
                 .HasMaxLength(256)
                 .IsRequired();
+            email.HasIndex(e => e.Value).IsUnique();
         });
 
         builder.OwnsOne(c => c.Phone, phone =>
@@ -40,6 +41,26 @@ public class CustomerProfileConfiguration : IEntityTypeConfiguration<CustomerPro
                 .HasMaxLength(20);
         });
 
+        builder.OwnsOne(c => c.Preferences, prefs =>
+        {
+            prefs.Property(p => p.MarketingEmails)
+                .HasDefaultValue(false);
+
+            prefs.Property(p => p.OrderNotifications)
+                .HasDefaultValue(true);
+
+            prefs.Property(p => p.NewsletterSubscribed)
+                .HasDefaultValue(false);
+
+            prefs.Property(p => p.PreferredLanguage)
+                .HasMaxLength(10)
+                .HasDefaultValue("en");
+
+            prefs.Property(p => p.PreferredCurrency)
+                .HasMaxLength(3)
+                .HasDefaultValue("USD");
+        });
+
         builder.HasMany(c => c.Addresses)
             .WithOne()
             .HasForeignKey(a => a.CustomerId)
@@ -47,5 +68,6 @@ public class CustomerProfileConfiguration : IEntityTypeConfiguration<CustomerPro
 
         builder.HasIndex(c => c.UserId)
             .IsUnique();
+
     }
 }

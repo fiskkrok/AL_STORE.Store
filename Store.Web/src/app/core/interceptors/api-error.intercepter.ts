@@ -51,18 +51,20 @@ export const apiErrorInterceptor: HttpInterceptorFn = (req, next) => {
                     break;
 
                 case HttpStatusCode.UnprocessableEntity:
-                    const validationErrors = error.error?.errors;
-                    if (validationErrors) {
-                        errorService.addError(
-                            'VALIDATION_ERROR',
-                            'Please check your input and try again.',
-                            {
-                                severity: 'warning',
-                                context: { validationErrors }
-                            }
-                        );
+                    {
+                        const validationErrors = error.error?.errors;
+                        if (validationErrors) {
+                            errorService.addError(
+                                'VALIDATION_ERROR',
+                                'Please check your input and try again.',
+                                {
+                                    severity: 'warning',
+                                    context: { validationErrors }
+                                }
+                            );
+                        }
+                        break;
                     }
-                    break;
 
                 case HttpStatusCode.TooManyRequests:
                     errorService.addError(

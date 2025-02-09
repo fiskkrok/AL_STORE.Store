@@ -14,6 +14,7 @@ public class CustomerProfile : BaseAuditableEntity
     public Email Email { get; private set; }
     public PhoneNumber? Phone { get; private set; }
     public bool IsVerified { get; private set; }
+    public CustomerPreferences Preferences { get; private set; }
     public IReadOnlyCollection<CustomerAddress> Addresses => _addresses.AsReadOnly();
 
     private CustomerProfile() { } // For EF Core
@@ -25,12 +26,10 @@ public class CustomerProfile : BaseAuditableEntity
         string email,
         string? phone = null)
     {
-        // Validate and create Email value object
         var emailResult = Email.Create(email);
         if (!emailResult.IsSuccess)
             throw new DomainException($"Invalid email: {string.Join(", ", emailResult.Errors)}");
 
-        // Validate and create Phone value object if provided
         PhoneNumber? phoneNumber = null;
         if (!string.IsNullOrEmpty(phone))
         {
@@ -46,6 +45,7 @@ public class CustomerProfile : BaseAuditableEntity
         Email = emailResult.Value!;
         Phone = phoneNumber;
         IsVerified = false;
+        Preferences = new CustomerPreferences(); // Default preferences
 
         AddDomainEvent(new CustomerProfileCreatedEvent(this));
     }
@@ -53,7 +53,8 @@ public class CustomerProfile : BaseAuditableEntity
     public void Update(
         string firstName,
         string lastName,
-        string? phone)
+        string? phone,
+        CustomerPreferences preferences)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -66,6 +67,7 @@ public class CustomerProfile : BaseAuditableEntity
             Phone = phoneResult.Value;
         }
 
+        Preferences = preferences;
         AddDomainEvent(new CustomerProfileUpdatedEvent(this));
     }
 

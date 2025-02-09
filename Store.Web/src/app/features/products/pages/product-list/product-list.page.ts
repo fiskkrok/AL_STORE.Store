@@ -1,5 +1,5 @@
 // src/app/features/products/pages/product-list/product-list.page.ts
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ActivatedRoute, Router } from '@angular/router';

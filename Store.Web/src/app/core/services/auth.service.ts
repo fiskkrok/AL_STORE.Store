@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, inject, signal } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, throwError, firstValueFrom } from 'rxjs';
 
 import { Auth0Error, AuthErrorService } from './auth-error.service';
 import { ErrorService } from './error.service';
 import { UserProfile } from '../models/auth.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
+import { CustomerService } from './customer.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,10 +16,11 @@ export class AuthService {
     private readonly router = inject(Router);
     private readonly authErrorService = inject(AuthErrorService);
     private readonly errorService = inject(ErrorService);
+    private readonly customerService = inject(CustomerService);
 
     readonly isAuthenticated$ = this.auth0.isAuthenticated$;
     readonly user$ = this.auth0.user$;
-    private state = signal<{
+    private readonly state = signal<{
         isLoading: boolean;
         isAuthenticated: boolean;
         user: UserProfile | null;
@@ -30,8 +31,6 @@ export class AuthService {
         user: null,
         error: null
     });
-
-
 
     constructor() {
         this.auth0.isAuthenticated$.pipe(
@@ -54,6 +53,8 @@ export class AuthService {
                 } : null
             }));
         });
+
+        this.customerService.setAuthService(this);
     }
     handleAuthCallback() {
         return this.auth0.handleRedirectCallback().pipe(
@@ -62,7 +63,27 @@ export class AuthService {
                 this.router.navigate(['/']);
                 return throwError(() => error);
             })
-        );
+        ).subscribe(async () => {
+            const user = await firstValueFrom(this.auth0.user$);
+            if (user) {
+                try {
+                    // Check if profile exists
+                    await this.customerService.loadProfile();
+                } catch (error) {
+                    if (typeof error === 'object' && error !== null && 'status' in error && (error as { status?: number }).status === 404) {
+                        // Profile does not exist, create a new profile
+                        await this.customerService.createProfile({
+                            firstName: user.given_name || '',
+                            lastName: user.family_name || '',
+                            email: user.email || '',
+                            phone: user.phone_number || ''
+                        });
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+        });
     }
 
     async login(returnUrl?: string) {
@@ -87,6 +108,7 @@ export class AuthService {
             this.authErrorService.handleError(error as Auth0Error);
         }
     }
+
     isAuthenticated(): Promise<boolean> {
         return new Promise((resolve) => {
             this.isAuthenticated$.subscribe({
@@ -98,6 +120,4 @@ export class AuthService {
             });
         });
     }
-
-
 }

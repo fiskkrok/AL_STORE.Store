@@ -4,12 +4,15 @@ using Duende.AccessTokenManagement;
 
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using FluentValidation;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 using Store.API.Configuration;
 using Store.API.Middleware;
+using Store.API.Validation;
 using Store.Application.Configuration;
 using Store.Application.Mappings;
 using Store.Infrastructure;
@@ -29,6 +32,7 @@ builder.Services.AddHttpClient("FrontendClient", client =>
 {
     client.BaseAddress = new Uri(frontendBaseUrl!);
 });
+
 builder.Services.AddClientCredentialsTokenManagement()
     .AddClient("admin-api", client =>
     {
@@ -37,7 +41,12 @@ builder.Services.AddClientCredentialsTokenManagement()
         client.ClientSecret = builder.Configuration["AdminApi:ClientSecret"];
         client.Scope = "products.read categories.read";
     });
-builder.Services.AddFastEndpoints().SwaggerDocument()
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProfileValidator>();
+
+builder.Services.AddFastEndpoints(options =>
+    {
+        options.IncludeAbstractValidators = true;
+    }).SwaggerDocument()
     .AddOpenApi();
 // Configure CORS
 builder.Services.AddCors(options =>

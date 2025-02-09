@@ -1,4 +1,3 @@
-// src/app/core/services/customer.service.ts
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -11,14 +10,15 @@ import {
     UpdateCustomerProfileRequest,
     CustomerProfileResponse,
     AddressResponse,
-    Address
+    Address,
+    CreateProfileRequest
 } from '../models/customer.model';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
     private readonly http = inject(HttpClient);
-    private readonly auth = inject(AuthService);
+    private auth: AuthService | null = null;
     private readonly errorService = inject(ErrorService);
     private readonly apiUrl = `${environment.apiUrl}/api/customers`;
 
@@ -43,8 +43,8 @@ export class CustomerService {
         this.addresses().find(a => a.type === 'billing' && a.isDefault)
     );
 
-    constructor() {
-        // Load profile when user is authenticated
+    setAuthService(authService: AuthService) {
+        this.auth = authService;
         this.auth.isAuthenticated$.subscribe(isAuthenticated => {
             if (isAuthenticated) {
                 this.handleAuthenticated();
@@ -73,11 +73,30 @@ export class CustomerService {
             if (response?.profile) {
                 this.profile.set(response.profile);
             }
-        } catch {
+        } catch (error) {
+            if (typeof error === 'object' && error !== null && 'status' in error && (error as { status?: number }).status === 404) {
+                throw error;
+            } else {
+                this.errorService.addError(
+                    'PROFILE_LOAD_ERROR',
+                    'Failed to load customer profile',
+                );
+            }
+        } finally {
+            this.loading.set(false);
+        }
+    }
+
+    async createProfile(profile: CreateProfileRequest): Promise<void> {
+        this.loading.set(true);
+        try {
+            await firstValueFrom(this.http.post(`${this.apiUrl}/profile`, profile));
+        } catch (error) {
             this.errorService.addError(
-                'PROFILE_LOAD_ERROR',
-                'Failed to load customer profile',
+                'PROFILE_CREATE_ERROR',
+                'Failed to create customer profile'
             );
+            throw error;
         } finally {
             this.loading.set(false);
         }

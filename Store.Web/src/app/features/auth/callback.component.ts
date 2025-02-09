@@ -36,12 +36,6 @@ export class AuthCallbackComponent {
   error = signal(false);
 
   constructor() {
-    this.auth.handleAuthCallback().pipe(
-      timeout(5000),
-      catchError(err => {
-        this.error.set(true);
-        return throwError(() => err);
-      })
-    ).subscribe();
+    this.auth.handleAuthCallback();
   }
 }

@@ -5,7 +5,7 @@ import { AppError, ErrorOptions } from '../models/error.model';
 
 @Injectable({ providedIn: 'root' })
 export class ErrorService {
-  private logger = inject(LoggerService);
+  private readonly logger = inject(LoggerService);
   private readonly errors = signal<AppError[]>([]);
 
   readonly currentErrors = computed(() => this.errors());
@@ -42,9 +42,20 @@ export class ErrorService {
 
   private handleFatalError(error: AppError) {
     // Implement fatal error handling
-    // Could show a full-screen error message
-    // Could attempt to recover the application
-    // Could force a refresh
+    this.logger.error('Fatal error encountered. Initiating full recovery.', error);
+    // Lazy load the full-screen error component using dynamic import (assuming a lazy-loaded fatal error UI)
+    import('../components/fatal-error/fatal-error.component')
+      .then(() => {
+        // Here, you can display the full-screen error component if desired.
+        // For example, using a component outlet or service to show the component.
+        // After showing the error, force a refresh to attempt recovery.
+        setTimeout(() => location.reload(), 3000);
+      })
+      .catch((err: unknown) => {
+        // If lazy loading fails, attempt a fallback refresh.
+        this.logger.error('Failed to load fatal error component.', err);
+        setTimeout(() => location.reload(), 3000);
+      });
   }
 
   removeError(error: AppError) {

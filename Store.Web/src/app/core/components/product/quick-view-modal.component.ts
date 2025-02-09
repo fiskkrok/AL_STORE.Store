@@ -76,8 +76,9 @@ import { ErrorService } from '../../services/error.service';
               <!-- Variants Selection -->
               @if (product().variants.length) {
                 <div class="form-group">
-                  <label class="form-label">Select Option</label>
+                  <label class="form-label" for="selectedVariant">Select Option</label>
                   <select 
+                    id="selectedVariant"
                     [(ngModel)]="selectedVariant"
                     class="form-input"
                   >
@@ -96,8 +97,9 @@ import { ErrorService } from '../../services/error.service';
 
               <!-- Quantity -->
               <div class="form-group">
-                <label class="form-label">Quantity</label>
+                <label class="form-label" for="quantity">Quantity</label>
                 <select 
+                  id="quantity"
                   [ngModel]="quantity()"
                   (ngModelChange)="quantity.set($event)"
                   class="form-input dark:text-white"

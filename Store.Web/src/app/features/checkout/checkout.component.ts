@@ -58,7 +58,7 @@ import { Router } from '@angular/router';
             </div>
           }
 
-          <div id="klarna-payments-container"></div>
+          <div id="klarna-payments-container" class="dark:bg-white"></div>
 
           @if (error()) {
             <div class="p-4 bg-red-50 text-red-700 rounded-lg">

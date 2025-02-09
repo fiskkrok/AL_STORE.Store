@@ -1,10 +1,9 @@
 // src/app/core/state/product.store.ts
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { SignalRService } from '../services/signalr.service';
 import { ProductService } from '../services/product.service';
-import { GetProductsRequest, Product, ProductListRequest, ProductListResponse } from '../models/product.model';
+import { Product, ProductListRequest } from '../models/product.model';
 
 
 interface ProductState {

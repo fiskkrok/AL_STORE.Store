@@ -11,7 +11,7 @@ import { PreferencesComponent } from "./preferences.component";
     standalone: true,
     imports: [LoadingSpinnerComponent, PersonalInfoComponent, AddressBookComponent, OrderHistoryComponent, PreferencesComponent],
     template: `
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-4 py-8 dark:text-white" >
             <h1 class="text-2xl font-bold mb-8">Profile Settings</h1>
 
             @if (customerService.isLoading()) {

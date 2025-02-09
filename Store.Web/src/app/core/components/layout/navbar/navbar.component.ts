@@ -77,7 +77,7 @@ import { ThemeService } from '../../../services/theme.service';
 
           <!-- Auth Section -->
           <ng-container *ngIf="auth.user$ | async as user; else loginButton">
-            <div class="relative">
+            <div class="relative user-menu-container">
               <button
                 class="flex items-center gap-2 hover:bg-accent p-2 rounded-lg btn-secondary"
                 (click)="toggleUserMenu()"
@@ -91,23 +91,17 @@ import { ThemeService } from '../../../services/theme.service';
               </button>
 
               @if (showUserMenu()) {
-                <div class="absolute right-0 mt-2 w-48 bg-background rounded-lg shadow-lg border py-1">
+                <div class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border py-1 dark:bg-white">
                   <a
-                    routerLink="/account"
-                    class="block px-4 py-2 text-sm hover:bg-accent"
+                    routerLink="/account/profile-management"
+                    class="block px-4 py-2 text-sm hover:bg-accent dark:hover:bg-accent-foreground"
                   >
                     Account Settings
                   </a>
-                  <a
-                    routerLink="/orders"
-                    class="block px-4 py-2 text-sm hover:bg-accent"
-                  >
-                    Order History
-                  </a>
                   <button
                     (click)="auth.logout()"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
-                      class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600 dark:hover:bg-accent-foreground"
+                      class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600 dark:hover:bg-accent-foreground"
                   >
                     Sign Out
                   </button>
@@ -119,7 +113,7 @@ import { ThemeService } from '../../../services/theme.service';
           <ng-template #loginButton>
             <button
               (click)="auth.login()"
-              class="inline-flex items-center justify-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md"
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md dark:bg-accent dark:text-accent-foreground"
             >
               Sign In
             </button>
@@ -133,7 +127,7 @@ export class NavbarComponent {
   auth = inject(AuthService);
   private readonly cartStore = inject(CartStore);
   private autoHideTimeout: any;
-  private themeService = inject(ThemeService);
+  private readonly themeService = inject(ThemeService);
 
   isDarkTheme = computed(() => this.themeService.currentTheme() === 'dark');
   cartItemCount = this.cartStore.totalItems;

@@ -17,8 +17,8 @@ interface PriceUpdate {
   providedIn: 'root'
 })
 export class SignalRService {
-  private hubConnection: HubConnection;
-  private connectionState = new BehaviorSubject<boolean>(false);
+  private readonly hubConnection: HubConnection;
+  private readonly connectionState = new BehaviorSubject<boolean>(false);
   connectionState$ = this.connectionState.asObservable();
   onStockUpdate = new BehaviorSubject<StockUpdate | null>(null);
   onPriceUpdate = new BehaviorSubject<PriceUpdate | null>(null);
@@ -47,11 +47,11 @@ export class SignalRService {
     });
   }
 
-  subscribeToCart(callback: (update: any) => void): void {
+  subscribeToCart(callback: (update: { productId: string; quantity: number }) => void): void {
     this.hubConnection.on('CartUpdated', callback);
   }
 
-  subscribeToProductUpdates(callback: (update: any) => void): void {
+  subscribeToProductUpdates(callback: (update: StockUpdate | PriceUpdate) => void): void {
     this.hubConnection.on('ProductUpdated', callback);
   }
 }
