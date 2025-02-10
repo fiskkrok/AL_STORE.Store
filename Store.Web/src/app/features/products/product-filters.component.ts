@@ -4,8 +4,9 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GetProductsRequest } from '../../../core/models/product.model';
-import { ProductStore } from '../../../core/state/product.store';
+import { GetProductsRequest } from '../../core/models/product.model';
+import { ProductStore } from '../../core/state/product.store';
+
 interface ActiveFilter {
   id: string;
   label: string;

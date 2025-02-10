@@ -20,6 +20,7 @@ export class AuthService {
 
     readonly isAuthenticated$ = this.auth0.isAuthenticated$;
     readonly user$ = this.auth0.user$;
+
     private readonly state = signal<{
         isLoading: boolean;
         isAuthenticated: boolean;
@@ -33,6 +34,7 @@ export class AuthService {
     });
 
     constructor() {
+        // Set up auth state management
         this.auth0.isAuthenticated$.pipe(
             takeUntilDestroyed()
         ).subscribe(isAuthenticated => {
@@ -42,48 +44,26 @@ export class AuthService {
         this.auth0.user$.pipe(
             takeUntilDestroyed()
         ).subscribe(user => {
-            this.state.update(s => ({
-                ...s,
-                user: user ? {
+            if (user) {
+                const userProfile: UserProfile = {
                     sub: user.sub ?? '',
                     email: user.email ?? '',
                     name: user.name ?? '',
                     picture: user.picture ?? '',
                     roles: user[`${environment.auth0.audience}/roles`] as string[] || []
-                } : null
-            }));
-        });
-
-        this.customerService.setAuthService(this);
-    }
-    handleAuthCallback() {
-        return this.auth0.handleRedirectCallback().pipe(
-            catchError(error => {
-                this.authErrorService.handleError(error);
-                this.router.navigate(['/']);
-                return throwError(() => error);
-            })
-        ).subscribe(async () => {
-            const user = await firstValueFrom(this.auth0.user$);
-            if (user) {
-                try {
-                    // Check if profile exists
-                    await this.customerService.loadProfile();
-                } catch (error) {
-                    if (typeof error === 'object' && error !== null && 'status' in error && (error as { status?: number }).status === 404) {
-                        // Profile does not exist, create a new profile
-                        await this.customerService.createProfile({
-                            firstName: user.given_name || '',
-                            lastName: user.family_name || '',
-                            email: user.email || '',
-                            phone: user.phone_number || ''
-                        });
-                    } else {
-                        throw error;
-                    }
-                }
+                };
+                this.state.update(s => ({ ...s, user: userProfile }));
+            } else {
+                this.state.update(s => ({ ...s, user: null }));
             }
         });
+
+        // Initialize customer service
+        this.customerService.setAuthService(this);
+    }
+
+    isAuthenticated(): Promise<boolean> {
+        return firstValueFrom(this.isAuthenticated$);
     }
 
     async login(returnUrl?: string) {
@@ -91,7 +71,9 @@ export class AuthService {
             if (returnUrl) {
                 localStorage.setItem('returnUrl', returnUrl);
             }
-            await this.auth0.loginWithRedirect();
+            await this.auth0.loginWithRedirect({
+                appState: { returnTo: returnUrl }
+            });
         } catch (error) {
             this.authErrorService.handleError(error as Auth0Error);
         }
@@ -109,15 +91,13 @@ export class AuthService {
         }
     }
 
-    isAuthenticated(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.isAuthenticated$.subscribe({
-                next: resolve,
-                error: (error) => {
-                    this.authErrorService.handleError(error);
-                    resolve(false);
-                }
-            });
-        });
+    handleAuthCallback() {
+        return this.auth0.handleRedirectCallback().pipe(
+            catchError(error => {
+                this.authErrorService.handleError(error);
+                this.router.navigate(['/']);
+                return throwError(() => error);
+            })
+        ).subscribe();
     }
 }

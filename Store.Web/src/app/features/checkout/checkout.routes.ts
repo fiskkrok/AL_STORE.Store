@@ -2,7 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 import { CheckoutComponent } from './checkout.component';
-import { ConfirmationComponent } from './confirmation/confirmation.component';
+import { ConfirmationComponent } from './confirmation.component';
 export const CHECKOUT_ROUTES: Routes = [
     {
         path: '',

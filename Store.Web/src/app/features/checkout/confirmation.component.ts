@@ -1,9 +1,10 @@
 import { Component, OnInit, inject, signal } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { firstValueFrom } from "rxjs";
-import { CheckoutService } from "../../../core/services/checkout.service";
-import { ErrorService } from "../../../core/services/error.service";
-import { CartStore } from "../../../core/state/cart.store";
+import { CheckoutService } from "../../core/services/checkout.service";
+import { ErrorService } from "../../core/services/error.service";
+import { CartStore } from "../../core/state/cart.store";
+
 
 // src/app/features/checkout/confirmation/confirmation.component.ts
 @Component({

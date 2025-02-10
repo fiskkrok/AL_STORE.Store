@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ProductStore } from '../../../core/state/product.store';
+import { ProductStore } from '../../core/state/product.store';
 
 @Component({
   selector: 'app-product-search',

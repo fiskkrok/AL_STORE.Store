@@ -1,0 +1,9 @@
+<div class="home__svgs">
+    @if (svgFiles.length > 0) {
+    @for (svg of svgFiles ; track $index) {
+    <img class="home__svg" src="{{svg.path}}" alt="{{ svg }} svg" width="400px" height="400px" />
+    }
+    } @else {
+    <p>No SVG files found in the assets folder.</p>
+    }
+</div>

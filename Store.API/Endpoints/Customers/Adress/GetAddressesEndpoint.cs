@@ -20,6 +20,7 @@ public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
 
     public override void Configure()
     {
+        AllowAnonymous();
         Get("/api/customers/addresses");
         Claims("sub");
         Description(d => d

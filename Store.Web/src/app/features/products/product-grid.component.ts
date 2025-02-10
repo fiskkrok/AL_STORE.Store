@@ -1,12 +1,11 @@
 // src/app/features/products/components/product-grid/product-grid.component.ts
 import { Component, inject, signal } from '@angular/core';
-
-import { Product } from '../../../core/models/product.model';
-import { CartItem, CartStore } from '../../../core/state/cart.store';
-import { ProductCardComponent } from '../../../core/components/product/product-card.component';
-import { QuickViewModalComponent } from '../../../core/components/product/quick-view-modal.component';
-import { ProductStore } from '../../../core/state/product.store';
-import { IntersectionObserverDirective } from '../../../directives/intersection-observer.directive';
+import { ProductCardComponent } from '../../core/components/product/product-card.component';
+import { QuickViewModalComponent } from '../../core/components/product/quick-view-modal.component';
+import { Product } from '../../core/models/product.model';
+import { CartStore, CartItem } from '../../core/state/cart.store';
+import { ProductStore } from '../../core/state/product.store';
+import { IntersectionObserverDirective } from '../../directives/intersection-observer.directive';
 
 @Component({
   selector: 'app-product-grid',

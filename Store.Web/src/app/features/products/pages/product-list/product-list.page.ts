@@ -5,9 +5,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorDisplayComponent } from '../../../../core/components/error-display/error-display.component';
 import { ProductStore } from '../../../../core/state/product.store';
-import { ProductGridComponent } from '../../product-grid/product-grid.component';
-import { ProductFiltersComponent } from '../../product-filters/product-filters.component';
-import { ProductSearchComponent } from '../../components/product-search.component';
+import { ProductGridComponent } from '../../product-grid.component';
+import { ProductFiltersComponent } from '../../product-filters.component';
+import { ProductSearchComponent } from '../../product-search.component';
+
 
 
 @Component({

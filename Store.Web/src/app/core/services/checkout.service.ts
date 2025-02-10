@@ -9,7 +9,7 @@ import { CheckoutSessionRequest } from "../models/checkout.model";
 @Injectable({ providedIn: 'root' })
 export class CheckoutService {
     private readonly http = inject(HttpClient);
-    private readonly apiUrl = `${environment.apiUrl}/api/checkout`;
+    private readonly storeApiUrl = `${environment.apiUrl}/api/checkout`;
 
     createKlarnaSession(cart: CartItem[], customerInfo: Omit<CheckoutSessionRequest['customer'], 'shippingAddress'> & { shippingAddress: CheckoutSessionRequest['customer']['shippingAddress'] }) {
         // Generate idempotency key based on cart contents and timestamp
@@ -32,7 +32,7 @@ export class CheckoutService {
             clientToken: string;
             sessionId: string;
             paymentMethods: { identifier: string; name: string; }[];
-        }>(`${this.apiUrl}/sessions`, request, {
+        }>(`${this.storeApiUrl}/sessions`, request, {
             headers: {
                 'Idempotency-Key': idempotencyKey
             }
@@ -55,7 +55,7 @@ export class CheckoutService {
             success: boolean;
             orderId?: string;
             error?: string;
-        }>(`${this.apiUrl}/authorize`, paymentData);
+        }>(`${this.storeApiUrl}/authorize`, paymentData);
     }
 
     // Backend validates and processes the order
@@ -66,6 +66,6 @@ export class CheckoutService {
                 orderNumber: string;
                 status: string;
             };
-        }>(`${this.apiUrl}/complete`, { orderId });
+        }>(`${this.storeApiUrl}/complete`, { orderId });
     }
 }

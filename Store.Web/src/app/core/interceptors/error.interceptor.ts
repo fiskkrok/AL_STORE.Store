@@ -14,44 +14,44 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse) {
         switch (error.status) {
           case 401:
-            errorService.addError({
-              code: 'UNAUTHORIZED',
-              message: 'Please log in to continue'
-            });
+            errorService.addError(
+              'UNAUTHORIZED',
+              'Please log in to continue'
+            );
             router.navigate(['/login']);
             break;
 
           case 403:
-            errorService.addError({
-              code: 'FORBIDDEN',
-              message: 'You don\'t have permission to access this resource'
-            });
+            errorService.addError(
+              'FORBIDDEN',
+              'You don\'t have permission to access this resource'
+            );
             break;
 
           case 404:
-            errorService.addError({
-              code: 'NOT_FOUND',
-              message: 'The requested resource was not found'
-            });
+            errorService.addError(
+              'NOT_FOUND',
+              'The requested resource was not found'
+            );
             break;
 
           case 422: {
             const validationErrors = error.error.errors;
             if (validationErrors) {
-              errorService.addError({
-                code: 'VALIDATION_ERROR',
-                message: 'Please check your input',
-                details: validationErrors
-              });
+              errorService.addError(
+                'VALIDATION_ERROR',
+                'Please check your input',
+                validationErrors
+              );
             }
             break;
           }
 
           default:
-            errorService.addError({
-              code: 'UNEXPECTED_ERROR',
-              message: 'An unexpected error occurred. Please try again later.'
-            });
+            errorService.addError(
+              'UNEXPECTED_ERROR',
+              'An unexpected error occurred. Please try again later.'
+            );
         }
       }
       return throwError(() => error);
