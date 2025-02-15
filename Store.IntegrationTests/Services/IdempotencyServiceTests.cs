@@ -1,21 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
-
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Moq;
-
 using StackExchange.Redis;
-
 using Store.Infrastructure.Services;
 using Store.Infrastructure.Services.Models;
-
-using Xunit;
 
 namespace Store.IntegrationTests.Services;
 
 public class IdempotencyServiceTests : IAsyncLifetime
 {
-    private readonly Mock<IConnectionMultiplexer> _redisMock;
     private readonly Mock<IDatabase> _dbMock;
     private readonly Mock<ILogger<IdempotencyService>> _loggerMock;
+    private readonly Mock<IConnectionMultiplexer> _redisMock;
     private readonly IdempotencyService _service;
     private readonly string _testKey = "test-key";
 
@@ -29,6 +25,16 @@ public class IdempotencyServiceTests : IAsyncLifetime
             .Returns(_dbMock.Object);
 
         _service = new IdempotencyService(_redisMock.Object, _loggerMock.Object);
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
     }
 
     [Fact]
@@ -88,7 +94,7 @@ public class IdempotencyServiceTests : IAsyncLifetime
         Assert.NotNull(storedExpiry);
         Assert.True(storedExpiry?.Days == 7); // Verify 7-day expiry
 
-        var record = System.Text.Json.JsonSerializer
+        var record = JsonSerializer
             .Deserialize<IdempotencyRecord>(storedValue.ToString());
 
         Assert.NotNull(record);
@@ -120,7 +126,7 @@ public class IdempotencyServiceTests : IAsyncLifetime
         };
 
         _dbMock.Setup(x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
-            .ReturnsAsync(System.Text.Json.JsonSerializer.Serialize(record));
+            .ReturnsAsync(JsonSerializer.Serialize(record));
 
         // Act
         var result = await _service.GetOperationDetailsAsync(_testKey);
@@ -130,7 +136,4 @@ public class IdempotencyServiceTests : IAsyncLifetime
         Assert.Equal(record.ProcessedAt.Date, result.ProcessedAt.Date);
         Assert.Equal(record.ExpiresAt.Date, result.ExpiresAt.Date);
     }
-
-    public Task InitializeAsync() => Task.CompletedTask;
-    public Task DisposeAsync() => Task.CompletedTask;
 }

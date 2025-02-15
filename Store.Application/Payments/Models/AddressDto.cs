@@ -1,6 +1,4 @@
-﻿using Store.Domain.Entities.Customer;
-
-namespace Store.Application.Payments.Models;
+﻿namespace Store.Application.Payments.Models;
 
 public class AddressDto
 {

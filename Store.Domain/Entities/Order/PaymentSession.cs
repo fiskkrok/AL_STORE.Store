@@ -7,16 +7,9 @@ namespace Store.Domain.Entities.Order;
 
 public class PaymentSession : BaseEntity
 {
-    public Guid OrderId { get; private set; }
-    public string ClientToken { get; private set; }
-    public PaymentSessionStatus Status { get; private set; }
-    public DateTime ExpiresAt { get; private set; }
-    public string PaymentMethod { get; private set; }
-    public Money Amount { get; private set; }
-    public int AttemptCount { get; private set; }
-    
-
-    private PaymentSession() { } // For EF Core
+    private PaymentSession()
+    {
+    } // For EF Core
 
     public PaymentSession(
         Guid orderId,
@@ -36,9 +29,23 @@ public class PaymentSession : BaseEntity
         AddDomainEvent(new PaymentSessionCreatedEvent(this));
     }
 
-    public bool IsExpired() => DateTime.UtcNow > ExpiresAt;
+    public Guid OrderId { get; private set; }
+    public string ClientToken { get; private set; }
+    public PaymentSessionStatus Status { get; private set; }
+    public DateTime ExpiresAt { get; }
+    public string PaymentMethod { get; private set; }
+    public Money Amount { get; private set; }
+    public int AttemptCount { get; private set; }
 
-    public bool CanRetry() => AttemptCount < 3 && !IsExpired();
+    public bool IsExpired()
+    {
+        return DateTime.UtcNow > ExpiresAt;
+    }
+
+    public bool CanRetry()
+    {
+        return AttemptCount < 3 && !IsExpired();
+    }
 
     public void IncrementAttempt()
     {
@@ -62,10 +69,10 @@ public class PaymentSession : BaseEntity
 
 public class PaymentSessionMaxAttemptsReachedEvent : BaseDomainEvent
 {
-    public Guid Id { get; }
-
     public PaymentSessionMaxAttemptsReachedEvent(Guid id)
     {
         Id = id;
     }
+
+    public Guid Id { get; }
 }

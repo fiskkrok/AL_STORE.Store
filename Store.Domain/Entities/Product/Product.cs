@@ -7,26 +7,13 @@ namespace Store.Domain.Entities.Product;
 
 public class Product : BaseAuditableEntity
 {
-    private Product() { }
-    public string Name { get; private set; } = string.Empty;
-    public string Slug { get; private set; } = string.Empty;
-    public string Description { get; private set; } = string.Empty;
-    public string? ShortDescription { get; private set; } // New
-    public string Sku { get; private set; } = string.Empty;
-    public string? Barcode { get; private set; } // New
-    public Money Price { get; private set; } = Money.Zero();
-    public Money? CompareAtPrice { get; set; } // New
-    public int StockLevel { get; private set; }
-    public int? LowStockThreshold { get; private set; } // New
-    public bool IsActive { get; private set; }
-    public Guid CategoryId { get; private set; }
-    public List<string> Tags { get; private set; } = new(); // New
-
     private readonly List<ProductImage> _images = new();
-    public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();
 
     private readonly List<ProductVariant> _variants = new();
-    public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
+
+    private Product()
+    {
+    }
 
 
     public Product(
@@ -53,6 +40,22 @@ public class Product : BaseAuditableEntity
         CategoryId = categoryId;
         IsActive = true;
     }
+
+    public string Name { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public string? ShortDescription { get; private set; } // New
+    public string Sku { get; private set; } = string.Empty;
+    public string? Barcode { get; private set; } // New
+    public Money Price { get; private set; } = Money.Zero();
+    public Money? CompareAtPrice { get; set; } // New
+    public int StockLevel { get; private set; }
+    public int? LowStockThreshold { get; private set; } // New
+    public bool IsActive { get; private set; }
+    public Guid CategoryId { get; private set; }
+    public List<string> Tags { get; private set; } = new(); // New
+    public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();
+    public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
 
     public void Update(
         string name,
@@ -101,29 +104,22 @@ public class Product : BaseAuditableEntity
         // Remove variants that no longer exist
         var variantIds = variants.Select(v => v.Id).ToList();
         var removedVariants = _variants.Where(v => !variantIds.Contains(v.Id)).ToList();
-        foreach (var variant in removedVariants)
-        {
-            _variants.Remove(variant);
-        }
+        foreach (var variant in removedVariants) _variants.Remove(variant);
 
         // Update or add variants
         foreach (var variant in variants)
         {
             var existingVariant = _variants.FirstOrDefault(v => v.Id == variant.Id);
             if (existingVariant != null)
-            {
                 existingVariant.Update(
                     variant.Sku,
                     variant.Name,
                     variant.Price,
                     variant.StockLevel);
-            }
             else
-            {
                 _variants.Add(variant);
-            }
         }
 
-        AddDomainEvent(new ProductVariantsUpdatedEvent(this.Id, variantIds));
+        AddDomainEvent(new ProductVariantsUpdatedEvent(Id, variantIds));
     }
 }

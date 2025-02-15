@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Store.Infrastructure.Services.Models;
 
-namespace Store.Infrastructure.Services.Models;
 public class ProductSyncMetrics(int productsCount)
 {
     public string BatchId { get; }

@@ -2,5 +2,4 @@
 
 internal class DomainEventNotification<T>
 {
-
 }

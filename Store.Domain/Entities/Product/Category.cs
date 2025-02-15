@@ -1,26 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Domain.Common;
+﻿using Store.Domain.Common;
 
 namespace Store.Domain.Entities.Product;
+
 public class Category : BaseAuditableEntity
 {
-    public string Name { get; private set; } = string.Empty;
-    public string Slug { get; private set; } = string.Empty;
-    public string? Description { get; private set; }
-    public string? ImageUrl { get; private set; }
-    public Guid? ParentId { get; private set; }
-    public bool IsActive { get; private set; }
-    public int SortOrder { get; private set; }
-    public string? MetaTitle { get; private set; }
-    public string? MetaDescription { get; private set; }
-
     private readonly List<Category> _children = new();
-    public IReadOnlyCollection<Category> Children => _children.AsReadOnly();
 
     // Constructor with all properties
     public Category(
@@ -39,6 +23,17 @@ public class Category : BaseAuditableEntity
         SortOrder = sortOrder;
         IsActive = true;
     }
+
+    public string Name { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
+    public string? ImageUrl { get; private set; }
+    public Guid? ParentId { get; private set; }
+    public bool IsActive { get; private set; }
+    public int SortOrder { get; private set; }
+    public string? MetaTitle { get; private set; }
+    public string? MetaDescription { get; private set; }
+    public IReadOnlyCollection<Category> Children => _children.AsReadOnly();
 
     // Method for updates
     public void Update(

@@ -1,27 +1,26 @@
 ﻿using FastEndpoints;
-
 using FluentValidation;
-
 using Store.API.Endpoints.Customers.Models;
 using Store.API.Endpoints.Customers.Profile;
-using Store.API.Endpoints.Customers;
 using Store.Application.Customers.Models;
 
 namespace Store.API.Validation;
 
-public class CreateProfileValidator : Validator<CreateProfileRequest>
+public class CreateProfileValidator : Validator<ProfilePayload>
 {
     public CreateProfileValidator()
     {
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required")
             .MaximumLength(100).WithMessage("First name cannot exceed 100 characters")
-            .Matches(@"^[\p{L}\s-']+$").WithMessage("First name can only contain letters, spaces, hyphens and apostrophes");
+            .Matches(@"^[\p{L}\s-']+$")
+            .WithMessage("First name can only contain letters, spaces, hyphens and apostrophes");
 
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Last name is required")
             .MaximumLength(100).WithMessage("Last name cannot exceed 100 characters")
-            .Matches(@"^[\p{L}\s-']+$").WithMessage("Last name can only contain letters, spaces, hyphens and apostrophes");
+            .Matches(@"^[\p{L}\s-']+$")
+            .WithMessage("Last name can only contain letters, spaces, hyphens and apostrophes");
 
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required")
@@ -44,12 +43,14 @@ public class UpdateProfileValidator : Validator<UpdateProfileRequest>
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required")
             .MaximumLength(100).WithMessage("First name cannot exceed 100 characters")
-            .Matches(@"^[\p{L}\s-']+$").WithMessage("First name can only contain letters, spaces, hyphens and apostrophes");
+            .Matches(@"^[\p{L}\s-']+$")
+            .WithMessage("First name can only contain letters, spaces, hyphens and apostrophes");
 
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Last name is required")
             .MaximumLength(100).WithMessage("Last name cannot exceed 100 characters")
-            .Matches(@"^[\p{L}\s-']+$").WithMessage("Last name can only contain letters, spaces, hyphens and apostrophes");
+            .Matches(@"^[\p{L}\s-']+$")
+            .WithMessage("Last name can only contain letters, spaces, hyphens and apostrophes");
 
         When(x => !string.IsNullOrEmpty(x.Phone), () =>
         {

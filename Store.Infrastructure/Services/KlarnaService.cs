@@ -1,16 +1,16 @@
-﻿using Store.Domain.Common;
-using Store.Domain.Entities.Order;
-using Microsoft.Extensions.Options;
-using System.Text.Json;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Store.Application.Contracts;
-using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Diagnostics;
+using Store.Domain.Common;
+using Store.Domain.Entities.Order;
 using Store.Infrastructure.Services.Models;
 
 namespace Store.Infrastructure.Services;
+
 public class KlarnaService : IKlarnaService
 {
     private readonly HttpClient _httpClient;
@@ -31,7 +31,7 @@ public class KlarnaService : IKlarnaService
 
         // Configure Basic Authentication
         var authString = $"{_options.Username}:{_options.Password}";
-        var base64Auth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(authString));
+        var base64Auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(authString));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Auth);
 
         // Configure headers Klarna expects
@@ -39,9 +39,9 @@ public class KlarnaService : IKlarnaService
     }
 
     public async Task<Result<KlarnaSessionResponse>> CreateSessionAsync(
-       Order order,
-       string locale,
-       CancellationToken ct = default)
+        Order order,
+        string locale,
+        CancellationToken ct = default)
     {
         try
         {
@@ -92,13 +92,11 @@ public class KlarnaService : IKlarnaService
             }
 
             var sessionResponse = await response.Content.ReadFromJsonAsync<KlarnaSessionResponse>(
-                cancellationToken: ct);
+                ct);
 
             if (sessionResponse == null)
-            {
                 return Result<KlarnaSessionResponse>.Failure(
                     new Error("Klarna.Session.Invalid", "Invalid response from Klarna"));
-            }
 
             _logger.LogInformation("Successfully created Klarna session for order {OrderId}", order.Id);
             return Result<KlarnaSessionResponse>.Success(sessionResponse);
@@ -137,13 +135,11 @@ public class KlarnaService : IKlarnaService
             }
 
             var authResponse = await response.Content.ReadFromJsonAsync<KlarnaAuthorizationResponse>(
-                cancellationToken: ct);
+                ct);
 
             if (authResponse?.OrderId == null)
-            {
                 return Result<string>.Failure(
                     new Error("Klarna.Authorization.Invalid", "Invalid authorization response"));
-            }
 
             return Result<string>.Success(authResponse.OrderId);
         }

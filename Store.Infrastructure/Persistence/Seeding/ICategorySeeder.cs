@@ -1,10 +1,7 @@
 ﻿using System.Text.Json;
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-
 using Store.Domain.Entities.Product;
-using Store.Infrastructure.Persistence;
 
 namespace Store.Infrastructure.Persistence.Seeding;
 
@@ -53,10 +50,7 @@ public class CategorySeeder : ICategorySeeder
                 }
 
                 // Create root categories first
-                foreach (var categoryData in seedData.Categories)
-                {
-                    await CreateCategoryHierarchy(categoryData, null);
-                }
+                foreach (var categoryData in seedData.Categories) await CreateCategoryHierarchy(categoryData, null);
 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Categories seeded successfully");
@@ -76,11 +70,11 @@ public class CategorySeeder : ICategorySeeder
     private async Task CreateCategoryHierarchy(CategoryData data, Guid? parentId)
     {
         var category = new Category(
-            name: data.Name,
-            slug: data.Slug,
-            description: data.Description,
-            imageUrl: data.ImageUrl,
-            parentId: parentId);
+            data.Name,
+            data.Slug,
+            data.Description,
+            data.ImageUrl,
+            parentId);
 
         // Set the ID to match admin system
         typeof(Category)
@@ -96,12 +90,8 @@ public class CategorySeeder : ICategorySeeder
 
         // Process subcategories
         if (data.SubCategories != null)
-        {
             foreach (var subCategoryData in data.SubCategories)
-            {
                 await CreateCategoryHierarchy(subCategoryData, category.Id);
-            }
-        }
     }
 }
 

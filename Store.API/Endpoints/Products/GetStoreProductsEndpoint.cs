@@ -1,14 +1,10 @@
 ﻿using FastEndpoints;
-
 using MediatR;
-
 using Store.Application.Products.Models;
 using Store.Application.Products.Queries;
-using Store.Domain.Common;
-
-using Swashbuckle.AspNetCore.Filters;
 
 namespace Store.API.Endpoints.Products;
+
 public class GetStoreProductsRequest
 {
     public int Page { get; init; } = 1;
@@ -23,12 +19,11 @@ public class GetStoreProductsRequest
 
 // Store products listing endpoint
 /// <summary>
-/// 
 /// </summary>
 public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListResponse>
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<GetStoreProductsEndpoint> _logger;
+    private readonly IMediator _mediator;
 
     public GetStoreProductsEndpoint(IMediator mediator, ILogger<GetStoreProductsEndpoint> logger)
     {
@@ -38,11 +33,11 @@ public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListRespon
 
     public override void Configure()
     {
-        Get("/api/store/products"); // Consistent route
+        Get("/store/products"); // Consistent route
         AllowAnonymous(); // Add this if the endpoint should be public
         Description(d => d
             .WithTags("Store")
-            .Produces<ProductListResponse>(200)
+            .Produces<ProductListResponse>()
             .ProducesProblem(400)
             .WithName("GetStoreProducts")
             .WithOpenApi());
@@ -55,7 +50,7 @@ public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListRespon
         });
     }
 
-    public override async Task HandleAsync( CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
         var query = new GetProductsQuery();
         //GetProductsQuery query = new GetProductsQuery
@@ -70,7 +65,7 @@ public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListRespon
         //    SortBy = req.SortBy
         //};
         _logger.LogInformation("\e Hit the GetProducts endpoint with query: {Query} \e", query);
-        Result<ProductListResponse> result = await _mediator.Send(query, ct);
+        var result = await _mediator.Send(query, ct);
 
         if (!result.IsSuccess)
         {

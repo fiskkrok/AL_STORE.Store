@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-
-using Store.Application.Payments.Models;
-using Store.Domain.Entities.Customer;
+﻿using Store.Application.Payments.Models;
 
 namespace Store.Application.Customers.Models;
 
@@ -18,5 +15,3 @@ public class CustomerProfileDto
     public List<AddressDto> Addresses { get; init; } = new();
     public CustomerPreferencesDto Preferences { get; init; } = new();
 }
-
-

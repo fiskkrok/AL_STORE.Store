@@ -1,10 +1,6 @@
 ﻿using FastEndpoints;
-
 using Microsoft.AspNetCore.Authorization;
-
 using Store.Infrastructure.Services;
-
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Store.API.Endpoints.Products;
 
@@ -20,12 +16,11 @@ public class TriggerProductSyncEndpoint : EndpointWithoutRequest
     }
 
     /// <summary>
-    /// 
     /// </summary>
     [AllowAnonymous]
     public override void Configure()
     {
-        Post("/api/admin/products/sync");
+        Post("/admin/products/sync");
         AllowAnonymous(Http.POST);
         AuthSchemes("ApiKey"); // Be explicit about the scheme
         Description(d => d
@@ -37,7 +32,6 @@ public class TriggerProductSyncEndpoint : EndpointWithoutRequest
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param CancellationToken="ct"></param>
     public override async Task HandleAsync(CancellationToken ct)

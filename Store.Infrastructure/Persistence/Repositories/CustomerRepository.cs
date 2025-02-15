@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Store.Application.Contracts;
 using Store.Domain.Entities.Customer;
 
 namespace Store.Infrastructure.Persistence.Repositories;
+
 public class CustomerRepository : Repository<CustomerProfile>, ICustomerRepository
 {
     private readonly StoreDbContext _context;

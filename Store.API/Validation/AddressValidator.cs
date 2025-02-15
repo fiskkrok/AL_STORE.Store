@@ -1,8 +1,6 @@
-﻿using FastEndpoints;
-
+﻿using System.Text.RegularExpressions;
+using FastEndpoints;
 using FluentValidation;
-
-using Store.API.Endpoints.Customers;
 using Store.API.Endpoints.Customers.Adress;
 
 namespace Store.API.Validation;
@@ -11,13 +9,13 @@ public class AddressValidatorBase<T> : AbstractValidator<T> where T : AddAddress
 {
     private static readonly Dictionary<string, string> PostalCodePatterns = new()
     {
-        { "SE", @"^\d{3}\s?\d{2}$" },      // Sweden: 123 45 or 12345
-        { "NO", @"^\d{4}$" },              // Norway: 0123
-        { "DK", @"^\d{4}$" },              // Denmark: 1234
-        { "FI", @"^\d{5}$" },              // Finland: 12345
-        { "DE", @"^\d{5}$" },              // Germany: 12345
+        { "SE", @"^\d{3}\s?\d{2}$" }, // Sweden: 123 45 or 12345
+        { "NO", @"^\d{4}$" }, // Norway: 0123
+        { "DK", @"^\d{4}$" }, // Denmark: 1234
+        { "FI", @"^\d{5}$" }, // Finland: 12345
+        { "DE", @"^\d{5}$" }, // Germany: 12345
         { "GB", @"^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$" }, // UK: AA1A 1AA
-        { "US", @"^\d{5}(-\d{4})?$" }      // USA: 12345 or 12345-6789
+        { "US", @"^\d{5}(-\d{4})?$" } // USA: 12345 or 12345-6789
     };
 
     protected AddressValidatorBase()
@@ -82,7 +80,7 @@ public class AddressValidatorBase<T> : AbstractValidator<T> where T : AddAddress
                 if (!PostalCodePatterns.TryGetValue(country, out var pattern))
                     return true; // Skip validation for unknown countries
 
-                return System.Text.RegularExpressions.Regex.IsMatch(
+                return Regex.IsMatch(
                     postalCode.Replace(" ", ""), // Remove spaces for validation
                     pattern);
             })
@@ -99,15 +97,13 @@ public class AddressValidatorBase<T> : AbstractValidator<T> where T : AddAddress
 
 public class AddAddressValidator : AddressValidatorBase<AddAddressRequest>
 {
-    public AddAddressValidator() : base()
-    {
-        // Add any additional validation specific to adding a new address
-    }
 }
 
 public class UpdateAddressValidator : AddressValidatorBase<UpdateAddressRequest>
 {
-    public UpdateAddressValidator() : base()
+    /// <summary>
+    /// </summary>
+    public UpdateAddressValidator()
     {
         // Add any additional validation specific to updating an address
     }

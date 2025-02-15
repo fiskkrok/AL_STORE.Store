@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Store.Application.Common.Models;
+
 public class PaginatedList<T>
 {
-    public IReadOnlyCollection<T> Items { get; }
-    public int PageNumber { get; }
-    public int TotalPages { get; }
-    public int TotalCount { get; }
-
     public PaginatedList(IReadOnlyCollection<T> items, int pageNumber, int totalPages, int totalCount)
     {
         Items = items;
@@ -20,6 +11,11 @@ public class PaginatedList<T>
         TotalPages = totalPages;
         TotalCount = totalCount;
     }
+
+    public IReadOnlyCollection<T> Items { get; }
+    public int PageNumber { get; }
+    public int TotalPages { get; }
+    public int TotalCount { get; }
 
     public bool HasPreviousPage => PageNumber > 1;
     public bool HasNextPage => PageNumber < TotalPages;

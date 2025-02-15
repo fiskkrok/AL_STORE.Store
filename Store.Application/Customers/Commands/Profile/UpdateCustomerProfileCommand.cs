@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
@@ -13,6 +7,7 @@ using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
 
 namespace Store.Application.Customers.Commands.Profile;
+
 // Update Profile
 public record UpdateCustomerProfileCommand(
     string FirstName,
@@ -20,12 +15,13 @@ public record UpdateCustomerProfileCommand(
     string? Phone,
     CustomerPreferences Preferences) : IRequest<Result<CustomerProfileDto>>;
 
-public class UpdateCustomerProfileCommandHandler : IRequestHandler<UpdateCustomerProfileCommand, Result<CustomerProfileDto>>
+public class
+    UpdateCustomerProfileCommandHandler : IRequestHandler<UpdateCustomerProfileCommand, Result<CustomerProfileDto>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public UpdateCustomerProfileCommandHandler(
         ICustomerRepository customerRepository,

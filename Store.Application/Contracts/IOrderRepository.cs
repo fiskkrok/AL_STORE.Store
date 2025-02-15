@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Store.Domain.Entities.Order;
+﻿using Store.Domain.Entities.Order;
 
 namespace Store.Application.Contracts;
+
 public interface IOrderRepository
 {
     Task<Order?> GetByIdAsync(Guid id, CancellationToken ct = default);

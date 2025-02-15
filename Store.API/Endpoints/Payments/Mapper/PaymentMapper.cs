@@ -1,41 +1,45 @@
-﻿
-using FastEndpoints;
-
+﻿using FastEndpoints;
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Payments.Commands;
 using Store.Application.Payments.Models;
 
 namespace Store.API.Endpoints.Payments.Mapper;
 
-public class PaymentMapper : Mapper<CreatePaymentSessionRequest, CreatePaymentSessionResponse, CreatePaymentSessionCommand>
+public class
+    PaymentMapper : Mapper<CreatePaymentSessionRequest, CreatePaymentSessionResponse, CreatePaymentSessionCommand>
 {
-    public override CreatePaymentSessionCommand ToEntity(CreatePaymentSessionRequest r) => new()
+    public override CreatePaymentSessionCommand ToEntity(CreatePaymentSessionRequest r)
     {
-        Items = r.Items.Select(x => new OrderLineDto
+        return new CreatePaymentSessionCommand
         {
-            ProductId = x.ProductId,
-            ProductName = x.ProductName,
-            Sku = x.Sku,
-            Quantity = x.Quantity,
-            UnitPrice = x.UnitPrice
-        }).ToList(),
-        Currency = r.Currency,
-        Locale = r.Locale,
-        Customer = new CustomerDto
-        {
-            Email = r.Customer.Email,
-            Phone = r.Customer.Phone,
-            ShippingAddress = r.Customer.ShippingAddress != null ? new AddressDto
+            Items = r.Items.Select(x => new OrderLineDto
             {
-                // Map AddressRequest properties to AddressDto properties here
-                Street = r.Customer.ShippingAddress.Street,
-                City = r.Customer.ShippingAddress.City,
-                State = r.Customer.ShippingAddress.State,
-                PostalCode = r.Customer.ShippingAddress.PostalCode,
-                Country = r.Customer.ShippingAddress.Country
-            } : null
-        },
-    };
+                ProductId = x.ProductId,
+                ProductName = x.ProductName,
+                Sku = x.Sku,
+                Quantity = x.Quantity,
+                UnitPrice = x.UnitPrice
+            }).ToList(),
+            Currency = r.Currency,
+            Locale = r.Locale,
+            Customer = new CustomerDto
+            {
+                Email = r.Customer.Email,
+                Phone = r.Customer.Phone,
+                ShippingAddress = r.Customer.ShippingAddress != null
+                    ? new AddressDto
+                    {
+                        // Map AddressRequest properties to AddressDto properties here
+                        Street = r.Customer.ShippingAddress.Street,
+                        City = r.Customer.ShippingAddress.City,
+                        State = r.Customer.ShippingAddress.State,
+                        PostalCode = r.Customer.ShippingAddress.PostalCode,
+                        Country = r.Customer.ShippingAddress.Country
+                    }
+                    : null
+            }
+        };
+    }
 
     //public override CreatePaymentSessionResponse FromEntity(CreatePaymentSessionCommand e) => new()
     //{

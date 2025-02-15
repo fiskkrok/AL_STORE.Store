@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using Store.Application.Common.Interfaces;
 
 namespace Store.Infrastructure.Caching;
 
-
-
 public class RedisCacheService : ICacheService
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<RedisCacheService> _logger;
     private readonly IDatabase _db;
+    private readonly ILogger<RedisCacheService> _logger;
+    private readonly IConnectionMultiplexer _redis;
 
     public RedisCacheService(
         IConnectionMultiplexer redis,
@@ -55,4 +48,3 @@ public class RedisCacheService : ICacheService
         await _db.KeyDeleteAsync(key);
     }
 }
-

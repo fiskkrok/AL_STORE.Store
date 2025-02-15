@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { AuthTestComponent } from "../../core/components/auth-test.component";
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [AuthTestComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

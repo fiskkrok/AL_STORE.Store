@@ -1,5 +1,4 @@
 ﻿using FastEndpoints;
-
 using MediatR;
 using Store.API.Endpoints.Customers.Models;
 using Store.Application.Customers.Commands.Profile;
@@ -7,32 +6,40 @@ using Store.Domain.Entities.Customer;
 
 namespace Store.API.Endpoints.Customers.Profile;
 
+/// <summary>
+/// </summary>
 public class UpdateProfileEndpoint : Endpoint<UpdateProfileRequest, CustomerProfileResponse>
 {
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// </summary>
+    /// <param name="mediator"></param>
     public UpdateProfileEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
+    /// <inheritdoc />
     public override void Configure()
     {
-        Put("/api/customers/profile");
-        Claims("sub");
+        Put("/customers/profile");
+        Policies("RequireAuth"); // Use policy instead of Claims
         Description(d => d
-            .Produces<CustomerProfileResponse>(200)
+            .Produces<CustomerProfileResponse>()
             .ProducesProblem(400)
             .WithTags("Customer Profile"));
+        Permissions("write:profile");
     }
 
+    /// <inheritdoc />
     public override async Task HandleAsync(UpdateProfileRequest req, CancellationToken ct)
     {
         var command = new UpdateCustomerProfileCommand(
-            FirstName: req.FirstName,
-            LastName: req.LastName,
-            Phone: req.Phone,
-            Preferences: new CustomerPreferences(
+            req.FirstName,
+            req.LastName,
+            req.Phone,
+            new CustomerPreferences(
                 req.Preferences.MarketingEmails,
                 req.Preferences.OrderNotifications,
                 req.Preferences.NewsletterSubscribed,
@@ -47,10 +54,7 @@ public class UpdateProfileEndpoint : Endpoint<UpdateProfileRequest, CustomerProf
         }
         else
         {
-            foreach (var error in result.Errors)
-            {
-                AddError(error.Message);
-            }
+            foreach (var error in result.Errors) AddError(error.Message);
             await SendErrorsAsync(400, ct);
         }
     }

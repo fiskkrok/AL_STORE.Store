@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using Store.Application.Products.Models;
 
-
 namespace Store.Infrastructure;
 
 public interface IAdminApiClient
@@ -50,8 +49,6 @@ public class AdminApiClient : IAdminApiClient
     }
 }
 
-
-
 public record BulkProductsResponse
 {
     public string BatchId { get; init; } = string.Empty;
@@ -62,8 +59,6 @@ public record BulkProductsResponse
 
 public class AdminApiException : Exception
 {
-    public HttpStatusCode StatusCode { get; }
-
     public AdminApiException(
         string message,
         HttpStatusCode statusCode,
@@ -72,4 +67,6 @@ public class AdminApiException : Exception
     {
         StatusCode = statusCode;
     }
+
+    public HttpStatusCode StatusCode { get; }
 }

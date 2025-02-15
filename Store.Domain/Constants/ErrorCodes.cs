@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Store.Domain.Constants;
 
-namespace Store.Domain.Constants;
 public static class ErrorCodes
 {
     public static class Cart

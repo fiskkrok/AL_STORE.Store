@@ -1,17 +1,13 @@
 ﻿using FastEndpoints;
-using MediatR;
-using Store.Application.Common.Interfaces;
-using Store.Domain.Entities.Order;
-using Microsoft.EntityFrameworkCore;
-using Store.Application.Contracts;
 using Store.API.Endpoints.Payments.Models;
+using Store.Application.Contracts;
 
 namespace Store.API.Endpoints.Payments;
 
 public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, CreatePaymentSessionResponse>
 {
-    private readonly IPaymentSessionRepository _sessionRepository;
     private readonly ILogger<GetPaymentSessionEndpoint> _logger;
+    private readonly IPaymentSessionRepository _sessionRepository;
 
     public GetPaymentSessionEndpoint(
         IPaymentSessionRepository sessionRepository,
@@ -23,11 +19,11 @@ public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, Crea
 
     public override void Configure()
     {
-        Get("/api/checkout/sessions/{Id}");
+        Get("/checkout/sessions/{Id}");
         AllowAnonymous();
         Description(d => d
             .WithTags("Checkout")
-            .Produces<CreatePaymentSessionResponse>(200)
+            .Produces<CreatePaymentSessionResponse>()
             .ProducesProblem(404)
             .WithName("GetPaymentSession")
             .WithOpenApi());
@@ -51,7 +47,7 @@ public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, Crea
             ExpiresAt = session.ExpiresAt,
             PaymentMethods = new List<PaymentMethodResponse>
             {
-                new PaymentMethodResponse
+                new()
                 {
                     Id = session.PaymentMethod,
                     Name = "Klarna", // This could be more dynamic based on payment method

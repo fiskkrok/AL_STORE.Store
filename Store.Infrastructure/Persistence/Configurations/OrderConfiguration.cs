@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 using Store.Domain.Entities.Order;
 
 namespace Store.Infrastructure.Persistence.Configurations;
@@ -14,7 +13,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired();
 
         builder.Property(o => o.CustomerId)
-            .HasMaxLength(450);  // Matches ASP.NET Identity user ID length
+            .HasMaxLength(450); // Matches ASP.NET Identity user ID length
 
         builder.Property(o => o.KlarnaOrderReference)
             .HasMaxLength(100);

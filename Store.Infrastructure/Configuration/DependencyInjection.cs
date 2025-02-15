@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using StackExchange.Redis;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Infrastructure.BackgroundJobs;
@@ -18,6 +15,7 @@ using Store.Infrastructure.RealTime;
 using Store.Infrastructure.Services;
 
 namespace Store.Infrastructure.Configuration;
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
@@ -69,10 +67,7 @@ public static class DependencyInjection
 
     public static WebApplication UseRealTimeServices(this WebApplication app)
     {
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapHub<ProductHub>("/hubs/product");
-        });
+        app.UseEndpoints(endpoints => { endpoints.MapHub<ProductHub>("/hubs/product"); });
 
 
         return app;

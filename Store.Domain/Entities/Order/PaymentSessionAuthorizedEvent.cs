@@ -4,6 +4,10 @@ namespace Store.Domain.Entities.Order;
 
 public class PaymentSessionAuthorizedEvent : BaseDomainEvent
 {
+    public PaymentSessionAuthorizedEvent(PaymentSession session)
+    {
+        Session = session;
+    }
+
     public PaymentSession Session { get; }
-    public PaymentSessionAuthorizedEvent(PaymentSession session) => Session = session;
 }

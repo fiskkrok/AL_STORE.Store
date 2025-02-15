@@ -6,7 +6,11 @@ using Store.Domain.Entities.Customer;
 
 namespace Store.API.Endpoints.Customers.Adress;
 
-public class UpdateAddressRequest : AddAddressRequest { }
+/// <summary>
+/// </summary>
+public class UpdateAddressRequest : AddAddressRequest
+{
+}
 
 public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressResponse>
 {
@@ -19,10 +23,10 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
 
     public override void Configure()
     {
-        Put("/api/customers/addresses/{id}");
+        Put("/customers/addresses/{id}");
         Claims("sub");
         Description(d => d
-            .Produces<AddressResponse>(200)
+            .Produces<AddressResponse>()
             .ProducesProblem(400)
             .Produces(404)
             .WithTags("Customer Addresses"));
@@ -32,19 +36,19 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
     {
         var addressId = Route<Guid>("id");
         var command = new UpdateCustomerAddressCommand(
-            AddressId: addressId,
-            Type: Enum.Parse<AddressType>(req.Type, true),
-            FirstName: req.FirstName,
-            LastName: req.LastName,
-            Street: req.Street,
-            StreetNumber: req.StreetNumber,
-            Apartment: req.Apartment,
-            PostalCode: req.PostalCode,
-            City: req.City,
-            State: req.State,
-            Country: req.Country,
-            Phone: req.Phone,
-            IsDefault: req.IsDefault);
+            addressId,
+            Enum.Parse<AddressType>(req.Type, true),
+            req.FirstName,
+            req.LastName,
+            req.Street,
+            req.StreetNumber,
+            req.Apartment,
+            req.PostalCode,
+            req.City,
+            req.State,
+            req.Country,
+            req.Phone,
+            req.IsDefault);
 
         var result = await _mediator.Send(command, ct);
 
@@ -58,10 +62,7 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
         }
         else
         {
-            foreach (var error in result.Errors)
-            {
-                AddError(error.Message);
-            }
+            foreach (var error in result.Errors) AddError(error.Message);
             await SendErrorsAsync(400, ct);
         }
     }

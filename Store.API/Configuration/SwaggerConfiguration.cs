@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Reflection;
-
-using Swashbuckle.AspNetCore.Filters;
 
 namespace Store.API.Configuration;
 
+/// <summary>
+/// </summary>
 public static class SwaggerConfiguration
 {
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
@@ -63,20 +61,15 @@ public static class SwaggerConfiguration
                     var genericArgs = string.Join("", type.GetGenericArguments().Select(t => t.Name));
                     name = $"{type.Name.Split('`')[0]}{genericArgs}";
                 }
+
                 return name;
             });
             // Include XML comments
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
-            {
-                c.IncludeXmlComments(xmlPath);
-            }
-
+            if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
         });
 
         return services;
     }
 }
-
-

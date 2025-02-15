@@ -5,13 +5,9 @@ namespace Store.Domain.Entities.Order;
 
 public class PaymentAttempt : BaseEntity
 {
-    public Guid OrderId { get; private set; }
-    public Guid PaymentSessionId { get; private set; }
-    public DateTime AttemptedAt { get; private set; }
-    public PaymentStatus Status { get; private set; }
-    public string? ErrorMessage { get; private set; }
-
-    private PaymentAttempt() { } // For EF Core
+    private PaymentAttempt()
+    {
+    } // For EF Core
 
     public PaymentAttempt(Guid orderId, Guid paymentSessionId)
     {
@@ -20,6 +16,12 @@ public class PaymentAttempt : BaseEntity
         AttemptedAt = DateTime.UtcNow;
         Status = PaymentStatus.Pending;
     }
+
+    public Guid OrderId { get; private set; }
+    public Guid PaymentSessionId { get; private set; }
+    public DateTime AttemptedAt { get; private set; }
+    public PaymentStatus Status { get; private set; }
+    public string? ErrorMessage { get; private set; }
 
     public void SetSuccess()
     {

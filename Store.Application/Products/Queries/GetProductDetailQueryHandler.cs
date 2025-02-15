@@ -1,23 +1,22 @@
 ﻿using MediatR;
-
 using Microsoft.Extensions.Logging;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Products.Models;
-using Store.Domain.Common;
-using Store.Domain.Entities;
-using Store.Domain.Entities.Product; // Add this line to include the Product entity
+using Store.Domain.Entities.Product;
+
+// Add this line to include the Product entity
 
 namespace Store.Application.Products.Queries;
 
 public class GetProductDetailQueryHandler : IRequestHandler<GetProductDetailQuery, ProductDetailDto>
 {
-    private IStoreDbContext _context;
-    private ILogger<GetProductDetailQueryHandler> _logger;
+    private readonly IStoreDbContext _context;
+    private readonly ILogger<GetProductDetailQueryHandler> _logger;
+
     public GetProductDetailQueryHandler(IStoreDbContext context, ILogger<GetProductDetailQueryHandler> logger)
     {
-        this._context = context;
-        this._logger = logger;
+        _context = context;
+        _logger = logger;
     }
 
     public async Task<ProductDetailDto> Handle(GetProductDetailQuery request, CancellationToken cancellationToken)
@@ -40,7 +39,7 @@ public class GetProductDetailQueryHandler : IRequestHandler<GetProductDetailQuer
                 Id = v.Id,
                 Name = v.Name,
                 Price = v.Price.Amount
-            }).ToList(),
+            }).ToList()
             //Attributes = product.Attributes,
             //RelatedProducts = product.RelatedProducts.Select(rp => new ProductDto
             //{

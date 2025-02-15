@@ -20,6 +20,7 @@ public record GetProductsQuery : IRequest<Result<ProductListResponse>>
     public bool? InStock { get; init; }
     public string? SortBy { get; init; }
 }
+
 public class GetProductsQueryHandler(
     IStoreDbContext context,
     ICacheService cache,
@@ -123,7 +124,7 @@ public class GetProductsQueryHandler(
         //};
 
         //await cache.SetAsync(cacheKey, response, TimeSpan.FromMinutes(5));
-        var req = await context.Set<Product>().ToListAsync(cancellationToken: cancellationToken);
+        var req = await context.Set<Product>().ToListAsync(cancellationToken);
         var response = new ProductListResponse
         {
             Items = mapper.Map<List<ProductDto>>(req),

@@ -8,16 +8,9 @@ public class CustomerProfile : BaseAuditableEntity
 {
     private readonly List<CustomerAddress> _addresses = new();
 
-    public string UserId { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public Email Email { get; private set; }
-    public PhoneNumber? Phone { get; private set; }
-    public bool IsVerified { get; private set; }
-    public CustomerPreferences Preferences { get; private set; }
-    public IReadOnlyCollection<CustomerAddress> Addresses => _addresses.AsReadOnly();
-
-    private CustomerProfile() { } // For EF Core
+    private CustomerProfile()
+    {
+    } // For EF Core
 
     public CustomerProfile(
         string userId,
@@ -49,6 +42,15 @@ public class CustomerProfile : BaseAuditableEntity
 
         AddDomainEvent(new CustomerProfileCreatedEvent(this));
     }
+
+    public string UserId { get; private set; }
+    public string FirstName { get; private set; }
+    public string LastName { get; private set; }
+    public Email Email { get; private set; }
+    public PhoneNumber? Phone { get; private set; }
+    public bool IsVerified { get; private set; }
+    public CustomerPreferences Preferences { get; private set; }
+    public IReadOnlyCollection<CustomerAddress> Addresses => _addresses.AsReadOnly();
 
     public void Update(
         string firstName,

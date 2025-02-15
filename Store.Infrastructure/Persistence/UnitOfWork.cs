@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Store.Application.Contracts;
 
-using Microsoft.EntityFrameworkCore;
-using Store.Application.Contracts; // Add this using directive
+// Add this using directive
 
 namespace Store.Infrastructure.Persistence;
-
-
 
 public class UnitOfWork : IUnitOfWork, IDisposable // Implement IDisposable
 {
@@ -21,23 +14,20 @@ public class UnitOfWork : IUnitOfWork, IDisposable // Implement IDisposable
         _context = context;
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.SaveChangesAsync(cancellationToken);
-    }
-
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.SaveChangesAsync(cancellationToken);
+    }
+
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed && disposing)
-        {
-            _context?.Dispose(); // Ensure _context is not null and call Dispose
-        }
+        if (!_disposed && disposing) _context?.Dispose(); // Ensure _context is not null and call Dispose
         _disposed = true;
     }
 }

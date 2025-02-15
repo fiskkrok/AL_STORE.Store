@@ -6,7 +6,9 @@ using Store.Application.Payments.Models;
 using Store.Domain.Common;
 using Store.Domain.Entities.Order;
 using Store.Domain.ValueObjects;
+
 namespace Store.Application.Payments.Commands;
+
 public class CreatePaymentSessionCommand : IRequest<Result<PaymentSessionDto>>
 {
     public List<OrderLineDto> Items { get; init; } = new();
@@ -14,14 +16,16 @@ public class CreatePaymentSessionCommand : IRequest<Result<PaymentSessionDto>>
     public string Locale { get; init; } = string.Empty;
     public CustomerDto Customer { get; init; } = new();
 }
-public class CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentSessionCommand, Result<PaymentSessionDto>>
+
+public class
+    CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentSessionCommand, Result<PaymentSessionDto>>
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly IPaymentSessionRepository _sessionRepository;
     private readonly IKlarnaService _klarnaService;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreatePaymentSessionCommandHandler> _logger;
     private readonly IMapper _mapper;
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentSessionRepository _sessionRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreatePaymentSessionCommandHandler(
         IOrderRepository orderRepository,

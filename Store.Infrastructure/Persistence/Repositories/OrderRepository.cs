@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Store.Application.Contracts;
 using Store.Domain.Entities.Order;
 
@@ -52,7 +46,7 @@ internal class OrderRepository : Repository<Order>, IOrderRepository
             .OrderByDescending(o => o.OrderNumber)
             .FirstOrDefaultAsync(ct);
 
-        int sequence = 1;
+        var sequence = 1;
         if (lastOrder != null)
         {
             // Extract the sequence number from the last order

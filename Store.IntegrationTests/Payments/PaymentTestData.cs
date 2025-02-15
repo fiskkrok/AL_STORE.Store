@@ -1,6 +1,4 @@
 ﻿using Bogus;
-
-using Store.API.Endpoints.Payments;
 using Store.API.Endpoints.Payments.Models;
 using Store.Domain.Entities.Order;
 using Store.Domain.ValueObjects;

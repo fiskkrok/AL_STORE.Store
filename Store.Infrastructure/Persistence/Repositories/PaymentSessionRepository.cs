@@ -25,7 +25,8 @@ public class PaymentSessionRepository : Repository<PaymentSession>, IPaymentSess
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyList<PaymentSession>> GetSessionsForOrderAsync(Guid orderId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PaymentSession>> GetSessionsForOrderAsync(Guid orderId,
+        CancellationToken ct = default)
     {
         return await _context.Set<PaymentSession>()
             .Where(ps => ps.OrderId == orderId)

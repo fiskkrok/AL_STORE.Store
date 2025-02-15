@@ -1,18 +1,17 @@
 ﻿using FastEndpoints;
-
 using MediatR;
-
 using Store.API.Endpoints.Payments.Mapper;
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Contracts;
 
 namespace Store.API.Endpoints.Payments;
 
-public class CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest, CreatePaymentSessionResponse, PaymentMapper>
+public class
+    CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest, CreatePaymentSessionResponse, PaymentMapper>
 {
-    private readonly IMediator _mediator;
     private readonly IIdempotencyService _idempotencyService;
     private readonly ILogger<CreatePaymentSessionEndpoint> _logger;
+    private readonly IMediator _mediator;
 
     public CreatePaymentSessionEndpoint(
         IMediator mediator,
@@ -26,7 +25,7 @@ public class CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest
 
     public override void Configure()
     {
-        Post("/api/checkout/sessions");
+        Post("/checkout/sessions");
         AllowAnonymous();
         Description(d => d
             .WithTags("Checkout")
@@ -80,8 +79,8 @@ public class CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest
                 };
 
                 await SendCreatedAtAsync<GetPaymentSessionEndpoint>(
-                    routeValues: new { id = response.SessionId },
-                    responseBody: response,
+                    new { id = response.SessionId },
+                    response,
                     cancellation: ct);
             }
             else
@@ -93,8 +92,10 @@ public class CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest
                         await SendErrorsAsync(500, ct);
                         return;
                     }
+
                     AddError(error.Message);
                 }
+
                 await SendErrorsAsync(400, ct);
             }
         }

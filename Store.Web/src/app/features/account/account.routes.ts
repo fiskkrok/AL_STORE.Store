@@ -1,6 +1,6 @@
 // account.routes.ts
 import { Routes } from '@angular/router';
-import { authGuard } from '../../core/guards/auth.guard';
+import { authGuardFn as authGuard } from '@auth0/auth0-angular';
 
 export const ACCOUNT_ROUTES: Routes = [
     {

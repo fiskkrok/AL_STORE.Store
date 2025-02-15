@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using Store.Application.Common.Interfaces;
-
 using Store.Application.Contracts;
-using Store.Application.Customers.Models;
 using Store.Application.Payments.Models;
 using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
@@ -27,10 +25,10 @@ public record UpdateCustomerAddressCommand(
 
 public class UpdateCustomerAddressCommandHandler : IRequestHandler<UpdateCustomerAddressCommand, Result<AddressDto>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public UpdateCustomerAddressCommandHandler(
         ICustomerRepository customerRepository,

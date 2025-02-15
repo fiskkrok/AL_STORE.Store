@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Store.Application.Common.Interfaces;
-using Store.Infrastructure.Caching;
 
 namespace Store.Infrastructure.RealTime;
+
 public interface IProductHub
 {
     Task OnStockUpdate(StockUpdate update);
@@ -47,8 +41,8 @@ public interface IProductUpdateService
 
 public class ProductUpdateService : IProductUpdateService
 {
-    private readonly IHubContext<ProductHub, IProductHub> _hubContext;
     private readonly ICacheService _cache;
+    private readonly IHubContext<ProductHub, IProductHub> _hubContext;
     private readonly ILogger<ProductUpdateService> _logger;
 
     public ProductUpdateService(

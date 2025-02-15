@@ -2,15 +2,14 @@
 using Microsoft.OpenApi.Models;
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
-using Store.Application.Customers.Models;
 using Store.Application.Payments.Models;
 
 namespace Store.API.Endpoints.Customers.Adress;
 
 public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly ICustomerRepository _customerRepository;
 
     public GetAddressesEndpoint(ICustomerRepository customerRepository, ICurrentUser currentUser)
     {
@@ -21,10 +20,10 @@ public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
     public override void Configure()
     {
         AllowAnonymous();
-        Get("/api/customers/addresses");
+        Get("/customers/addresses");
         Claims("sub");
         Description(d => d
-            .Produces<List<AddressDto>>(200)
+            .Produces<List<AddressDto>>()
             .WithTags("Customer Addresses")
             .WithOpenApi(operation => new OpenApiOperation
             {

@@ -4,7 +4,7 @@ import { HttpStatusCode } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class ApiConfigService {
-    private readonly API_URL = 'https://localhost:5001';
+    private readonly API_URL = 'https://localhost:5000'; // TODO: Ändra admin/manage till rätt URL
     private readonly API_KEY = 'your-api-key'; // You should store this securely
 
     private readonly DEFAULT_RETRY_POLICY = {

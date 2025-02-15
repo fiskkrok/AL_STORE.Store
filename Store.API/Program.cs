@@ -1,66 +1,30 @@
-using System.Reflection;
-
-using Duende.AccessTokenManagement;
-
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using FluentValidation;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
-
 using Store.API.Configuration;
 using Store.API.Middleware;
 using Store.API.Validation;
 using Store.Application.Configuration;
-using Store.Application.Mappings;
-using Store.Infrastructure;
 using Store.Infrastructure.Configuration;
-using Store.Infrastructure.Persistence;
 using Store.Infrastructure.Persistence.Seeding;
-
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
+// Added
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 var frontendBaseUrl = builder.Configuration.GetSection("Frontend:BaseUrl").Value;
 builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
-builder.Services.AddHttpClient("FrontendClient", client =>
-{
-    client.BaseAddress = new Uri(frontendBaseUrl!);
-});
+builder.Services.AddHttpClient("FrontendClient", client => { client.BaseAddress = new Uri(frontendBaseUrl!); });
 
-builder.Services.AddClientCredentialsTokenManagement()
-    .AddClient("admin-api", client =>
-    {
-        client.TokenEndpoint = $"{builder.Configuration["IdentityServer:Authority"]}/connect/token";
-        client.ClientId = builder.Configuration["AdminApi:ClientId"];
-        client.ClientSecret = builder.Configuration["AdminApi:ClientSecret"];
-        client.Scope = "products.read categories.read";
-    });
+builder.Services.AddClientCredentialsTokenManagementConfig(builder);
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProfileValidator>();
 
-builder.Services.AddFastEndpoints(options =>
-    {
-        options.IncludeAbstractValidators = true;
-    }).SwaggerDocument()
-    .AddOpenApi();
 // Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>  // Note: AddDefaultPolicy instead of AddPolicy
-    {
-        builder
-            .WithOrigins("http://localhost:4200")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .WithExposedHeaders("Content-Disposition"); // Add if you need to expose headers
-    });
-});
+builder.Services.AddCorsConfig();
+
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Duration = TimeSpan.FromMinutes(5))
     .WithSerializer(new FusionCacheSystemTextJsonSerializer())
@@ -70,14 +34,14 @@ builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Dur
 
 builder.Services.AddResponseCompression();
 
-builder.Services
-    .AddApplication()
-    .AddInfrastructure(builder.Configuration)
-    .AddProductServices(builder.Configuration)
-    .AddAuth(builder.Configuration)
-    .AddRealTimeServices(builder.Configuration)
-    .AddBackgroundJobs().AddKlarnaService(builder.Configuration);
-
+builder.Services.AddAuth(builder.Configuration);
+builder.Services.AddBackgroundJobs().AddKlarnaService(builder.Configuration);
+builder.Services.AddFastEndpoints(options => { options.IncludeAbstractValidators = true; }).SwaggerDocument()
+    .AddOpenApi();
+builder.Services.AddRealTimeServices(builder.Configuration);
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddProductServices(builder.Configuration);
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -85,28 +49,43 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<IStoreSeeder>();
     await seeder.SeedAsync();
- 
 }
-// Add logging middleware
+
 app.Use(async (context, next) =>
 {
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
-    logger.LogInformation("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path); // Added
-    await next.Invoke();
-    logger.LogInformation("Finished handling request."); // Added
-});
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
-app.UseCors();
+    logger.LogInformation(
+        "Request {Method} {Path} - Auth: {IsAuthenticated}, User: {User}",
+        context.Request.Method,
+        context.Request.Path,
+        context.User?.Identity?.IsAuthenticated,
+        context.User?.Identity?.Name
+    );
+
+    if (context.User?.Identity?.IsAuthenticated == true)
+    {
+        var claims = context.User.Claims.Select(c => new { c.Type, c.Value });
+        logger.LogInformation("Claims: {@Claims}", claims);
+    }
+
+    await next();
+});
 app.UseRouting();
-app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseFastEndpoints(o => { o.Endpoints.RoutePrefix = "api"; }).UseSwaggerGen();
 app.UseResponseCompression();
-app.UseFastEndpoints().UseSwaggerGen();
 app.UseHttpsRedirection();
-
 app.UseRealTimeServices();
 await app.RunAsync();
 
-public partial class Program { }
+/// <summary>
+/// </summary>
+#pragma warning disable S1118 // Utility classes should not have public constructors
+public partial class Program
+{
+}
+#pragma warning restore S1118 // Utility classes should not have public constructors

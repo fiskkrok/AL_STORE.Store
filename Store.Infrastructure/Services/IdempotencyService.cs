@@ -1,9 +1,6 @@
 ﻿using System.Text.Json;
-
 using Microsoft.Extensions.Logging;
-
 using StackExchange.Redis;
-
 using Store.Application.Contracts;
 using Store.Infrastructure.Services.Exceptions;
 using Store.Infrastructure.Services.Models;
@@ -12,10 +9,10 @@ namespace Store.Infrastructure.Services;
 
 public class IdempotencyService : IIdempotencyService
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<IdempotencyService> _logger;
     private const string KeyPrefix = "idempotency:";
     private static readonly TimeSpan KeyExpiry = TimeSpan.FromDays(7); // Configure as needed
+    private readonly ILogger<IdempotencyService> _logger;
+    private readonly IConnectionMultiplexer _redis;
 
     public IdempotencyService(
         IConnectionMultiplexer redis,

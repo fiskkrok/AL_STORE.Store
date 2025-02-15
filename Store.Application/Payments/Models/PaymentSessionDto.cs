@@ -1,6 +1,4 @@
-﻿using Store.Application.Payments.Commands;
-
-namespace Store.Application.Payments.Models;
+﻿namespace Store.Application.Payments.Models;
 
 public class PaymentSessionDto
 {

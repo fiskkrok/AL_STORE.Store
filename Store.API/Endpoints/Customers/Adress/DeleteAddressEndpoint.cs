@@ -15,7 +15,7 @@ public class DeleteAddressEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/api/customers/addresses/{id}");
+        Delete("/customers/addresses/{id}");
         Claims("sub");
         Description(d => d
             .Produces(204)
@@ -30,13 +30,8 @@ public class DeleteAddressEndpoint : EndpointWithoutRequest
         var result = await _mediator.Send(command, ct);
 
         if (result.IsSuccess)
-        {
             await SendNoContentAsync(ct);
-        }
         else
-        {
             await SendNotFoundAsync(ct);
-        }
     }
 }
-

@@ -1,6 +1,6 @@
 // checkout.routes.ts
 import { Routes } from '@angular/router';
-import { authGuard } from '../../core/guards/auth.guard';
+import { authGuardFn as authGuard } from '@auth0/auth0-angular';
 import { CheckoutComponent } from './checkout.component';
 import { ConfirmationComponent } from './confirmation.component';
 export const CHECKOUT_ROUTES: Routes = [

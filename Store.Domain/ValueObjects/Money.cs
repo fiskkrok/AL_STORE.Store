@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Domain.Common;
+﻿using Store.Domain.Common;
 
 namespace Store.Domain.ValueObjects;
+
 public class Money : BaseValueObject
 {
     private const int DecimalPrecision = 2;
     private const int MaxDigits = 18;
-
-    public decimal Amount { get; }
-    public string Currency { get; }
 
     private Money(decimal amount, string currency)
     {
@@ -21,6 +13,9 @@ public class Money : BaseValueObject
         Amount = decimal.Round(amount, DecimalPrecision, MidpointRounding.AwayFromZero);
         Currency = currency;
     }
+
+    public decimal Amount { get; }
+    public string Currency { get; }
 
     public static Result<Money> Create(decimal amount, string currency)
     {
@@ -50,7 +45,10 @@ public class Money : BaseValueObject
         return new Money(amount, currency);
     }
 
-    public static Money Zero(string currency = "USD") => new(0, currency);
+    public static Money Zero(string currency = "USD")
+    {
+        return new Money(0, currency);
+    }
 
     public Money Add(Money other)
     {

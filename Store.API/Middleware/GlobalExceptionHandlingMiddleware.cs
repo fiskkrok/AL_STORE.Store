@@ -5,8 +5,8 @@ namespace Store.API.Middleware;
 
 public class GlobalExceptionHandlingMiddleware : IMiddleware
 {
-    private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
     private readonly IWebHostEnvironment _env;
+    private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
 
     public GlobalExceptionHandlingMiddleware(
         ILogger<GlobalExceptionHandlingMiddleware> logger,
@@ -39,10 +39,7 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
             Instance = context.Request.Path
         };
 
-        if (_env.IsDevelopment())
-        {
-            problemDetails.Extensions["stackTrace"] = exception.StackTrace;
-        }
+        if (_env.IsDevelopment()) problemDetails.Extensions["stackTrace"] = exception.StackTrace;
 
         context.Response.StatusCode = problemDetails.Status.Value;
         context.Response.ContentType = "application/problem+json";
@@ -50,23 +47,32 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
         return context.Response.WriteAsJsonAsync(problemDetails);
     }
 
-    private static int GetStatusCode(Exception exception) => exception switch
+    private static int GetStatusCode(Exception exception)
     {
-        ValidationException => StatusCodes.Status400BadRequest,
-        NotFoundException => StatusCodes.Status404NotFound,
-        UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
-        _ => StatusCodes.Status500InternalServerError
-    };
+        return exception switch
+        {
+            ValidationException => StatusCodes.Status400BadRequest,
+            NotFoundException => StatusCodes.Status404NotFound,
+            UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+            _ => StatusCodes.Status500InternalServerError
+        };
+    }
 
-    private static string GetTitle(Exception exception) => exception switch
+    private static string GetTitle(Exception exception)
     {
-        ValidationException => "Validation Error",
-        NotFoundException => "Resource Not Found",
-        UnauthorizedAccessException => "Unauthorized",
-        _ => "Server Error"
-    };
+        return exception switch
+        {
+            ValidationException => "Validation Error",
+            NotFoundException => "Resource Not Found",
+            UnauthorizedAccessException => "Unauthorized",
+            _ => "Server Error"
+        };
+    }
 
-    private string GetDetail(Exception exception) => _env.IsDevelopment()
-        ? exception.Message
-        : "An error occurred processing your request.";
+    private string GetDetail(Exception exception)
+    {
+        return _env.IsDevelopment()
+            ? exception.Message
+            : "An error occurred processing your request.";
+    }
 }

@@ -1,17 +1,16 @@
 ﻿using MediatR;
 using Store.Application.Common.Interfaces;
-
 using Store.Application.Contracts;
 using Store.Domain.Common;
 
 namespace Store.Application.Customers.Commands.Adress;
-public record DeleteCustomerAddressCommand(Guid addressId) : IRequest<Result<bool>>;
 
+public record DeleteCustomerAddressCommand(Guid addressId) : IRequest<Result<bool>>;
 
 public class DeleteCustomerAddressCommandHandler : IRequestHandler<DeleteCustomerAddressCommand, Result<bool>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteCustomerAddressCommandHandler(

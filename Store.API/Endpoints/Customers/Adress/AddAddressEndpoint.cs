@@ -1,8 +1,8 @@
 ﻿using FastEndpoints;
 using MediatR;
-using Store.API.Endpoints.Customer;
 using Store.API.Endpoints.Customers.Models;
 using Store.Application.Customers.Commands.Adress;
+using Store.Application.Payments.Models;
 using Store.Domain.Entities.Customer;
 
 namespace Store.API.Endpoints.Customers.Adress;
@@ -34,7 +34,7 @@ public class AddAddressEndpoint : Endpoint<AddAddressRequest, AddressResponse>
 
     public override void Configure()
     {
-        Post("/api/customers/addresses");
+        Post("/customers/addresses");
         Claims("sub");
         Description(d => d
             .Produces<AddressResponse>(201)
@@ -45,34 +45,31 @@ public class AddAddressEndpoint : Endpoint<AddAddressRequest, AddressResponse>
     public override async Task HandleAsync(AddAddressRequest req, CancellationToken ct)
     {
         var command = new AddCustomerAddressCommand(
-            Type: Enum.Parse<AddressType>(req.Type, true),
-            FirstName: req.FirstName,
-            LastName: req.LastName,
-            Street: req.Street,
-            StreetNumber: req.StreetNumber,
-            Apartment: req.Apartment,
-            PostalCode: req.PostalCode,
-            City: req.City,
-            State: req.State,
-            Country: req.Country,
-            Phone: req.Phone,
-            IsDefault: req.IsDefault);
+            Enum.Parse<AddressType>(req.Type, true),
+            req.FirstName,
+            req.LastName,
+            req.Street,
+            req.StreetNumber,
+            req.Apartment,
+            req.PostalCode,
+            req.City,
+            req.State,
+            req.Country,
+            req.Phone,
+            req.IsDefault);
 
         var result = await _mediator.Send(command, ct);
 
         if (result.IsSuccess)
         {
             await SendCreatedAtAsync<GetAddressesEndpoint>(
-                routeValues: null,
-                responseBody: new AddressResponse { Address = result.Value },
+                null,
+                new AddressResponse { Address = result.Value ?? new AddressDto() },
                 cancellation: ct);
         }
         else
         {
-            foreach (var error in result.Errors)
-            {
-                AddError(error.Message);
-            }
+            foreach (var error in result.Errors) AddError(error.Message);
             await SendErrorsAsync(400, ct);
         }
     }

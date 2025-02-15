@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Store.Domain.Common;
 
-namespace Store.Domain.Common;
 public abstract class BaseValueObject
 {
     protected static bool EqualOperator(BaseValueObject left, BaseValueObject right)
     {
-        if (left is null ^ right is null)
-        {
-            return false;
-        }
+        if (left is null ^ right is null) return false;
         return left?.Equals(right!) != false;
     }
 
@@ -20,10 +12,7 @@ public abstract class BaseValueObject
 
     public override bool Equals(object? obj)
     {
-        if (obj == null || obj.GetType() != GetType())
-        {
-            return false;
-        }
+        if (obj == null || obj.GetType() != GetType()) return false;
 
         var other = (BaseValueObject)obj;
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());

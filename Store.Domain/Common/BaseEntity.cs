@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Store.Domain.Common;
 
-namespace Store.Domain.Common;
 public abstract class BaseEntity
 {
     private readonly List<BaseDomainEvent> _domainEvents = new();

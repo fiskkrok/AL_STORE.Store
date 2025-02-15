@@ -32,6 +32,7 @@ export interface CreateProfileRequest {
     lastName: string;
     email: string;
     phone?: string;
+    auth0Id: string;
 }
 
 export interface AddAddressRequest {

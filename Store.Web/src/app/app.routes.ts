@@ -1,17 +1,21 @@
 // app.routes.ts
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
-
+import { authGuardFn as authGuard } from '@auth0/auth0-angular';
+import { AuthCallbackComponent } from './features/auth/callback.component';
 export const routes: Routes = [
+  {
+    path: 'auth',
+    children: [
+      {
+        path: 'callback',
+        component: AuthCallbackComponent
+      }
+    ]
+  },
   {
     path: '',
     loadComponent: () => import('./features/home/home.component')
       .then(m => m.HomeComponent)
-  },
-  {
-    path: 'auth/callback',
-    loadComponent: () => import('./features/auth/callback.component')
-      .then(m => m.AuthCallbackComponent)
   },
   {
     path: 'products',

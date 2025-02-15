@@ -4,11 +4,10 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAuth0, authHttpInterceptorFn } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
-import { environment } from '../environments/environment';
 import { GlobalErrorHandler } from './core/error-handling/global-error-handler';
 import { apiErrorInterceptor } from './core/interceptors/api-error.intercepter';
-// import { retryStrategyInterceptor } from './core/interceptors/retry-strategy.interceptor';
 
+// app.config.ts
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -16,30 +15,28 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authHttpInterceptorFn, apiErrorInterceptor])
     ),
     provideAuth0({
-      domain: environment.auth0.domain,
-      clientId: environment.auth0.clientId,
+      domain: 'dev-3on2otf3kmyxv53z.us.auth0.com',
+      clientId: 'hwsquizkgecZPiyytTWSdGkhbjt0AeS4',
       authorizationParams: {
-        redirect_uri: window.location.origin,
-        scope: 'openid profile email offline_access',
-        audience: environment.auth0.audience // Uncomment if needed
+        redirect_uri: `${window.location.origin}/auth/callback`,
+        audience: 'https://localhost:5001',
+        scope: 'openid profile email read:profile offline_access'  // Add offline_access
       },
-      useRefreshTokens: true,
-      cacheLocation: 'localstorage',
-      skipRedirectCallback: false,
-      errorPath: '/error',
+      // useRefreshTokens: true,  // Add this
+      // cacheLocation: 'localstorage',  // Add this
       httpInterceptor: {
         allowedList: [
           {
-            uri: `${environment.apiUrl}/api/admin/*`,
+            uri: 'https://localhost:5001/api/*',  // More specific URI
+            allowAnonymous: false,  // Add this
             tokenOptions: {
-              // audience: environment.auth0.audience
+              authorizationParams: {
+                audience: 'https://localhost:5001'
+              }
             }
-          },
-          {
-            uri: `${environment.apiUrl}/api/store/*`
           }
         ]
-      },
+      }
     }),
     {
       provide: ErrorHandler,

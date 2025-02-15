@@ -4,8 +4,8 @@ export const environment = {
   useRealApi: false, // Toggle between mock and real API
   apiUrl: 'https://localhost:5001',
   auth0: {
-    domain: 'your-auth0-domain',
-    clientId: 'your-auth0-clientId',
-    audience: 'your-auth0-audience'
+    domain: 'dev-3on2otf3kmyxv53z.us.auth0.com',
+    clientId: 'hwsquizkgecZPiyytTWSdGkhbjt0AeS4',
+    audience: 'https://localhost:5001'
   }
 } as const;

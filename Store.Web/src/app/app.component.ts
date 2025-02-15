@@ -23,6 +23,7 @@ import { FooterComponent } from './core/components/footer/footer.component';
 })
 export class AppComponent {
   constructor() {
+    localStorage.removeItem('auth_state');
     // Initialize theme based on system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark) {

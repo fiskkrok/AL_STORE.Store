@@ -1,25 +1,12 @@
 ﻿using Store.Domain.Common;
-using Store.Domain.ValueObjects;
 
 namespace Store.Domain.Entities.Customer;
 
 public class CustomerAddress : BaseEntity
 {
-    public Guid CustomerId { get; private set; }
-    public AddressType Type { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public string Street { get; private set; }
-    public string StreetNumber { get; private set; }
-    public string? Apartment { get; private set; }
-    public string PostalCode { get; private set; }
-    public string City { get; private set; }
-    public string State { get; private set; }
-    public string Country { get; private set; }
-    public string? Phone { get; private set; }
-    public bool IsDefault { get; private set; }
-
-    private CustomerAddress() { } // For EF Core
+    private CustomerAddress()
+    {
+    } // For EF Core
 
     public CustomerAddress(
         Guid customerId,
@@ -51,6 +38,20 @@ public class CustomerAddress : BaseEntity
         IsDefault = isDefault;
     }
 
+    public Guid CustomerId { get; private set; }
+    public AddressType Type { get; private set; }
+    public string FirstName { get; private set; }
+    public string LastName { get; private set; }
+    public string Street { get; private set; }
+    public string StreetNumber { get; private set; }
+    public string? Apartment { get; private set; }
+    public string PostalCode { get; private set; }
+    public string City { get; private set; }
+    public string State { get; private set; }
+    public string Country { get; private set; }
+    public string? Phone { get; private set; }
+    public bool IsDefault { get; private set; }
+
     public void Update(
         string firstName,
         string lastName,
@@ -75,7 +76,13 @@ public class CustomerAddress : BaseEntity
         Phone = phone;
     }
 
-    public void SetDefault() => IsDefault = true;
+    public void SetDefault()
+    {
+        IsDefault = true;
+    }
 
-    public void ClearDefault() => IsDefault = false;
+    public void ClearDefault()
+    {
+        IsDefault = false;
+    }
 }

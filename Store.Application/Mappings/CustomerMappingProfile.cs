@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
+﻿using AutoMapper;
 using Store.Application.Customers.Models;
 using Store.Application.Payments.Models;
 using Store.Domain.Entities.Customer;
 
 namespace Store.Application.Mappings;
+
 public class CustomerMappingProfile : Profile
 {
     public CustomerMappingProfile()
     {
         CreateMap<CustomerProfile, CustomerProfileDto>()
-            .ForMember(d => d.Email, o => o.MapFrom(s => s.Email.Value))
-            .ForMember(d => d.Phone, o => o.MapFrom(s => s.Phone != null ? s.Phone.Value : null));
+            .ForMember(d => d.Email, o => o.MapFrom(s => s.Email))
+            .ForMember(d => d.Addresses, o => o.MapFrom(s => s.Addresses))
+            .ForMember(d => d.FirstName, o => o.MapFrom(s => s.FirstName))
+            .ForMember(d => d.LastName, o => o.MapFrom(s => s.LastName))
+            .ForMember(d => d.Phone, o => o.MapFrom(s => s.Phone ?? null));
+        CreateMap<CustomerProfileDto, CustomerProfile>()
+            .ForMember(d => d.Email, o => o.MapFrom(s => s.Email))
+            .ForMember(d => d.Addresses, o => o.MapFrom(s => s.Addresses))
+            .ForMember(d => d.FirstName, o => o.MapFrom(s => s.FirstName))
+            .ForMember(d => d.LastName, o => o.MapFrom(s => s.LastName))
+            .ForMember(d => d.Phone, o => o.MapFrom(s => s.Phone ?? null));
 
         CreateMap<CustomerAddress, AddressDto>()
             .ForMember(d => d.Street, o => o.MapFrom(s => s.Street))

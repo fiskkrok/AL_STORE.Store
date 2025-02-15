@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
+﻿using AutoMapper;
 using MediatR;
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
@@ -12,13 +6,14 @@ using Store.Application.Customers.Models;
 using Store.Domain.Common;
 
 namespace Store.Application.Customers.Queries.Profile;
+
 // Get Profile Query
 public record GetCustomerProfileQuery : IRequest<Result<CustomerProfileDto>>;
 
 public class GetCustomerProfileQueryHandler : IRequestHandler<GetCustomerProfileQuery, Result<CustomerProfileDto>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
 
     public GetCustomerProfileQueryHandler(
@@ -42,7 +37,13 @@ public class GetCustomerProfileQueryHandler : IRequestHandler<GetCustomerProfile
         var profile = await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
         if (profile == null)
             return Result<CustomerProfileDto>.Failure(new Error("Profile.NotFound", "Profile not found"));
-
-        return Result<CustomerProfileDto>.Success(_mapper.Map<CustomerProfileDto>(profile));
+        var result = new CustomerProfileDto
+        {
+            Email = profile.Email.Value,
+            Phone = profile.Phone?.Value ?? "",
+            FirstName = profile.FirstName,
+            LastName = profile.LastName
+        };
+        return Result<CustomerProfileDto>.Success(result);
     }
 }

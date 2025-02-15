@@ -1,3 +1,6 @@
+
+
+
 import { Injectable, inject, signal } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
@@ -9,6 +12,9 @@ import { UserProfile } from '../models/auth.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { CustomerService } from './customer.service';
+import { UserService } from './user.service';
+import { CreateProfileRequest } from '../models/customer.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -17,7 +23,7 @@ export class AuthService {
     private readonly authErrorService = inject(AuthErrorService);
     private readonly errorService = inject(ErrorService);
     private readonly customerService = inject(CustomerService);
-
+    private readonly userService = inject(UserService);
     readonly isAuthenticated$ = this.auth0.isAuthenticated$;
     readonly user$ = this.auth0.user$;
 
@@ -66,6 +72,7 @@ export class AuthService {
         return firstValueFrom(this.isAuthenticated$);
     }
 
+    // auth.service.ts
     async login(returnUrl?: string) {
         try {
             if (returnUrl) {
@@ -75,7 +82,11 @@ export class AuthService {
                 appState: { returnTo: returnUrl }
             });
         } catch (error) {
-            this.authErrorService.handleError(error as Auth0Error);
+            console.error('Login error:', error);
+            this.errorService.addError(
+                'AUTH_ERROR',
+                'Failed to initiate login'
+            );
         }
     }
 
@@ -93,11 +104,50 @@ export class AuthService {
 
     handleAuthCallback() {
         return this.auth0.handleRedirectCallback().pipe(
-            catchError(error => {
-                this.authErrorService.handleError(error);
+            catchError((error: any) => {
+                console.error('Auth0 callback error:', error); // Log the entire error object
+                if (error instanceof HttpErrorResponse) {
+                    console.error('Status code:', error.status);
+                    console.error('Error body:', error.error);
+                }
+                this.authErrorService.handleError(error as Auth0Error);
                 this.router.navigate(['/']);
                 return throwError(() => error);
             })
-        ).subscribe();
+        ).subscribe(async () => {
+            // This code doesnt work and might be subject for removal
+            try {
+
+                const userInfo = await firstValueFrom(this.userService.getUserInfo());
+
+                // Check if profile exists
+                const profileExists = await this.customerService.checkProfileExists();
+
+                if (!profileExists) {
+                    // Create profile if it doesn't exist
+                    const createProfileRequest: CreateProfileRequest = {
+                        firstName: userInfo.given_name,
+                        lastName: userInfo.family_name,
+                        email: userInfo.email,
+                        auth0Id: userInfo.sub,
+                        // ... map other relevant userinfo fields to your CreateProfileRequest
+                    };
+                    await this.customerService.createProfile(createProfileRequest);
+                } else {
+
+                    await this.customerService.loadProfile();
+                }
+
+                // Navigate to return URL
+                const returnUrl = localStorage.getItem('returnUrl') || '/';
+                localStorage.removeItem('returnUrl');
+                this.router.navigateByUrl(returnUrl);
+
+            } catch (error) {
+                console.error('Error in handleAuthCallback:', error);
+                this.router.navigate(['/']); // Handle errors gracefully, maybe show an error message
+            }
+        });
     }
+
 }

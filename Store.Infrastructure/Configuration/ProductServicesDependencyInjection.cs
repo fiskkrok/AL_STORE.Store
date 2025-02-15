@@ -1,20 +1,16 @@
-﻿
-
-using Azure.Core;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
-
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Polly;
 using Polly.Extensions.Http;
 using Store.Infrastructure.Services;
 
 namespace Store.Infrastructure.Configuration;
+
 public static class ProductServicesDependencyInjection
 {
     public static IServiceCollection AddProductServices(
@@ -26,11 +22,11 @@ public static class ProductServicesDependencyInjection
 
         // Remove the token handler, just use API key
         services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
-        {
-            client.BaseAddress = new Uri(configuration["AdminApi:BaseUrl"]!);
-            // Add API key directly to default headers
-            client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
-        }).AddPolicyHandler(GetRetryPolicy(services))
+            {
+                client.BaseAddress = new Uri(configuration["AdminApi:BaseUrl"]!);
+                // Add API key directly to default headers
+                client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+            }).AddPolicyHandler(GetRetryPolicy(services))
             .AddPolicyHandler(GetCircuitBreakerPolicy());
         services.AddScoped<ProductSyncService>();
         return services;
@@ -46,7 +42,7 @@ public static class ProductServicesDependencyInjection
             .Or<TimeoutException>()
             .WaitAndRetryAsync(3, retryAttempt =>
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                onRetry: (outcome, timeSpan, retryCount, context) =>
+                (outcome, timeSpan, retryCount, context) =>
                 {
                     logger.LogWarning(outcome.Exception,
                         "Retry {RetryCount} after {Delay}s delay due to {Message}",

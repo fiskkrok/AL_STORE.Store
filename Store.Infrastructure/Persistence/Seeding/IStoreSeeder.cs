@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-using Store.Infrastructure.Persistence;
-
 namespace Store.Infrastructure.Persistence.Seeding;
 
 public interface IStoreSeeder
@@ -12,8 +10,8 @@ public interface IStoreSeeder
 
 public class StoreSeeder : IStoreSeeder
 {
-    private readonly StoreDbContext _context;
     private readonly ICategorySeeder _categorySeeder;
+    private readonly StoreDbContext _context;
     private readonly ILogger<StoreSeeder> _logger;
 
     public StoreSeeder(

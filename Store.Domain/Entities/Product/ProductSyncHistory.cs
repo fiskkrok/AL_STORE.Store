@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Store.Domain.Common;
+﻿using Store.Domain.Common;
 using Store.Domain.Enums;
 
 namespace Store.Domain.Entities.Product;
 
 public class ProductSyncHistory : BaseEntity
 {
-    public string BatchId { get; private set; } = string.Empty;
-    public DateTime StartedAt { get; private set; }
-    public DateTime CompletedAt { get; private set; }
-    public int ProductCount { get; private set; }
-    public SyncStatus Status { get; private set; }
-    public string? ErrorMessage { get; private set; }
-
-    private ProductSyncHistory() { }
+    private ProductSyncHistory()
+    {
+    }
 
     public ProductSyncHistory(
         string batchId,
@@ -27,6 +17,13 @@ public class ProductSyncHistory : BaseEntity
         StartedAt = startedAt;
         Status = SyncStatus.Processing;
     }
+
+    public string BatchId { get; private set; } = string.Empty;
+    public DateTime StartedAt { get; private set; }
+    public DateTime CompletedAt { get; private set; }
+    public int ProductCount { get; private set; }
+    public SyncStatus Status { get; private set; }
+    public string? ErrorMessage { get; private set; }
 
     public void Complete(int productCount)
     {

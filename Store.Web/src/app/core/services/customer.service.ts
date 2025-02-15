@@ -1,3 +1,5 @@
+
+
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, of, throwError } from 'rxjs';
@@ -15,14 +17,16 @@ import {
     UpdateAddressRequest,
     ApiError
 } from '../models/customer.model';
+import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
+
     private readonly http = inject(HttpClient);
     private readonly errorService = inject(ErrorService);
     private readonly storeApiUrl = `${environment.apiUrl}/api/customers`;
     private auth: AuthService | null = null;
-
+    private readonly userService = inject(UserService);
     // State
     private readonly profile = signal<CustomerProfile | null>(null);
     private readonly addresses = signal<Address[]>([]);
@@ -71,63 +75,83 @@ export class CustomerService {
         if (!this.auth?.isAuthenticated()) {
             return;
         }
-
         try {
-            await this.loadProfile();
-            if (this.profile()) {
-                await this.loadAddresses();
+            const exist = await this.checkProfileExists();
+            if (!exist) {
+                const userInfo = await firstValueFrom(this.userService.getUserInfo());
+                const createProfileRequest: CreateProfileRequest = { // Assuming CreateProfileRequest interface
+                    firstName: userInfo.given_name, // Map userinfo fields to your profile model
+                    lastName: userInfo.family_name,
+                    email: userInfo.email,
+                    auth0Id: userInfo.sub, // Store Auth0 user ID
+                    // ... map other relevant userinfo fields to your CreateProfileRequest
+                };
+                await this.createProfile(createProfileRequest);
+            } else {
+                // Load profile if it exists
+                await this.loadProfile();
             }
+
+
         } catch (error) {
             console.error('Failed to load initial data:', error);
         }
     }
 
-    async loadProfile(): Promise<void> {
+    testAuth() {
+        this.http.get('https://localhost:5001/api/auth/test').subscribe({
+            next: () => console.log('Auth test succeeded'),
+            error: (err) => console.error('Auth test failed:', err)
+        });
+    }
+    async checkProfileExists(): Promise<boolean> {
+        // Guard against calling this when not authenticated
+        const auth = this.auth?.isAuthenticated();
+        if (!auth) {
+            return false; // Or handle unauthenticated case as needed
+        }
+
         this.loading.set(true);
         this.error.set(null);
 
         try {
-            if (!this.auth?.isAuthenticated()) {
-                throw new Error('Not authenticated');
-            }
-
             const response = await firstValueFrom(
-                this.http.get<CustomerProfile>(
-                    `${this.storeApiUrl}/profile`
-                ).pipe(
-                    catchError(async (error: HttpErrorResponse) => {
-                        // If 404, create a new profile with auth data
-                        if (error.status === 404 && this.auth) {
-                            const authUser = await firstValueFrom(this.auth.user$ ?? of(null));
-                            if (authUser?.email) {
-                                const createProfileData: CreateProfileRequest = {
-                                    email: authUser.email,
-                                    firstName: authUser.given_name ?? '',
-                                    lastName: authUser.family_name ?? '',
-                                };
+                this.http.get(`${this.storeApiUrl}/profile/exists`, { observe: 'response' }) // Use observe: 'response' to get full response
+            );
+            return response.status === 200; // Assuming 200 OK means profile exists
+        } catch (error) {
+            if (error instanceof HttpErrorResponse && error.status === 404) {
+                return false; // 404 means profile doesn't exist
+            }
+            // Handle other errors (e.g., network issues) - maybe log and return false or throw an error
+            console.error('Error checking profile existence:', error);
+            return false; // Or throw error depending on your error handling strategy
+        } finally {
+            this.loading.set(false);
+        }
+    }
+    async loadProfile(): Promise<void> {
+        // Guard against calling this when not authenticated
+        const auth = this.auth?.isAuthenticated();
+        if (!auth) {
+            return;
+        }
 
-                                try {
-                                    await this.createProfile(createProfileData);
-                                    return this.profile(); // Return the newly created profile
-                                } catch (createError) {
-                                    console.error('Failed to create profile:', createError);
-                                    throw createError;
-                                }
-                            }
-                        }
-                        throw error;
-                    })
-                )
+        this.loading.set(true);
+        this.error.set(null);
+
+        try {
+            const response = await firstValueFrom(
+                this.http.get<CustomerProfileResponse>(`${this.storeApiUrl}/profile`)
             );
 
-            if (response) {
-                this.profile.set(response);
+            if (response?.profile) {
+                this.profile.set(response.profile);
             }
         } catch (error) {
-            if (error instanceof HttpErrorResponse) {
+            // Only handle non-auth errors here since Auth0 handles auth errors
+            if (error instanceof HttpErrorResponse && error.status !== 401) {
                 this.handleHttpError(error);
-            } else {
-                this.error.set('An unexpected error occurred');
             }
         } finally {
             this.loading.set(false);

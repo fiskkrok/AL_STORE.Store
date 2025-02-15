@@ -1,5 +1,4 @@
-﻿
-namespace Store.Application.Payments.Models;
+﻿namespace Store.Application.Payments.Models;
 
 public class CustomerDto
 {

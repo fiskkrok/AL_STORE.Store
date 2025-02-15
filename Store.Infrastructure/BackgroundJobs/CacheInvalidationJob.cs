@@ -1,20 +1,17 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Threading.Channels;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Store.Domain.ValueObjects;
-using Store.Infrastructure.Caching;
-using System.Threading.Channels;
-using Microsoft.Extensions.Caching.Hybrid;
-using Store.Application.Common.Interfaces;
-using Azure;
 
 namespace Store.Infrastructure.BackgroundJobs;
 
 public class CacheInvalidationJob : BackgroundService
 {
-    private readonly ILogger<CacheInvalidationJob> _logger;
     private readonly HybridCache _cache;
-    private readonly IServiceProvider _serviceProvider;
     private readonly Channel<CacheInvalidationEvent> _channel;
+    private readonly ILogger<CacheInvalidationJob> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public CacheInvalidationJob(
         ILogger<CacheInvalidationJob> logger,
@@ -45,7 +42,6 @@ public class CacheInvalidationJob : BackgroundService
         try
         {
             await foreach (var invalidationEvent in _channel.Reader.ReadAllAsync(stoppingToken))
-            {
                 try
                 {
                     await ProcessInvalidationEventAsync(invalidationEvent, stoppingToken);
@@ -58,7 +54,6 @@ public class CacheInvalidationJob : BackgroundService
                         invalidationEvent.GetType().Name,
                         invalidationEvent.EntityId);
                 }
-            }
         }
         catch (OperationCanceledException)
         {
@@ -104,7 +99,6 @@ public class CacheInvalidationJob : BackgroundService
         // Invalidate product list caches
         const string tag = "products:list:*";
         await _cache.RemoveByTagAsync(tag);
-        
     }
 
     private async Task InvalidateCategoryCacheAsync(Guid categoryId)
@@ -114,7 +108,6 @@ public class CacheInvalidationJob : BackgroundService
         // Invalidate product lists that might be filtered by this category
         const string tag = "products:list:*";
         await _cache.RemoveByTagAsync(tag);
-     
     }
 
     private async Task InvalidateProductPriceCacheAsync(Guid productId, Money newPrice)
@@ -129,16 +122,18 @@ public class CacheInvalidationJob : BackgroundService
 
 public abstract record CacheInvalidationEvent
 {
-    public Guid EntityId { get; }
-    public DateTime Timestamp { get; }
-
     protected CacheInvalidationEvent(Guid entityId)
     {
         EntityId = entityId;
         Timestamp = DateTime.UtcNow;
     }
+
+    public Guid EntityId { get; }
+    public DateTime Timestamp { get; }
 }
 
 public record ProductUpdatedEvent(Guid EntityId) : CacheInvalidationEvent(EntityId);
+
 public record CategoryUpdatedEvent(Guid EntityId) : CacheInvalidationEvent(EntityId);
+
 public record PriceUpdatedEvent(Guid EntityId, Money NewPrice) : CacheInvalidationEvent(EntityId);

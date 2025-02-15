@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Store.Application.Common.Interfaces;
 using Store.Domain.Common;
-using MediatR;
 using Store.Domain.Entities.Customer;
 using Store.Domain.Entities.Product;
 
 namespace Store.Infrastructure.Persistence;
+
 public class StoreDbContext : DbContext, IStoreDbContext
 {
     private readonly ICurrentUser _currentUser;
@@ -36,7 +31,6 @@ public class StoreDbContext : DbContext, IStoreDbContext
     public DbSet<ProductSyncHistory> SyncHistory => Set<ProductSyncHistory>();
 
 
-
     DbSet<TEntity> IStoreDbContext.Set<TEntity>()
     {
         return base.Set<TEntity>();
@@ -45,7 +39,6 @@ public class StoreDbContext : DbContext, IStoreDbContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
-        {
             // TODO: Ändra till riktig användare guid här sen
             switch (entry.State)
             {
@@ -59,7 +52,6 @@ public class StoreDbContext : DbContext, IStoreDbContext
                     entry.Entity.LastModified = _dateTime.UtcNow;
                     break;
             }
-        }
 
         var events = ChangeTracker.Entries<BaseEntity>()
             .Select(x => x.Entity)
@@ -70,10 +62,7 @@ public class StoreDbContext : DbContext, IStoreDbContext
         var result = await base.SaveChangesAsync(cancellationToken);
 
         // Dispatch domain events after save
-        foreach (var @event in events)
-        {
-            await _mediator.Publish(@event, cancellationToken);
-        }
+        foreach (var @event in events) await _mediator.Publish(@event, cancellationToken);
 
         return result;
     }
@@ -85,4 +74,3 @@ public class StoreDbContext : DbContext, IStoreDbContext
         base.OnModelCreating(modelBuilder);
     }
 }
-

@@ -1,14 +1,14 @@
 ﻿using FastEndpoints;
 using MediatR;
-using Store.Application.Contracts;
 using Store.Application.Customers.Commands.Adress;
-using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
 
 namespace Store.API.Endpoints.Customers.Adress;
 
 public class SetDefaultAddressRequest
 {
+    /// <summary>
+    /// </summary>
     public string Type { get; init; } = string.Empty;
 }
 
@@ -23,7 +23,7 @@ public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
 
     public override void Configure()
     {
-        Post("/api/customers/addresses/{id}/default");
+        Post("/customers/addresses/{id}/default");
         Claims("sub");
         Description(d => d
             .Produces(200)
@@ -36,8 +36,8 @@ public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
     {
         var addressId = Route<Guid>("id");
         var command = new SetDefaultAddressCommand(
-            AddressId: addressId,
-            Type: Enum.Parse<AddressType>(req.Type, true));
+            addressId,
+            Enum.Parse<AddressType>(req.Type, true));
 
         var result = await _mediator.Send(command, ct);
 
@@ -51,10 +51,7 @@ public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
         }
         else
         {
-            foreach (var error in result.Errors)
-            {
-                AddError(error.Message);
-            }
+            foreach (var error in result.Errors) AddError(error.Message);
             await SendErrorsAsync(400, ct);
         }
     }

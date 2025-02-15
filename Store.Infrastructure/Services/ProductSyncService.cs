@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
-
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -13,7 +6,6 @@ using Polly.Retry;
 using Store.Application.Products.Models;
 using Store.Domain.Entities.Product;
 using Store.Domain.Enums;
-using Store.Domain.ValueObjects;
 using Store.Infrastructure.Persistence;
 using Store.Infrastructure.Services.Exceptions;
 using Store.Infrastructure.Services.Models;
@@ -22,10 +14,10 @@ namespace Store.Infrastructure.Services;
 
 public class ProductSyncService
 {
-    private readonly ILogger<ProductSyncService> _logger;
-    private readonly StoreDbContext _dbContext;
     private readonly IAdminApiClient _adminClient;
+    private readonly StoreDbContext _dbContext;
     private readonly IDomainEventService _domainEventService;
+    private readonly ILogger<ProductSyncService> _logger;
     private readonly IMapper _mapper;
     private readonly AsyncRetryPolicy<BulkProductsResponse> _retryPolicy;
 
@@ -48,13 +40,14 @@ public class ProductSyncService
             .Or<TimeoutException>()
             .WaitAndRetryAsync(3, retryAttempt =>
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                onRetry: (exception, timeSpan, retryCount, context) =>
+                (exception, timeSpan, retryCount, context) =>
                 {
                     _logger.LogWarning(exception.Exception,
                         "Retry {RetryCount} of {MaxRetries} after {Delay}s delay due to {Message}",
                         retryCount, 3, timeSpan.TotalSeconds, exception.Exception.Message);
                 });
     }
+
     public async Task SyncProductsAsync(CancellationToken ct = default)
     {
         var syncHistory = new ProductSyncHistory(
@@ -155,8 +148,8 @@ public class ProductSyncService
         var retryPolicy = Policy
             .Handle<Exception>()
             .WaitAndRetryAsync(3, retryAttempt =>
-                TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                onRetry: (exception, timeSpan, retryCount, context) =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                (exception, timeSpan, retryCount, context) =>
                 {
                     _logger.LogWarning(exception,
                         "Retry {RetryCount} processing batch after {Delay}s delay",
@@ -166,7 +159,6 @@ public class ProductSyncService
         await retryPolicy.ExecuteAsync(async () =>
         {
             foreach (var productDto in products)
-            {
                 try
                 {
                     var existingProduct = await _dbContext.Products
@@ -175,13 +167,9 @@ public class ProductSyncService
                         .FirstOrDefaultAsync(p => p.Id == productDto.Id, ct);
 
                     if (existingProduct == null)
-                    {
                         await CreateProduct(productDto, ct);
-                    }
                     else
-                    {
-                        await UpdateProduct(existingProduct, productDto, ct);
-                    }
+                        await UpdateProduct(existingProduct, productDto);
                 }
                 catch (Exception ex)
                 {
@@ -190,7 +178,6 @@ public class ProductSyncService
                         productDto.Id);
                     throw;
                 }
-            }
 
             await _dbContext.SaveChangesAsync(ct);
         });
@@ -206,11 +193,12 @@ public class ProductSyncService
             .FirstOrDefaultAsync(ct);
     }
 
-    private async Task UpdateProduct(Product existingProduct, ProductDto productDto, CancellationToken ct)
+    private Task UpdateProduct(Product existingProduct, ProductDto productDto)
     {
         _mapper.Map(productDto, existingProduct);
         _dbContext.Products.Update(existingProduct);
         _logger.LogInformation("Updated existing product {ProductId}", productDto.Id);
+        return Task.CompletedTask;
     }
 
     private async Task CreateProduct(ProductDto productDto, CancellationToken ct)
@@ -219,7 +207,6 @@ public class ProductSyncService
         await _dbContext.Products.AddAsync(newProduct, ct);
         _logger.LogInformation("Added new product {ProductId}", productDto.Id);
     }
-
 
 
     private async Task SyncProductAsync(AdminProductDto productDto,
@@ -244,7 +231,7 @@ public class ProductSyncService
                 productDto.Id);
         }
     }
-   
+
     //private async Task EnsureCategoriesExist(IEnumerable<Guid> categoryIds)
     //{
     //    var existingIds = await _dbContext.Categories

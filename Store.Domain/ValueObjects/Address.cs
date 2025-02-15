@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Domain.Common;
+﻿using Store.Domain.Common;
 
 namespace Store.Domain.ValueObjects;
+
 public class Address : BaseValueObject
 {
-    public string Street { get; private set; }
-    public string City { get; private set; }
-    public string State { get; private set; }
-    public string Country { get; private set; }
-    public string PostalCode { get; private set; }
-
     private Address(string street, string city, string state, string country, string postalCode)
     {
         Street = street;
@@ -23,6 +12,12 @@ public class Address : BaseValueObject
         Country = country;
         PostalCode = postalCode;
     }
+
+    public string Street { get; }
+    public string City { get; }
+    public string State { get; }
+    public string Country { get; }
+    public string PostalCode { get; }
 
     public static Result<Address> Create(string street, string city, string state, string country, string postalCode)
     {

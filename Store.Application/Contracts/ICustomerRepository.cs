@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Domain.Entities.Customer;
+﻿using Store.Domain.Entities.Customer;
 
 namespace Store.Application.Contracts;
+
 public interface ICustomerRepository
 {
     Task<CustomerProfile?> GetByIdAsync(Guid id, CancellationToken ct = default);

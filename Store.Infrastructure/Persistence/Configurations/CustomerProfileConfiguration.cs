@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
 using Store.Domain.Entities.Customer;
 
 namespace Store.Infrastructure.Persistence.Configurations;
+
 public class CustomerProfileConfiguration : IEntityTypeConfiguration<CustomerProfile>
 {
     public void Configure(EntityTypeBuilder<CustomerProfile> builder)
@@ -68,6 +63,5 @@ public class CustomerProfileConfiguration : IEntityTypeConfiguration<CustomerPro
 
         builder.HasIndex(c => c.UserId)
             .IsUnique();
-
     }
 }

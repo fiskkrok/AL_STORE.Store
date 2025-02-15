@@ -1,10 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-
 using Microsoft.AspNetCore.Mvc;
-
 using Store.API.Endpoints.Payments.Models;
-
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 
@@ -12,8 +9,8 @@ namespace Store.IntegrationTests.Payments;
 
 public class PaymentTests : IClassFixture<PaymentTestsFixture>
 {
-    private readonly PaymentTestsFixture _fixture;
     private readonly HttpClient _client;
+    private readonly PaymentTestsFixture _fixture;
 
     public PaymentTests(PaymentTestsFixture fixture)
     {
@@ -24,7 +21,6 @@ public class PaymentTests : IClassFixture<PaymentTestsFixture>
     [Fact]
     public async Task CreatePaymentSession_WithValidRequest_ReturnsSuccessResponse()
     {
-
         // Arrange
         var request = PaymentTestData.CreateValidSessionRequest();
         var headers = new Dictionary<string, string>
@@ -84,9 +80,9 @@ public class PaymentTests : IClassFixture<PaymentTestsFixture>
 
         // Act
         using var firstResponse = await _client.PostAsJsonAsync("/api/checkout/sessions", request,
-            headers: new() { { "Idempotency-Key", idempotencyKey } });
+            new Dictionary<string, string> { { "Idempotency-Key", idempotencyKey } });
         using var secondResponse = await _client.PostAsJsonAsync("/api/checkout/sessions", request,
-            headers: new() { { "Idempotency-Key", idempotencyKey } });
+            new Dictionary<string, string> { { "Idempotency-Key", idempotencyKey } });
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
@@ -105,7 +101,7 @@ public class PaymentTests : IClassFixture<PaymentTestsFixture>
         var request = new CreatePaymentSessionRequest
         {
             Currency = currency,
-            Locale = locale,
+            Locale = locale
             // ... other required fields
         };
 
@@ -192,4 +188,3 @@ public class PaymentTests : IClassFixture<PaymentTestsFixture>
         Assert.Equal(3, requests.Count());
     }
 }
-

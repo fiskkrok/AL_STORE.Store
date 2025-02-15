@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Store.Application.Common.Interfaces;
-
 using Store.Application.Contracts;
 using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
@@ -11,8 +10,8 @@ public record SetDefaultAddressCommand(Guid AddressId, AddressType Type) : IRequ
 
 public class SetDefaultAddressCommandHandler : IRequestHandler<SetDefaultAddressCommand, Result<bool>>
 {
-    private readonly ICustomerRepository _customerRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public SetDefaultAddressCommandHandler(

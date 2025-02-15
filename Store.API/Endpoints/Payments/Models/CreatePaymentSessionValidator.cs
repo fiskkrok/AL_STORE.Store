@@ -1,8 +1,4 @@
-﻿using FastEndpoints;
-
-using FluentValidation;
-
-namespace Store.API.Endpoints.Payments.Models;
+﻿namespace Store.API.Endpoints.Payments.Models;
 
 //public class CreatePaymentSessionValidator : Validator<CreatePaymentSessionRequest>
 //{

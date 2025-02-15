@@ -1,17 +1,11 @@
-﻿
-
-using System.Net.Http.Json;
-
+﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using Store.Infrastructure.Persistence;
 using Store.Infrastructure.Services.Models;
-
 using Testcontainers.MsSql;
-
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -42,10 +36,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<StoreDbContext>));
 
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
+            if (descriptor != null) services.Remove(descriptor);
 
             // Add DB context pointing to test container
             services.AddDbContext<StoreDbContext>(options =>
@@ -78,22 +69,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
 public class PaymentTestsFixture : IAsyncLifetime
 {
-    public HttpClient Client { get; private set; }
-    public CustomWebApplicationFactory Factory { get; }
-    public WireMockServer MockKlarnaApi => _mockKlarnaApi;
-    private readonly WireMockServer _mockKlarnaApi;
-
     public PaymentTestsFixture()
     {
         Factory = new CustomWebApplicationFactory();
-        _mockKlarnaApi = WireMockServer.Start();
+        MockKlarnaApi = WireMockServer.Start();
         Client = Factory.CreateClient();
     }
+
+    public HttpClient Client { get; private set; }
+    public CustomWebApplicationFactory Factory { get; }
+    public WireMockServer MockKlarnaApi { get; }
 
     public async Task InitializeAsync()
     {
         // Setup mock responses
-        _mockKlarnaApi
+        MockKlarnaApi
             .Given(Request.Create()
                 .WithPath("/payments/v1/sessions")
                 .UsingPost())
@@ -112,16 +102,15 @@ public class PaymentTestsFixture : IAsyncLifetime
                     ]
                 }"));
 
-        _mockKlarnaApi.Reset();
+        MockKlarnaApi.Reset();
     }
 
     public async Task DisposeAsync()
     {
-        _mockKlarnaApi.Dispose();
+        MockKlarnaApi.Dispose();
         await Factory.DisposeAsync();
     }
 }
-
 
 public static class HttpClientExtensions
 {
@@ -137,12 +126,8 @@ public static class HttpClientExtensions
         };
 
         if (headers != null)
-        {
             foreach (var (key, value) in headers)
-            {
                 request.Headers.Add(key, value);
-            }
-        }
 
         return await client.SendAsync(request);
     }

@@ -1,34 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Domain.Common;
+﻿using Store.Domain.Common;
 using Store.Domain.Constants;
 
 namespace Store.Domain.ValueObjects;
+
 public class Quantity : BaseValueObject
 {
-    public int Value { get; private set; }
-
     private Quantity(int value)
     {
         Value = value;
     }
 
+    public int Value { get; }
+
     public static Result<Quantity> Create(int value)
     {
-        if (value < 0)
-        {
-            return Result<Quantity>.Failure(new Error("Quantity.Negative", "Quantity cannot be negative"));
-        }
+        if (value < 0) return Result<Quantity>.Failure(new Error("Quantity.Negative", "Quantity cannot be negative"));
 
         if (value > CartConstants.MaxItemQuantity)
-        {
             return Result<Quantity>.Failure(
                 new Error("Quantity.TooLarge", $"Quantity cannot be larger than {CartConstants.MaxItemQuantity}"));
-        }
 
         return Result<Quantity>.Success(new Quantity(value));
     }
@@ -48,5 +38,8 @@ public class Quantity : BaseValueObject
         yield return Value;
     }
 
-    public override string ToString() => Value.ToString();
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

@@ -1,6 +1,7 @@
+
+
 import { Component, inject, signal } from "@angular/core";
 import { AuthService } from "../../core/services/auth.service";
-import { catchError, throwError, timeout } from "rxjs";
 
 @Component({
   selector: 'app-auth-callback',
@@ -10,7 +11,7 @@ import { catchError, throwError, timeout } from "rxjs";
       <div class="flex items-center justify-center min-h-screen">
         <div class="text-center">
           <p class="text-red-600">Authentication failed. Please try logging in again.</p>
-          <button 
+          <button
             (click)="auth.login()"
             class="mt-4 px-4 py-2 bg-brand-navy text-white rounded-md"
           >
