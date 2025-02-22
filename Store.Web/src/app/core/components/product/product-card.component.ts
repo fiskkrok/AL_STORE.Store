@@ -2,8 +2,8 @@
 import { Component, computed, input, output } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Product } from '../../models/product.model';
 import { CartItem } from '../../state/cart.store';
+import { Product } from '../../../shared/models/product.model';
 
 @Component({
   selector: 'app-product-card',
@@ -24,16 +24,16 @@ import { CartItem } from '../../state/cart.store';
 
           <!-- Quick Actions -->
           <div class="product-actions">
-            <div class="flex gap-2 transform translate-y-4 transition-transform hover:translate-y-0">
+            <div class="flex gap-2 transform translate-y-1 transition-transform hover:translate-y-0">
               <button
-                class="btn btn-secondary"
+                class="btn btn-secondary btn-sm"
                 (click)="handleQuickView.emit(product())"
               >
                 Quick View
               </button>
               @if (isInStock()) {
                 <button
-                  class="btn btn-primary"
+                  class="btn btn-primary btn-sm"
                   (click)="addToCart()"
                   [disabled]="loading() || addingToCart()"
                 >

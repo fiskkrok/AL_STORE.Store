@@ -1,54 +1,41 @@
 // checkout.routes.ts
 import { Routes } from '@angular/router';
-import { authGuardFn as authGuard } from '@auth0/auth0-angular';
-import { CheckoutComponent } from './checkout.component';
-import { ConfirmationComponent } from './confirmation.component';
+import { checkoutGuard } from '../../core/guards/checkout.guard';
+import { AuthService } from '@auth0/auth0-angular';
+import { inject } from '@angular/core';
+import { map } from 'rxjs';
+import { GuestEmailComponent } from './guest-email.component';
+
 export const CHECKOUT_ROUTES: Routes = [
     {
         path: '',
-        canActivate: [authGuard],
         children: [
             {
                 path: '',
-                component: CheckoutComponent
+                redirectTo: 'information',
+                pathMatch: 'full'
+            },
+            {
+                path: 'email',
+                component: GuestEmailComponent,
+                canActivate: [() => inject(AuthService).isAuthenticated$.pipe(
+                    map(isAuth => !isAuth)
+                )]
+            },
+            {
+                path: 'information',
+                loadComponent: () => import('./checkout-information.component').then(m => m.CheckoutInformationComponent),
+            },
+            {
+                path: 'payment',
+                loadComponent: () => import('./checkout.component').then(m => m.CheckoutComponent),
+                canActivate: [checkoutGuard]
             },
             {
                 path: 'confirmation',
-                component: ConfirmationComponent
+                loadComponent: () => import('./confirmation.component').then(m => m.ConfirmationComponent),
+                canActivate: [checkoutGuard]
             }
         ]
     }
 ];
-// export const CHECKOUT_ROUTES: Routes = [
-//     {
-//         path: '',
-//         canActivate: [authGuard],
-//         children: [
-//             {
-//                 path: '',
-//                 redirectTo: 'information',
-//                 pathMatch: 'full'
-//             },
-//             {
-//                 path: 'information',
-//                 loadComponent: () => import('./checkout-information.component')
-//                     .then(m => m.CheckoutInformationComponent)
-//             },
-//             {
-//                 path: 'shipping',
-//                 loadComponent: () => import('./checkout-shipping.component')
-//                     .then(m => m.CheckoutShippingComponent)
-//             },
-//             {
-//                 path: 'payment',
-//                 loadComponent: () => import('./checkout-payment.component')
-//                     .then(m => m.CheckoutPaymentComponent)
-//             },
-//             {
-//                 path: 'confirmation',
-//                 loadComponent: () => import('./checkout-confirmation.component')
-//                     .then(m => m.CheckoutConfirmationComponent)
-//             }
-//         ]
-//     }
-// ];

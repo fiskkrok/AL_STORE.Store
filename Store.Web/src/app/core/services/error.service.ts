@@ -1,7 +1,7 @@
 // src/app/core/services/error.service.ts
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { LoggerService } from './logger.service';
-import { AppError, ErrorOptions } from '../models/error.model';
+import { AppError, ErrorOptions } from '../../shared/models/error.model';
 
 @Injectable({ providedIn: 'root' })
 export class ErrorService {

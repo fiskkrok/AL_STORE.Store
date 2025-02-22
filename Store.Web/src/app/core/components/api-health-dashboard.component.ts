@@ -3,18 +3,18 @@
 import { Component, inject } from '@angular/core';
 import { ApiMonitorService } from '../services/api-monitor.service';
 import { ApiConfigService } from '../services/api-config.service';
-import { NgClass } from '@angular/common';
+import { NgClass, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-api-health-dashboard',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, CommonModule],
   template: `
     <div class="p-6 space-y-6">
-      <h2 class="text-2xl dark:text-white font-bold">API Health Dashboard</h2>
+      <h2 class="text-2xl text-foreground font-bold">API Health Dashboard</h2>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div *ngFor="let endpoint of endpoints; trackBy: trackByFn">
+        @for (endpoint of endpoints; track trackByFn) {
           <ng-container *ngIf="getEndpointHealth(endpoint) as health">
             <div class="p-4 rounded-lg border" [ngClass]="getHealthClasses(health)">
               <h3 class="font-medium">{{ endpoint }}</h3>
@@ -28,14 +28,14 @@ import { NgClass } from '@angular/common';
               </ng-container>
             </div>
           </ng-container>
-        </div>
+        }
       </div>
     </div>
   `
 })
 export class ApiHealthDashboardComponent {
-  private monitor = inject(ApiMonitorService);
-  private apiConfig = inject(ApiConfigService);
+  private readonly monitor = inject(ApiMonitorService);
+  private readonly apiConfig = inject(ApiConfigService);
 
   endpoints = Object.keys(this.apiConfig.config.endpoints);
 

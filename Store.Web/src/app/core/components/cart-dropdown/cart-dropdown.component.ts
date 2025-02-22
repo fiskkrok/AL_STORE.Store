@@ -14,7 +14,7 @@ import { CartStore } from '../../state/cart.store';
   template: `
     @if (isOpen()) {
       <div 
-        class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[28rem] rounded-lg border bg-white shadow-lg"
+        class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[28rem] rounded-lg border bg-background shadow-lg text-foreground z-40"
         [@fade]
         style="max-width: calc(100vw - 2rem);"
       >
@@ -40,7 +40,7 @@ import { CartStore } from '../../state/cart.store';
         @if (cartItems().length > 0) {
           <div class="max-h-[60vh] sm:max-h-96 overflow-auto">
             @for (item of cartItems(); track item.id) {
-              <div class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-50">
+              <div class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 ">
                 <img 
                   [src]="item.imageUrl" 
                   [alt]="item.name"
@@ -65,13 +65,13 @@ import { CartStore } from '../../state/cart.store';
             <div class="space-y-2">
               <a 
                 routerLink="/cart"
-                class="block w-full px-4 py-2 text-center text-sm bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition"
+                class="block w-full px-4 py-2 text-center text-sm bg-background border text-foreground rounded-md hover:bg-foreground/10 transition"
               >
                 View Cart ({{ totalItems() }} items)
               </a>
               <a 
                 routerLink="/checkout"
-                class="block w-full px-4 py-2 text-center text-sm border border-brand-navy text-brand-navy rounded-md hover:bg-brand-navy hover:text-white transition"
+                class="block w-full px-4 py-2 text-center text-sm border bg-foreground text-primary-foreground rounded-md hover:bg-foreground/90 transition"
               >
                 Proceed to Checkout
               </a>

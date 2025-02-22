@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SignalRService } from '../services/signalr.service';
 import { ProductService } from '../services/product.service';
-import { Product, ProductListRequest } from '../models/product.model';
+import { Product, ProductQueryParams } from '../../shared/models';
 
 
 interface ProductState {
@@ -13,7 +13,7 @@ interface ProductState {
     pageSize: number;
     loading: boolean;
     error: string | null;
-    filters: ProductListRequest;
+    filters: ProductQueryParams;
 }
 
 const initialState: ProductState = {
@@ -50,7 +50,7 @@ export class ProductStore {
         };
     });
 
-    async loadProducts(request: ProductListRequest = {}): Promise<void> {
+    async loadProducts(request: ProductQueryParams = {}): Promise<void> {
         this.state.update(s => ({ ...s, loading: true, error: null }));
 
         try {
@@ -78,7 +78,7 @@ export class ProductStore {
         }
     }
 
-    setFilter(updates: Partial<ProductListRequest>): void {
+    setFilter(updates: Partial<ProductQueryParams>): void {
         this.state.update(s => ({
             ...s,
             filters: {

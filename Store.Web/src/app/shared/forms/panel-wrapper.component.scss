@@ -1,0 +1,21 @@
+.panel-wrapper {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+
+    &__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: hsl(var(--foreground));
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    // Dark mode handled automatically through CSS variables
+}

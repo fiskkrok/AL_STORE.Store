@@ -1,6 +1,5 @@
 // src/app/core/models/customer.model.ts
-
-// src/app/core/models/customer.model.ts
+import { Address, ApiError } from '.';
 
 export interface CustomerProfile {
     id: string;
@@ -15,18 +14,6 @@ export interface CustomerProfile {
     preferences: CustomerPreferences;
 }
 
-export interface Address {
-    id: string;
-    street: string;
-    city: string;
-    state?: string;
-    country: string;
-    postalCode: string;
-    type: 'shipping' | 'billing';
-    isDefault: boolean;
-}
-
-// API Request Types
 export interface CreateProfileRequest {
     firstName: string;
     lastName: string;
@@ -36,6 +23,10 @@ export interface CreateProfileRequest {
 }
 
 export interface AddAddressRequest {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    apartment?: string;
     street: string;
     city: string;
     state?: string;
@@ -45,37 +36,15 @@ export interface AddAddressRequest {
     isDefault?: boolean;
 }
 
-// API Error Types
-export interface ApiValidationError {
-    type: 'ValidationError';
-    message: string;
-    errors: Record<string, string[]>;
+export interface ValidationError extends ApiError {
+    code: 'ValidationError';
+    details: {
+        errors: Record<string, string[]>;
+    };
 }
 
-export interface ApiConflictError {
-    type: 'ConflictError';
-    message: string;
-}
-
-export type ApiError =
-    | ApiValidationError
-    | ApiConflictError
-    | { type: string; message: string; };
-
-export interface Address {
-    id: string;
-    type: 'billing' | 'shipping'
-    firstName: string;
-    lastName: string;
-    street: string;
-    streetNumber?: string;
-    apartment?: string;
-    postalCode: string;
-    city: string;
-    state?: string;
-    country: string;
-    phone?: string;
-    isDefault: boolean;
+export interface ConflictError extends ApiError {
+    code: 'ConflictError';
 }
 
 export interface CustomerPreferences {
@@ -86,7 +55,6 @@ export interface CustomerPreferences {
     preferredCurrency: string;
 }
 
-// For creating/updating customer profiles
 export interface UpdateCustomerProfileRequest {
     firstName?: string;
     lastName?: string;
@@ -94,26 +62,10 @@ export interface UpdateCustomerProfileRequest {
     preferences?: Partial<CustomerPreferences>;
 }
 
-export interface AddAddressRequest {
-    type: Address['type'];
-    firstName: string;
-    lastName: string;
-    street: string;
-    streetNumber?: string;
-    apartment?: string;
-    postalCode: string;
-    city: string;
-    state?: string;
-    country: string;
-    phone?: string;
-    isDefault?: boolean;
-}
-
 export interface UpdateAddressRequest extends Partial<AddAddressRequest> {
     id: string;
 }
 
-// API Responses
 export interface CustomerProfileResponse {
     profile: CustomerProfile;
 }
@@ -122,8 +74,7 @@ export interface AddressResponse {
     address: Address;
 }
 
-// Error types
-export interface ValidationError {
+export interface FieldValidationError {
     field: string;
     message: string;
 }
@@ -131,5 +82,5 @@ export interface ValidationError {
 export interface CustomerProfileError {
     code: string;
     message: string;
-    validationErrors?: ValidationError[];
+    validationErrors?: FieldValidationError[];
 }

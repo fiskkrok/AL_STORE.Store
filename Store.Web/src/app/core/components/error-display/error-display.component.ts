@@ -1,7 +1,7 @@
 // src/app/core/components/error-display/error-display.component.ts
 import { Component, inject } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
-import { AppError } from '../../models/error.model';
+import { AppError } from '../../../shared/models/error.model';
 import { fadeAnimation } from '../../animations/fade.animation/fade.animation';
 
 @Component({

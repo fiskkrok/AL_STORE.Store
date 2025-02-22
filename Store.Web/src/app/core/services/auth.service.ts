@@ -1,6 +1,3 @@
-
-
-
 import { Injectable, inject, signal } from '@angular/core';
 import { AuthService as Auth0Service } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
@@ -8,12 +5,12 @@ import { catchError, throwError, firstValueFrom } from 'rxjs';
 
 import { Auth0Error, AuthErrorService } from './auth-error.service';
 import { ErrorService } from './error.service';
-import { UserProfile } from '../models/auth.model';
+import { UserProfile } from '../../shared/models/auth.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { CustomerService } from './customer.service';
 import { UserService } from './user.service';
-import { CreateProfileRequest } from '../models/customer.model';
+import { CreateProfileRequest } from '../../shared/models/customer.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
@@ -56,7 +53,7 @@ export class AuthService {
                     email: user.email ?? '',
                     name: user.name ?? '',
                     picture: user.picture ?? '',
-                    roles: user[`${environment.auth0.audience}/roles`] as string[] || []
+                    roles: user[`${environment.auth0.audience}/roles`] as string[] ?? []
                 };
                 this.state.update(s => ({ ...s, user: userProfile }));
             } else {
@@ -104,7 +101,7 @@ export class AuthService {
 
     handleAuthCallback() {
         return this.auth0.handleRedirectCallback().pipe(
-            catchError((error: any) => {
+            catchError((error: unknown) => {
                 console.error('Auth0 callback error:', error); // Log the entire error object
                 if (error instanceof HttpErrorResponse) {
                     console.error('Status code:', error.status);
@@ -118,12 +115,12 @@ export class AuthService {
             // This code doesnt work and might be subject for removal
             try {
 
-                const userInfo = await firstValueFrom(this.userService.getUserInfo());
-
-                // Check if profile exists
                 const profileExists = await this.customerService.checkProfileExists();
 
+                // Check if profile exists
+
                 if (!profileExists) {
+                    const userInfo = await firstValueFrom(this.userService.getUserInfo());
                     // Create profile if it doesn't exist
                     const createProfileRequest: CreateProfileRequest = {
                         firstName: userInfo.given_name,
@@ -139,7 +136,7 @@ export class AuthService {
                 }
 
                 // Navigate to return URL
-                const returnUrl = localStorage.getItem('returnUrl') || '/';
+                const returnUrl = localStorage.getItem('returnUrl') ?? '/';
                 localStorage.removeItem('returnUrl');
                 this.router.navigateByUrl(returnUrl);
 

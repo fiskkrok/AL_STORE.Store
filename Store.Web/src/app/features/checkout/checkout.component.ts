@@ -7,15 +7,19 @@ import { klarnaHelpers } from '../../core/config/klarna.config';
 import { firstValueFrom } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { CheckoutStateService } from '../../core/services/checkout-state.service';
+import { AuthService } from '../../core/services/auth.service';
+import { PaymentMethod } from '../../shared/models';
 
 @Component({
   selector: 'app-checkout',
+  standalone: true,
   imports: [CurrencyPipe],
   template: `
-    <div class="container mx-auto px-4 py-8 dark:text-white">
+    <div class="container mx-auto px-4 py-8 text-foreground">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Order Summary -->
-        <div class="space-y-4 ">
+        <div class="space-y-4">
           <h2 class="text-2xl font-bold">Order Summary</h2>
           
           @for (item of cartItems(); track item.id) {
@@ -34,23 +38,39 @@ import { Router } from '@angular/router';
             </div>
           }
 
-          <div class="border-t pt-4 space-y-2 ">
-            <div class="flex justify-between ">
+          <div class="border-t pt-4 space-y-2">
+            <div class="flex justify-between">
               <span>Subtotal</span>
               <span>{{ subtotal() | currency:'SEK' }}</span>
             </div>
-            <div class="flex justify-between ">
+            <div class="flex justify-between">
               <span>VAT (25%)</span>
               <span>{{ tax() | currency:'SEK' }}</span>
             </div>
-            <div class="flex justify-between font-bold ">
+            <div class="flex justify-between font-bold">
               <span>Total</span>
               <span>{{ total() | currency:'SEK' }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Klarna Checkout -->
+        <!-- Shipping Information Summary -->
+        @if (shippingInfo()) {
+          <div class="mb-6 p-4 border rounded-md">
+            <h3 class="font-medium mb-2">Shipping Address</h3>
+            <p>{{ shippingInfo()?.firstName }} {{ shippingInfo()?.lastName }}</p>
+            <p>{{ shippingInfo()?.street }}</p>
+            <p>{{ shippingInfo()?.city }}, {{ shippingInfo()?.postalCode }}</p>
+            <button 
+              (click)="editShippingInfo()"
+              class="text-sm text-primary mt-2 hover:underline"
+            >
+              Edit
+            </button>
+          </div>
+        }
+
+        <!-- Klarna Payment -->
         <div>
           @if (loading()) {
             <div class="flex items-center justify-center h-64">
@@ -58,10 +78,48 @@ import { Router } from '@angular/router';
             </div>
           }
 
-          <div id="klarna-payments-container" class="dark:bg-white"></div>
+          <!-- Payment Method Selection -->
+          @if (!!paymentMethods()&&paymentMethods().length > 0) {
+            <div class="mb-4 space-y-2">
+              <h3 class="font-medium">Select Payment Method</h3>
+              @for (method of paymentMethods(); track method.id) {
+                <button
+                  class="w-full px-4 py-2 text-left border rounded-md active:bg-primary/10" 
+                  type="button"
+                  [class.border-primary]="selectedPaymentMethod() === method.identifier"
+                  (click)="selectPaymentMethod(method.identifier)"
+                >
+                <img [src]="method?.assetUrls?.descriptive" [alt]="method.name" class="w-8 h-8">
+                {{ method.name }}
+              </button>
+              }
+            </div>
+          }
+
+          <div id="klarna-payments-container" class="bg-background"></div>
+
+          @if (!!paymentMethods()&&paymentMethods().length > 0)  {
+            <button
+              (click)="initiatePayment()"
+              class="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              [disabled]="loading() || !selectedPaymentMethod()"
+            >
+              @if (loading()) {
+                <span class="flex items-center justify-center">
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  Processing Payment...
+                </span>
+              } @else {
+                Complete Purchase
+              }
+            </button>
+          }
 
           @if (error()) {
-            <div class="p-4 bg-red-50 text-red-700 rounded-lg">
+            <div class="p-4 mt-4 bg-red-50 text-red-700 rounded-lg">
               {{ error() }}
             </div>
           }
@@ -74,25 +132,35 @@ export class CheckoutComponent {
   private readonly cartStore = inject(CartStore);
   private readonly checkoutService = inject(CheckoutService);
   private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
+  private readonly checkoutState = inject(CheckoutStateService);
+  private readonly auth = inject(AuthService);
 
   cartItems = this.cartStore.cartItems;
   subtotal = this.cartStore.totalPrice;
   tax = computed(() => klarnaHelpers.calculateTax(this.subtotal()));
   total = computed(() => this.subtotal() + this.tax());
+  shippingInfo = computed(() => this.checkoutState.getShippingInformation());
 
   loading = signal(false);
   error = signal<string | null>(null);
+  paymentMethods = signal<PaymentMethod[]>([]);
+  selectedPaymentMethod = signal<string | null>(null);
   sessionId: string | null = null;
-  router = inject(Router);
 
   constructor() {
-    // Initialize Klarna when cart items change
+    // Subscribe to auth state and shipping info
     effect(() => {
-      const items = this.cartItems();
-      if (items.length > 0) {
-        this.initKlarnaCheckout();
-      }
+      firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
+        if (isAuthenticated && this.shippingInfo()) {
+          this.initKlarnaCheckout();
+        }
+      });
     });
+  }
+
+  editShippingInfo() {
+    this.router.navigate(['/checkout/information']);
   }
 
   private async initKlarnaCheckout() {
@@ -100,49 +168,72 @@ export class CheckoutComponent {
     this.error.set(null);
 
     try {
+      const info = this.shippingInfo();
+      if (!info) {
+        throw new Error('Shipping information is required');
+      }
+
       const session = await firstValueFrom(
         this.checkoutService.createKlarnaSession(this.cartItems(), {
-          // Add the necessary customer information here
-          email: 'customer@example.com',
+          email: info.email ?? '',
+          phone: info.phone,
           shippingAddress: {
-            street: 'Tradgardsgatan 6C',
-            city: 'Norrköping',
-            state: 'Ostergotland',
-            country: 'SE',
-            postalCode: '60222'
+            street: info.street,
+            city: info.city,
+            state: info.city, // Using city as state for Sweden
+            country: info.country,
+            postalCode: info.postalCode,
+            id: '',
+            type: 'shipping',
+            firstName: '',
+            lastName: '',
+            isDefault: false
           }
         })
       );
 
-      // Initialize Klarna
+      this.sessionId = session.session_id;
+      this.paymentMethods.set(session.paymentMethods);
+
+      if (session.paymentMethods.length > 0) {
+        this.selectPaymentMethod(session.paymentMethods[0].identifier);
+      }
+
+
       await this.loadKlarnaScript();
       if (window.Klarna) {
-        window.Klarna.Payments.init({
-          client_token: session.clientToken
-        });
-
-
-        window.Klarna.Payments.load({
-          container: '#klarna-payments-container',
-          payment_method_category: session.paymentMethods[0]?.identifier
-        }, {}, (res) => {
-          if (!res.show_form) {
-            this.error.set('Klarna payment is not available at this time');
-          }
-        });
+        window.Klarna.Payments.init({ client_token: session.client_token });
+        this.loadPaymentWidget();
       } else {
         this.error.set('Klarna is not available at this time');
       }
     } catch (err) {
       this.error.set('Failed to initialize checkout. Please try again.');
-      this.errorService.addError(
-        'CHECKOUT_ERROR',
-        'Failed to initialize checkout',
-        { severity: 'error', context: { error: err } }
-      );
+      this.errorService.addError('CHECKOUT_ERROR', 'Failed to initialize checkout', {
+        severity: 'error',
+        context: { error: err }
+      });
     } finally {
       this.loading.set(false);
     }
+  }
+
+  selectPaymentMethod(identifier: string) {
+    this.selectedPaymentMethod.set(identifier);
+    this.loadPaymentWidget();
+  }
+
+  private loadPaymentWidget() {
+    if (!window.Klarna || !this.selectedPaymentMethod()) return;
+
+    window.Klarna.Payments.load({
+      container: '#klarna-payments-container',
+      payment_method_category: this.selectedPaymentMethod() ?? undefined
+    }, {}, (res) => {
+      if (!res.show_form) {
+        this.error.set('Selected payment method is not available at this time');
+      }
+    });
   }
 
   private loadKlarnaScript(): Promise<void> {
@@ -159,39 +250,45 @@ export class CheckoutComponent {
       document.body.appendChild(script);
     });
   }
+
   async initiatePayment() {
+    if (!this.sessionId || !this.selectedPaymentMethod()) return;
+
     this.loading.set(true);
     this.error.set(null);
 
     try {
-      // Call authorize on Klarna SDK
       await new Promise<void>((resolve, reject) => {
-        window.Klarna?.Payments.authorize({}, {}, async (response) => {
+        if (!window.Klarna?.Payments) {
+          reject(new Error('Klarna is not initialized'));
+          return;
+        }
+
+        window.Klarna.Payments.authorize({}, {}, async (response) => {
           if (!response.approved) {
             reject(new Error(response.error?.message || 'Payment not approved'));
             return;
           }
 
           try {
-            // Backend handles the actual authorization
             const result = await firstValueFrom(
-              this.checkoutService.authorizePayment({
-                sessionId: this.sessionId,
-                // Add any additional data needed
-              })
+              this.checkoutService.authorizePayment({ sessionId: this.sessionId! })
             );
 
             if (result.success) {
-              // Navigate to confirmation page
+              // Clear checkout state on successful payment
+              this.checkoutState.clearCheckoutState();
+
               this.router.navigate(['/checkout/confirmation'], {
                 queryParams: { orderId: result.orderId }
               });
             } else {
-              reject(new Error(result.error ?? 'Authorization failed'));
+              reject(new Error(result.error?.message ?? 'Authorization failed'));
             }
           } catch (err) {
-            reject(err as Error);
+            reject(new Error(err instanceof Error ? err.message : 'Payment processing failed'));
           }
+          resolve();
         });
       });
     } catch (err) {
@@ -205,84 +302,3 @@ export class CheckoutComponent {
     }
   }
 }
-
-
-
-// Backend Requirements:
-
-// Payment Session Management
-
-
-// Create payment sessions with Klarna
-// Store session information securely
-// Handle session timeouts / expiration
-// Validate session status
-
-
-// Payment Processing
-
-
-// Store Klarna API credentials securely
-// Handle payment authorizations
-// Process payment completions
-// Manage payment failures / retries
-
-
-// Order Management
-
-
-// Create and store orders
-// Track order statuses
-// Link orders to Klarna references
-// Handle order updates
-
-
-// Webhook Handling
-
-
-// Receive Klarna callbacks / webhooks
-// Update order statuses based on webhooks
-// Handle payment status changes
-// Process refunds if needed
-
-
-// Security Requirements
-
-
-// Secure storage of Klarna credentials
-// HTTPS endpoints
-// Request validation
-// Rate limiting for payment endpoints
-// CSRF protection
-// Input sanitization
-
-
-// Required API Endpoints:
-
-// CopyPOST / api / checkout / sessions
-//   - Creates a new Klarna payment session
-//     - Returns client token for frontend
-
-// POST / api / checkout / authorize
-//   - Handles payment authorization
-//     - Validates payment details
-//       - Returns success / failure status
-
-// POST / api / checkout / complete
-//   - Completes the order
-//     - Updates order status
-//       - Returns order confirmation
-
-// POST / api / webhook / klarna
-//   - Receives Klarna callbacks
-//     - Updates order statuses
-
-// Error Handling
-
-
-// Payment failures
-// Session timeouts
-// Network issues
-// Invalid requests
-// Fraud detection
-// Logging of all payment - related events

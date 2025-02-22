@@ -125,6 +125,7 @@ module.exports = {
         },
         ".dark": {
           "--background": "222.2 84% 4.9%",
+          // "--background": "0 0% 7%",
           "--foreground": "210 40% 98%",
           "--card": "222.2 84% 4.9%",
           "--card-foreground": "210 40% 98%",

@@ -2,17 +2,15 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ProductStore } from '../../../core/state/product.store';
-import { CartStore } from '../../../core/state/cart.store';
-import { ErrorService } from '../../../core/services/error.service';
-import { ContainerComponent } from '../../../core/components/layout/container.component';
-import { GridComponent } from '../../../core/components/layout/grid.component';
-import { ProductCardComponent } from '../../../core/components/product/product-card.component';
-
-import { SizeGuideComponent } from './size-guide.component';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ContainerComponent } from '../../core/components/layout/container.component';
+import { ErrorService } from '../../core/services/error.service';
+import { CartStore } from '../../core/state/cart.store';
+import { ProductStore } from '../../core/state/product.store';
 import { ReviewsComponent } from './reviews.component';
-import { Product, ProductImage } from '../../../core/models/product.model';
+import { SizeGuideComponent } from './size-guide.component';
+import { Product, ProductImage } from '../../shared/models/product.model';
+
 
 @Component({
   selector: 'app-product-detail',
@@ -23,8 +21,6 @@ import { Product, ProductImage } from '../../../core/models/product.model';
     ReactiveFormsModule,
     RouterLink,
     ContainerComponent,
-    GridComponent,
-    ProductCardComponent,
     SizeGuideComponent,
     ReviewsComponent,
     CurrencyPipe
@@ -271,11 +267,11 @@ import { Product, ProductImage } from '../../../core/models/product.model';
   `
 })
 export class ProductDetailComponent {
-  private route = inject(ActivatedRoute);
-  private productStore = inject(ProductStore);
-  private cartStore = inject(CartStore);
-  private errorService = inject(ErrorService);
-  private quickViewProduct = signal<Product | null>(null);
+  private readonly route = inject(ActivatedRoute);
+  private readonly productStore = inject(ProductStore);
+  private readonly cartStore = inject(CartStore);
+  private readonly errorService = inject(ErrorService);
+  private readonly quickViewProduct = signal<Product | null>(null);
 
   // State
   loading = signal(true);
@@ -337,10 +333,10 @@ export class ProductDetailComponent {
       }
 
     } catch {
-      this.errorService.addError({
-        code: 'PRODUCT_LOAD_ERROR',
-        message: 'Failed to load product details'
-      });
+      this.errorService.addError(
+        'PRODUCT_LOAD_ERROR',
+        'Failed to load product details'
+      );
     } finally {
       this.loading.set(false);
     }
@@ -373,15 +369,15 @@ export class ProductDetailComponent {
       });
 
       // Show success message
-      this.errorService.addError({
-        code: 'CART_SUCCESS',
-        message: 'Product added to cart successfully'
-      });
+      this.errorService.addError(
+        'CART_SUCCESS',
+        'Product added to cart successfully'
+      );
     } catch {
-      this.errorService.addError({
-        code: 'CART_ERROR',
-        message: 'Failed to add item to cart. Please try again.'
-      });
+      this.errorService.addError(
+        'CART_ERROR',
+        'Failed to add item to cart. Please try again.'
+      );
     } finally {
       this.addingToCart.set(false);
     }

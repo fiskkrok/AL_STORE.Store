@@ -16,7 +16,8 @@ public class DeleteAddressEndpoint : EndpointWithoutRequest
     public override void Configure()
     {
         Delete("/customers/addresses/{id}");
-        Claims("sub");
+        Policies("RequireAuth"); // Use policy instead of Claims
+        Permissions("write:profile");
         Description(d => d
             .Produces(204)
             .Produces(404)

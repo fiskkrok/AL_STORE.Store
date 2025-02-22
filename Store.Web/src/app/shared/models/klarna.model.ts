@@ -21,8 +21,20 @@ export interface KlarnaSessionRequest {
 export interface KlarnaSessionResponse {
     session_id: string;
     client_token: string;
-    payment_method_categories: {
-        identifier: string;
-        name: string;
-    }[];
+    paymentMethods: PaymentMethod[];
+}
+export interface PaymentMethod {
+    id: string;
+    identifier: string;
+    name: string;
+    assetUrls: {
+        descriptive: string;
+        standard: string;
+    };
+    allowed: boolean;
+}
+export interface KlarnaResponse {
+    htmlSnippet: string;
+    orderId: string;
+    status: 'complete' | 'incomplete' | 'failed';
 }

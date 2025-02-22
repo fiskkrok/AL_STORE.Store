@@ -1,10 +1,12 @@
+// src/app/core/models/error.model.ts
 export interface ApiError {
     code: string;
     message: string;
-    details?: Record<string, unknown>;
+    details?: {
+        errors?: Record<string, string[]>;
+    };
 }
 
-// src/app/core/models/error.model.ts
 export type ErrorSeverity = 'info' | 'warning' | 'error' | 'fatal';
 
 export interface AppError {

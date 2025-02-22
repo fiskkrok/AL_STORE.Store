@@ -13,7 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
       <div class="flex items-center justify-between">
         <div>
           <div class="flex items-center">
-            <span class="text-2xl dark:text-white font-bold">{{ averageRating }}</span>
+            <span class="text-2xl text-foreground font-bold">{{ averageRating }}</span>
             <div class="ml-2">
               <div class="flex gap-0.5">
                 @for (star of [1,2,3,4,5]; track star) {

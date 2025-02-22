@@ -11,9 +11,9 @@ export interface Product {
     isActive: boolean;
     categoryId: string;
     created: string;
+    attributes: ProductVariantAttribute[];
     images: ProductImage[];
     variants: ProductVariant[];
-    // Additional UI-specific fields
     compareAtPrice?: number;
     ratings?: {
         average: number;
@@ -21,7 +21,7 @@ export interface Product {
     };
 }
 
-export interface ProductListRequest {
+export interface ProductQueryParams {
     page?: number;
     pageSize?: number;
     search?: string;
@@ -29,7 +29,7 @@ export interface ProductListRequest {
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
-    sortBy?: string;
+    sortBy?: 'price_asc' | 'price_desc' | 'newest';
 }
 
 export interface ProductListResponse {
@@ -76,17 +76,6 @@ export interface CategoryAggregation {
 export interface PriceRange {
     min: number;
     max: number;
-}
-
-export interface GetProductsRequest {
-    page?: number;
-    pageSize?: number;
-    search?: string;
-    categories?: string[];
-    minPrice?: number;
-    maxPrice?: number;
-    inStock?: boolean;
-    sortBy?: 'price_asc' | 'price_desc' | 'newest';
 }
 
 export interface SyncStatus {

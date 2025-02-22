@@ -74,6 +74,7 @@ public class
                     {
                         Id = pm.Id,
                         Name = pm.Name,
+                        AssetUrls = pm.AssetUrls,
                         Allowed = pm.Allowed
                     }).ToList()
                 };

@@ -28,7 +28,7 @@ import { ProductSearchComponent } from '../../product-search.component';
         <div class="container py-4">
           <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 class="text-2xl dark:text-white font-bold tracking-tight">Products</h1>
+              <h1 class="text-2xl text-foreground font-bold tracking-tight">Products</h1>
               <p class="mt-1 text-sm text-muted-foreground">
                 {{ totalProducts() }} products available
               </p>

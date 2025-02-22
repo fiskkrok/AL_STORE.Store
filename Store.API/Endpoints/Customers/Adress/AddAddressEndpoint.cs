@@ -34,8 +34,10 @@ public class AddAddressEndpoint : Endpoint<AddAddressRequest, AddressResponse>
 
     public override void Configure()
     {
+        AllowAnonymous();
         Post("/customers/addresses");
-        Claims("sub");
+        //Policies("RequireAuth"); // Use policy instead of Claims
+        //Permissions("write:profile");
         Description(d => d
             .Produces<AddressResponse>(201)
             .ProducesProblem(400)

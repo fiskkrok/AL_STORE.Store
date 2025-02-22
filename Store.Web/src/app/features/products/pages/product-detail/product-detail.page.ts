@@ -1,16 +1,16 @@
 import { Component, computed } from "@angular/core";
 import { SectionComponent } from "../../../../core/components/layout/section.component";
 import { ContainerComponent } from "../../../../core/components/layout/container.component";
-import { Product } from "../../../../core/models/product.model";
 import { ActivatedRoute } from '@angular/router';
 import { OnInit, signal } from '@angular/core';
 import { ProductService } from "../../../../core/services/product.service";
+import { Product } from "../../../../shared/models/product.model";
 
 @Component({
-    selector: "app-product-detail",
-    standalone: true,
+  selector: "app-product-detail",
+  standalone: true,
 
-    template: `
+  template: `
     @if (product()) {
       <div class="page-container">
         <app-container>
@@ -27,7 +27,7 @@ import { ProductService } from "../../../../core/services/product.service";
     
               <!-- Product Info -->
               <div>
-                <h1 class="h1 text-brand-navy dark:text-white">{{ product()?.name }}</h1>
+                <h1 class="h1 text-brand-navy text-foreground">{{ product()?.name }}</h1>
                 <p class="text-lg text-brand-gray">{{ product()?.description }}</p>
     
                 <!-- Product Price -->
@@ -65,36 +65,36 @@ import { ProductService } from "../../../../core/services/product.service";
       <div class="loading-shimmer">Loading...</div>
     }
 `,
-    imports: [SectionComponent, ContainerComponent]
+  imports: [SectionComponent, ContainerComponent]
 })
 export class ProductDetailPageComponent implements OnInit {
-    unit = "each";
-    sizes = ["S", "M", "L", "XL"];
-    colors = ["Red", "Green", "Blue"];
+  unit = "each";
+  sizes = ["S", "M", "L", "XL"];
+  colors = ["Red", "Green", "Blue"];
 
-    product = signal<Product | null>(null);
+  product = signal<Product | null>(null);
 
-    imageUrl = computed<string>(() => {
-        const p = this.product();
-        if (p && p.images && p.images.length > 0 && p.images[0].url) {
-            return p.images[0].url;
-        }
-        const n = 1;
-        return `assets/Pics/${n}.webp`;
-    });
-
-    constructor(
-        private route: ActivatedRoute,
-        private productService: ProductService
-    ) { }
-
-    ngOnInit(): void {
-        const id = this.route.snapshot.paramMap.get('id');
-        if (id) {
-            this.productService.getProduct(id).subscribe(prod => {
-                this.product.set(prod);
-            });
-        }
+  imageUrl = computed<string>(() => {
+    const p = this.product();
+    if (p && p.images && p.images.length > 0 && p.images[0].url) {
+      return p.images[0].url;
     }
+    const n = 1;
+    return `assets/Pics/${n}.webp`;
+  });
+
+  constructor(
+    private route: ActivatedRoute,
+    private productService: ProductService
+  ) { }
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.productService.getProduct(id).subscribe(prod => {
+        this.product.set(prod);
+      });
+    }
+  }
 }
 

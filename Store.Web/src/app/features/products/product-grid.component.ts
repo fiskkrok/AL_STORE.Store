@@ -2,10 +2,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { ProductCardComponent } from '../../core/components/product/product-card.component';
 import { QuickViewModalComponent } from '../../core/components/product/quick-view-modal.component';
-import { Product } from '../../core/models/product.model';
 import { CartStore, CartItem } from '../../core/state/cart.store';
 import { ProductStore } from '../../core/state/product.store';
 import { IntersectionObserverDirective } from '../../directives/intersection-observer.directive';
+import { Product } from '../../shared/models/product.model';
 
 @Component({
   selector: 'app-product-grid',

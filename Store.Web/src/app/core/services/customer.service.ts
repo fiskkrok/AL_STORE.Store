@@ -1,23 +1,12 @@
-
-
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { ErrorService } from './error.service';
-import {
-    CustomerProfile,
-    Address,
-    CreateProfileRequest,
-    AddAddressRequest,
-    CustomerProfileResponse,
-    UpdateCustomerProfileRequest,
-    AddressResponse,
-    UpdateAddressRequest,
-    ApiError
-} from '../models/customer.model';
+
 import { UserService } from './user.service';
+import { AddAddressRequest, Address, ApiError, CreateProfileRequest, CustomerProfile, CustomerProfileResponse, UpdateCustomerProfileRequest } from '../../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
@@ -28,7 +17,7 @@ export class CustomerService {
     private auth: AuthService | null = null;
     private readonly userService = inject(UserService);
     // State
-    private readonly profile = signal<CustomerProfile | null>(null);
+    profile = signal<CustomerProfile | null>(null);
     private readonly addresses = signal<Address[]>([]);
     private readonly loading = signal(false);
     private readonly error = signal<string | null>(null);
@@ -96,6 +85,11 @@ export class CustomerService {
         } catch (error) {
             console.error('Failed to load initial data:', error);
         }
+    }
+    initiateGuestCheckout(email: string) {
+        this.guestEmail.set(email);
+        return this.checkProfileExists();
+
     }
 
     testAuth() {
@@ -220,16 +214,17 @@ export class CustomerService {
     }
 
     private handleApiError(apiError: ApiError): void {
-        if ('type' in apiError) {
-            if (apiError.type === 'ValidationError' && 'errors' in apiError) {
-                const messages = Object.entries(apiError.errors)
-                    .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
-                    .join('\n');
-                this.error.set(messages);
-                return;
-            }
+        // First check if we have details with errors
+        if (apiError.details && 'errors' in apiError.details) {
+            const errorDetails = apiError.details as { errors: Record<string, string[]> };
+            const messages = Object.entries(errorDetails.errors)
+                .map(([field, fieldErrors]) => `${field}: ${fieldErrors.join(', ')}`)
+                .join('\n');
+            this.error.set(messages);
+            return;
         }
 
+        // Fallback to generic error message
         this.error.set(apiError.message ?? 'An unexpected error occurred');
     }
 
@@ -277,14 +272,12 @@ export class CustomerService {
 
         const apiError = error.error as ApiError;
 
-        if (apiError.type === 'ValidationError') {
-            // Format validation errors for the UI
-            const messages = Object.entries(apiError.message)
-                .map(([field, message]) => `${field}: ${message}`)
+        if (apiError.code === 'ValidationError' && apiError.details?.errors) {
+            const messages = Object.entries(apiError.details.errors)
+                .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
                 .join('\n');
             this.error.set(messages);
-        } else {
-            this.error.set(apiError.message ?? 'An unexpected error occurred');
+            return;
         }
 
         return throwError(() => apiError);
@@ -312,24 +305,33 @@ export class CustomerService {
         }
     }
 
-    async addAddress(address: AddAddressRequest): Promise<void> {
+    async addAddress(request: AddAddressRequest): Promise<Address> {
+        const fullRequest = {
+            ...request,
+            type: request.type ?? 'shipping',
+            state: request.state ?? '' // For countries without states
+        };
         this.loading.set(true);
         try {
-            const response = await firstValueFrom(this.http.post<AddressResponse>(
-                `${this.storeApiUrl}/addresses`,
-                address
-            ));
+            const response = await firstValueFrom(
+                this.http.post<Address>(`${this.storeApiUrl}/addresses`, fullRequest)
+            );
 
-            if (response?.address && this.profile()) {
-                this.profile.update(profile => ({
-                    ...profile!,
-                    addresses: [...profile!.addresses, response.address]
-                }));
-            }
+            // Update local state
+            this.profile.update(profile => {
+                if (!profile) return profile;
+                return {
+                    ...profile,
+                    addresses: [...profile.addresses, response]
+                };
+            });
+
+            return response;
         } catch (error) {
             this.errorService.addError(
-                'ADDRESS_ADD_ERROR',
-                'Failed to add address'
+                'ADDRESS_ERROR',
+                'Failed to add new address',
+                { severity: 'error', context: { error } }
             );
             throw error;
         } finally {
@@ -337,26 +339,42 @@ export class CustomerService {
         }
     }
 
-    async updateAddress(addressId: string, updates: UpdateAddressRequest): Promise<void> {
+    // Helper method to check if address exists in profile
+    hasAddressInProfile(address: Partial<Address>): boolean {
+        const profile = this.profile();
+        if (!profile) return false;
+
+        return profile.addresses.some(addr =>
+            addr.street === address.street &&
+            addr.city === address.city &&
+            addr.postalCode === address.postalCode
+        );
+    }
+
+    async updateAddress(id: string, updates: Partial<AddAddressRequest>): Promise<Address> {
         this.loading.set(true);
         try {
-            const response = await firstValueFrom(this.http.patch<AddressResponse>(
-                `${this.storeApiUrl}/addresses/${addressId}`,
-                updates
-            ));
+            const response = await firstValueFrom(
+                this.http.patch<Address>(`${this.storeApiUrl}/addresses/${id}`, updates)
+            );
 
-            if (response?.address && this.profile()) {
-                this.profile.update(profile => ({
-                    ...profile!,
-                    addresses: profile!.addresses.map(addr =>
-                        addr.id === addressId ? response.address : addr
+            // Update local state
+            this.profile.update(profile => {
+                if (!profile) return profile;
+                return {
+                    ...profile,
+                    addresses: profile.addresses.map(addr =>
+                        addr.id === id ? response : addr
                     )
-                }));
-            }
+                };
+            });
+
+            return response;
         } catch (error) {
             this.errorService.addError(
-                'ADDRESS_UPDATE_ERROR',
-                'Failed to update address'
+                'ADDRESS_ERROR',
+                'Failed to update address',
+                { severity: 'error', context: { error } }
             );
             throw error;
         } finally {
@@ -364,23 +382,26 @@ export class CustomerService {
         }
     }
 
-    async deleteAddress(addressId: string): Promise<void> {
+    async deleteAddress(id: string): Promise<void> {
         this.loading.set(true);
         try {
-            await firstValueFrom(this.http.delete(
-                `${this.storeApiUrl}/addresses/${addressId}`
-            ));
+            await firstValueFrom(
+                this.http.delete(`${this.storeApiUrl}/addresses/${id}`)
+            );
 
-            if (this.profile()) {
-                this.profile.update(profile => ({
-                    ...profile!,
-                    addresses: profile!.addresses.filter(addr => addr.id !== addressId)
-                }));
-            }
+            // Update local state
+            this.profile.update(profile => {
+                if (!profile) return profile;
+                return {
+                    ...profile,
+                    addresses: profile.addresses.filter(addr => addr.id !== id)
+                };
+            });
         } catch (error) {
             this.errorService.addError(
-                'ADDRESS_DELETE_ERROR',
-                'Failed to delete address'
+                'ADDRESS_ERROR',
+                'Failed to delete address',
+                { severity: 'error', context: { error } }
             );
             throw error;
         } finally {
@@ -391,29 +412,44 @@ export class CustomerService {
     async setDefaultAddress(addressId: string, type: 'shipping' | 'billing'): Promise<void> {
         this.loading.set(true);
         try {
-            await firstValueFrom(this.http.post(
-                `${this.storeApiUrl}/addresses/${addressId}/default`,
-                { type }
-            ));
+            await firstValueFrom(
+                this.http.post(`${this.storeApiUrl}/addresses/${addressId}/default`, { type })
+            );
 
-            if (this.profile()) {
-                this.profile.update(profile => ({
-                    ...profile!,
-                    ...(type === 'shipping'
-                        ? { defaultShippingAddressId: addressId }
-                        : { defaultBillingAddressId: addressId })
-                }));
-            }
+            // Update local state
+            const addr = await this.getAddressById(addressId);
+            const isDefault = addr?.type === type ? false : addr?.isDefault;
+            this.profile.update(profile => {
+                if (!profile) return profile;
+                return {
+                    ...profile,
+                    addresses: profile.addresses.map(addr => ({
+                        ...addr,
+                        isDefault: Boolean(addr.isDefault)
+                    }))
+                };
+            });
         } catch (error) {
             this.errorService.addError(
-                'DEFAULT_ADDRESS_ERROR',
-                `Failed to set default ${type} address`
+                'ADDRESS_ERROR',
+                `Failed to set default ${type} address`,
+                { severity: 'error', context: { error } }
             );
             throw error;
         } finally {
             this.loading.set(false);
         }
     }
+    getAddress() {
+        return this.profile()?.addresses.find(a => a.isDefault
+            && a.type === 'shipping');
+
+    }
+
+    async getAddressById(addressId: string): Promise<Address | undefined> {
+        return this.profile()?.addresses.find(a => a.id === addressId);
+    }
+
     /**
     * Clears guest session
     */

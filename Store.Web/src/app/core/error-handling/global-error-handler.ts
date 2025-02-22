@@ -4,7 +4,7 @@ import { ErrorService } from '../services/error.service';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
-    private errorService = inject(ErrorService);
+    private readonly errorService = inject(ErrorService);
 
     handleError(error: unknown) {
         this.errorService.addError(

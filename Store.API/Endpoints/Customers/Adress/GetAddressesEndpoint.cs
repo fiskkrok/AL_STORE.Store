@@ -19,9 +19,9 @@ public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
 
     public override void Configure()
     {
-        AllowAnonymous();
         Get("/customers/addresses");
-        Claims("sub");
+        Policies("RequireAuth"); // Use policy instead of Claims
+        Permissions("read:profile");
         Description(d => d
             .Produces<List<AddressDto>>()
             .WithTags("Customer Addresses")

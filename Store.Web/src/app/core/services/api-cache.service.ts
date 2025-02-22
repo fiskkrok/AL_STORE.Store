@@ -9,7 +9,7 @@ interface CacheEntry<T> {
 
 @Injectable({ providedIn: 'root' })
 export class ApiCacheService {
-    private cache = new Map<string, CacheEntry<unknown>>();
+    private readonly cache = new Map<string, CacheEntry<unknown>>();
 
     // Default cache duration (5 minutes)
     private readonly DEFAULT_CACHE_DURATION = 5 * 60 * 1000;

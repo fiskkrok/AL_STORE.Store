@@ -9,8 +9,8 @@ import { AuthTestComponent } from "../../core/components/auth-test.component";
 })
 export class HomeComponent {
   svgFiles = [
-    { name: 'svg1', path: 'assets/svg/al_store.svg' },
-    { name: 'svg2', path: 'assets/svg/al_store2.svg' },
+    { name: 'svg1', path: 'assets/svg/alstore_white_black.svg' },
+    { name: 'svg2', path: 'assets/svg/alstore_blue_black.svg' },
     { name: 'svg3', path: 'assets/svg/klarna-svgrepo-com.svg' },
     { name: 'svg4', path: 'assets/svg/tshirt-clothes-clothing-svgrepo-com.svg' }
   ];

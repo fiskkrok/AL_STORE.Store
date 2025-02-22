@@ -125,8 +125,9 @@ public class
                 SessionId = paymentSession.Id,
                 ClientToken = paymentSession.ClientToken,
                 ExpiresAt = paymentSession.ExpiresAt,
-                PaymentMethods = klarnaSession.Value.PaymentMethodCategories.Select(o => new PaymentMethodDto
+                PaymentMethods = klarnaSession.Value.PaymentMethodCategories.Select((o, index) => new PaymentMethodDto
                 {
+                    Id = index.ToString(),
                     Allowed = true,
                     AssetUrls = o.AssetUrls,
                     Identifier = o.Identifier,

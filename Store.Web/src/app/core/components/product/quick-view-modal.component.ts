@@ -3,9 +3,9 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Product } from '../../models/product.model';
 import { CartStore } from '../../state/cart.store';
 import { ErrorService } from '../../services/error.service';
+import { Product } from '../../../shared/models/product.model';
 
 @Component({
   selector: 'app-quick-view-modal',
@@ -16,9 +16,9 @@ import { ErrorService } from '../../services/error.service';
       <div class="modal animate-in">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="text-lg font-semibold dark:text-white">Quick View</h3>
+            <h3 class="text-lg font-semibold text-foreground">Quick View</h3>
             <button 
-              class="modal-close dark:text-white"
+              class="modal-close text-foreground"
               (click)="close.emit()"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -53,9 +53,9 @@ import { ErrorService } from '../../services/error.service';
             <!-- Product Details -->
             <div class="space-y-6">
               <div>
-                <h2 class="text-2xl dark:text-white font-semibold">{{ product().name }}</h2>
+                <h2 class="text-2xl text-foreground font-semibold">{{ product().name }}</h2>
                 <div class="mt-2 flex items-baseline gap-2">
-                  <span class="text-2xl dark:text-white font-bold">
+                  <span class="text-2xl text-foreground font-bold">
                     {{ totalPrice() | currency }}
                   </span>
                   @if (quantity() > 1) {
@@ -102,7 +102,7 @@ import { ErrorService } from '../../services/error.service';
                   id="quantity"
                   [ngModel]="quantity()"
                   (ngModelChange)="quantity.set($event)"
-                  class="form-input dark:text-white"
+                  class="form-input text-foreground"
                   [disabled]="product().stockLevel === 0"
                 >
                   @for (num of [1,2,3,4,5]; track num) {
@@ -114,7 +114,7 @@ import { ErrorService } from '../../services/error.service';
               <!-- Actions -->
               <div class="space-y-3">
                 <button
-                  class="btn btn-primary w-full"
+                  class="btn btn-primary w-full btn-lg"
                   (click)="addToCart()"
                   [disabled]="product().stockLevel === 0 || isAddingToCart"
                 >
@@ -132,7 +132,7 @@ import { ErrorService } from '../../services/error.service';
 
                 <a 
                   [routerLink]="['/products', product().id]"
-                  class="btn btn-outline w-full dark:text-white"
+                  class="btn btn-outline w-full text-foreground btn-lg"
                 >
                   View Full Details
                 </a>

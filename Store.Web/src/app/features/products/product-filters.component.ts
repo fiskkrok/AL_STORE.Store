@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GetProductsRequest } from '../../core/models/product.model';
 import { ProductStore } from '../../core/state/product.store';
+import { ProductQueryParams } from '../../shared/models';
 
 interface ActiveFilter {
   id: string;
@@ -196,7 +196,7 @@ export class ProductFiltersComponent {
   minPriceControl = new FormControl<number | null>(null);
   maxPriceControl = new FormControl<number | null>(null);
   inStockControl = new FormControl(false);
-  sortControl = new FormControl<GetProductsRequest['sortBy']>('newest');
+  sortControl = new FormControl<ProductQueryParams['sortBy']>('newest');
 
   // Store selectors
   // categories = this.store.availableCategories;
@@ -343,7 +343,7 @@ export class ProductFiltersComponent {
     this.selectedCategories = [];
   }
 
-  private updateFilters(updates: Partial<GetProductsRequest>): void {
+  private updateFilters(updates: Partial<ProductQueryParams>): void {
     this.store.setFilter(updates);
   }
 }

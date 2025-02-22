@@ -1,15 +1,16 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductStore } from '../../../core/state/product.store';
-import { CartStore } from '../../../core/state/cart.store';
-import { ErrorDisplayComponent } from "../../../core/components/error-display/error-display.component";
-import { ErrorService } from '../../../core/services/error.service';
-import { Product } from '../../../core/models/product.model';
-import { ContainerComponent } from '../../../core/components/layout/container.component';
-import { SectionComponent } from '../../../core/components/layout/section.component';
-import { GridComponent } from '../../../core/components/layout/grid.component';
-import { ProductCardComponent } from "../../../core/components/product/product-card.component";
-import { QuickViewModalComponent } from "../../../core/components/product/quick-view-modal.component";
+import { ErrorDisplayComponent } from '../../core/components/error-display/error-display.component';
+import { ContainerComponent } from '../../core/components/layout/container.component';
+import { GridComponent } from '../../core/components/layout/grid.component';
+import { SectionComponent } from '../../core/components/layout/section.component';
+import { ProductCardComponent } from '../../core/components/product/product-card.component';
+import { QuickViewModalComponent } from '../../core/components/product/quick-view-modal.component';
+import { ErrorService } from '../../core/services/error.service';
+import { CartStore } from '../../core/state/cart.store';
+import { ProductStore } from '../../core/state/product.store';
+import { Product } from '../../shared/models/product.model';
+
 
 @Component({
   selector: 'app-product-list',
@@ -21,7 +22,7 @@ import { QuickViewModalComponent } from "../../../core/components/product/quick-
     SectionComponent,
     GridComponent,
     ProductCardComponent,
-    QuickViewModalComponent
+    QuickViewModalComponent,
   ],
   template: `
     <div class="page-container">
@@ -29,7 +30,7 @@ import { QuickViewModalComponent } from "../../../core/components/product/quick-
         <app-section>
           <!-- Page Header -->
           <header class="mb-8 animate-in">
-            <h1 class="h1 text-brand-navy dark:text-white">Our Products</h1>
+            <h1 class="h1 text-brand-navy text-foreground">Our Products</h1>
             <p class="mt-2 text-lg text-brand-gray">
               Quality essentials for the modern man
             </p>

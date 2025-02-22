@@ -8,7 +8,7 @@ import { AsyncPipe, JsonPipe } from "@angular/common";
   standalone: true,
   imports: [AsyncPipe, JsonPipe],
   template: `
-    <div class="p-4 dark:text-white" >
+    <div class="p-4 text-foreground" >
       <h2>Auth Test</h2>
       <div>
         <p>Is Authenticated: {{ auth.isAuthenticated$ | async }}</p>

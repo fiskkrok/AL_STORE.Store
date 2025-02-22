@@ -4,18 +4,19 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CustomerService } from '../../core/services/customer.service';
+import { CheckoutStateService } from '../../core/services/checkout-state.service';
 
 @Component({
     selector: 'app-guest-email',
     standalone: true,
     imports: [ReactiveFormsModule],
     template: `
-        <div class="max-w-md mx-auto p-6">
-            <h2 class="text-lg font-medium mb-4">Enter your email to continue</h2>
+        <div class="max-w-md mx-auto p-6 ">
+            <h2 class="text-lg font-medium mb-4 text-foreground">Enter your email to continue</h2>
             
             <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
                 <div class="form-group">
-                    <label for="email" class="block text-sm font-medium mb-1">
+                    <label for="email" class="block text-sm font-medium mb-1 text-foreground">
                         Email Address
                     </label>
                     <input
@@ -77,6 +78,7 @@ export class GuestEmailComponent {
     private auth = inject(AuthService);
     private customerService = inject(CustomerService);
     private router = inject(Router);
+    private checkoutState = inject(CheckoutStateService);
 
     form = this.fb.group({
         email: ['', [Validators.required, Validators.email]]
@@ -104,15 +106,17 @@ export class GuestEmailComponent {
             const shouldPromptLogin = await this.customerService.initiateGuestCheckout(email);
 
             if (shouldPromptLogin) {
-                // Show login prompt modal
                 if (await this.showLoginPrompt()) {
                     this.login();
                     return;
                 }
             }
 
-            // Continue to shipping
-            this.router.navigate(['/checkout/shipping']);
+            // Store email in checkout state
+            this.checkoutState.setGuestEmail(email);
+
+            // Continue to shipping information
+            this.router.navigate(['/checkout/information']);
         } finally {
             this.isLoading.set(false);
         }
@@ -126,6 +130,6 @@ export class GuestEmailComponent {
     }
 
     login(): void {
-        this.auth.login('/checkout/shipping');
+        this.auth.login('/checkout/information');
     }
 }

@@ -5,14 +5,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
-import { Product, ProductListRequest, ProductListResponse } from '../models/product.model';
+import { Product, ProductListResponse, ProductQueryParams } from '../../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
   private apiConfig = inject(ApiConfigService);
 
-  getProducts(request: ProductListRequest = {}): Observable<ProductListResponse> {
+  getProducts(request: ProductQueryParams = {}): Observable<ProductListResponse> {
     const url = this.apiConfig.getEndpointUrl('products/list');
 
     // Build query parameters

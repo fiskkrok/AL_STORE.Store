@@ -24,7 +24,8 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
     public override void Configure()
     {
         Put("/customers/addresses/{id}");
-        Claims("sub");
+        Policies("RequireAuth"); // Use policy instead of Claims
+        Permissions("write:profile");
         Description(d => d
             .Produces<AddressResponse>()
             .ProducesProblem(400)

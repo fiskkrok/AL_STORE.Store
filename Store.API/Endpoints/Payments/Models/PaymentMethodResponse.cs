@@ -1,4 +1,6 @@
-﻿namespace Store.API.Endpoints.Payments.Models;
+﻿using Store.Application.Contracts;
+
+namespace Store.API.Endpoints.Payments.Models;
 
 /// <summary>
 /// </summary>
@@ -15,4 +17,6 @@ public class PaymentMethodResponse
     /// <summary>
     /// </summary>
     public bool Allowed { get; init; }
+
+    public AssetUrls AssetUrls { get; init; }
 }

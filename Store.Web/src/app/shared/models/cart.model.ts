@@ -1,3 +1,4 @@
+// src/app/core/models/cart.model.ts
 export interface CartItem {
     id: string;
     productId: string;

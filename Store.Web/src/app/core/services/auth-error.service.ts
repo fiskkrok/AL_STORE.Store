@@ -2,17 +2,15 @@
 import { Injectable, inject } from '@angular/core';
 import { ErrorService } from './error.service';
 import { Router } from '@angular/router';
-
 export interface Auth0Error {
     error: string;
     error_description: string;
     state?: string;
 }
-
 @Injectable({ providedIn: 'root' })
 export class AuthErrorService {
-    private errorService = inject(ErrorService);
-    private router = inject(Router);
+    private readonly errorService = inject(ErrorService);
+    private readonly router = inject(Router);
 
     handleError(error: Auth0Error) {
         switch (error.error) {

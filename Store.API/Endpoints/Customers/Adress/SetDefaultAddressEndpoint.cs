@@ -24,7 +24,8 @@ public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
     public override void Configure()
     {
         Post("/customers/addresses/{id}/default");
-        Claims("sub");
+        Policies("RequireAuth"); // Use policy instead of Claims
+        Permissions("write:profile");
         Description(d => d
             .Produces(200)
             .ProducesProblem(400)

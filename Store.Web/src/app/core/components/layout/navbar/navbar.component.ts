@@ -15,13 +15,19 @@ import { ThemeService } from '../../../services/theme.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe, CartDropdownComponent],
   template: `
-    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground">
       <div class="container flex h-14 items-center">
         <!-- Brand and Navigation -->
         <div class="mr-4 flex" >
-          <a class="mr-6 flex items-center space-x-2 nav-link" href="/">
-            <span class="font-bold">STORE</span>
+          @if (isDarkTheme()) {
+          <a class="mr-6 max-sm:-ml-6  flex items-center space-x-2 nav-link" href="/">
+            <img src="assets/svg/alstore_blue_black.svg" alt="Logo" class="w-12 h-10" />
           </a>
+        } @else {
+          <a class="mr-6 max-sm:-ml-6 flex items-center space-x-2 nav-link" href="/">
+            <img src="assets/svg/alstore_white_black.svg" alt="Logo" class="w-12 h-10" />
+</a>
+          }
           
           <nav class="flex items-center space-x-6 text-sm font-medium">
             <a 
@@ -87,21 +93,21 @@ import { ThemeService } from '../../../services/theme.service';
                   [alt]="user.name"
                   class="w-8 h-8 rounded-full"
                 />
-                <span class="text-sm">{{ user.name }}</span>
+                <span class="text-sm max-sm:hidden">{{ user.name }}</span>
               </button>
 
               @if (showUserMenu()) {
-                <div class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border py-1 dark:bg-white">
+                <div class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border py-1 bg-background">
                   <a
                     routerLink="/account/profile-management"
-                    class="block px-4 py-2 text-sm hover:bg-accent dark:hover:bg-accent-foreground"
+                    class="block px-4 py-2 text-sm hover:bg-accent"
                   >
                     Account Settings
                   </a>
                   <button
                     (click)="auth.logout()"
-                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600 dark:hover:bg-accent-foreground"
-                      class="w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-600 dark:hover:bg-accent-foreground"
+                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent "
+                      class="w-full text-left px-4 py-2 text-sm hover:bg-accent "
                   >
                     Sign Out
                   </button>
@@ -113,7 +119,7 @@ import { ThemeService } from '../../../services/theme.service';
           <ng-template #loginButton>
             <button
               (click)="auth.login()"
-              class="inline-flex items-center justify-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md dark:bg-accent dark:text-accent-foreground"
+              class="inline-flex items-center justify-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 rounded-md text-foreground"
             >
               Sign In
             </button>

@@ -22,8 +22,8 @@ interface EndpointMetrics {
 
 @Injectable({ providedIn: 'root' })
 export class ApiMonitorService {
-    private logger = inject(LoggerService);
-    private metrics = new Map<string, EndpointMetrics>();
+    private readonly logger = inject(LoggerService);
+    private readonly metrics = new Map<string, EndpointMetrics>();
     private recentRequests: RequestMetrics[] = [];
 
     // Keep last 100 requests for analysis
