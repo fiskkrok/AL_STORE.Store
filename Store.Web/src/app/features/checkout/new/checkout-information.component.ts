@@ -1,22 +1,22 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CheckoutStateService } from '../../core/services/checkout-state.service';
+import { CheckoutStateService } from '../../../core/services/checkout-state.service';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { AuthService } from '@auth0/auth0-angular';
-import { CustomerService } from '../../core/services/customer.service';
+import { CustomerService } from '../../../core/services/customer.service';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { CheckoutSessionService } from '../../core/services/checkout-session';
-import { LoadingSpinnerComponent } from "../../core/components/loading-spinner/loading-spinner.component";
-import { ErrorService } from '../../core/services/error.service';
-import { InputFieldType } from '../../shared/forms/formly/input-field.type';
-import { SelectFieldType } from '../../shared/forms/formly/select-field.type';
-import { CheckoutAddressService } from '../../core/services/checkout-address.service';
-import { SavedAddressesComponent } from "../../core/components/address-selection/saved-addresses.component";
-import { AddressFormComponent, AddressFormData } from "../../core/components/address-selection/address-form.component";
-import { CheckoutInformation } from '../../shared/models/checkout.model';
-import { AddAddressRequest, Address } from '../../shared/models';
+import { CheckoutSessionService } from '../../../core/services/checkout-session';
+import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner/loading-spinner.component";
+import { ErrorService } from '../../../core/services/error.service';
+import { InputFieldType } from '../../../shared/forms/formly/input-field.type';
+import { SelectFieldType } from '../../../shared/forms/formly/select-field.type';
+import { CheckoutAddressService } from '../../../core/services/checkout-address.service';
+import { SavedAddressesComponent } from "../../../core/components/address-selection/saved-addresses.component";
+import { AddressFormComponent, AddressFormData } from "../../../core/components/address-selection/address-form.component";
+import { CheckoutInformation } from '../../../shared/models/checkout.model';
+import { AddAddressRequest, Address } from '../../../shared/models';
 
 @Component({
   selector: 'app-checkout-information',
@@ -24,38 +24,26 @@ import { AddAddressRequest, Address } from '../../shared/models';
   imports: [ReactiveFormsModule, FormlyModule, FormlyBootstrapModule, LoadingSpinnerComponent, SavedAddressesComponent, AddressFormComponent],
   providers: [FormBuilder],
   template: `
-  <div class="container mx-auto max-w-3xl px-4 py-8">
   @if (!state().loading) {
-      <div>
-        @if (authService.isAuthenticated$) {
-         <app-saved-addresses
+    <div>
+      @if (authService.isAuthenticated$) {
+        <app-saved-addresses
           [selectedId]="state().selectedAddressId"
           [saving]="state().loading"
           (select)="onAddressSelect($event)"
         />
-        } @else {
-          <app-address-form
-            [saving]="state().saving"
-            (save)="onNewAddressSave($event)"
-          />
-        }
-      </div>
-    } @else {
-      <div class="flex justify-center items-center min-h-[400px]">
-        <app-loading-spinner />
-      </div>
-    }
-    @if (checkoutState.getShippingAddress()) {
-  <div class="mt-6">
-    <button
-      class="w-full px-6 py-3 bg-primary btn btn-primary btn-lg text-primary-foreground rounded-lg"
-      (click)="onContinue()"
-    >
-      Continue to Payment
-    </button>
-  </div>
-}
-</div>
+      } @else {
+        <app-address-form
+          [saving]="state().saving"
+          (save)="onNewAddressSave($event)"
+        />
+      }
+    </div>
+  } @else {
+    <div class="flex justify-center items-center min-h-[200px]">
+      <app-loading-spinner />
+    </div>
+  }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 

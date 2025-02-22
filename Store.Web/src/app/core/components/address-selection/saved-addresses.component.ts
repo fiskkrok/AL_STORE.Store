@@ -17,7 +17,7 @@ import { Address } from '../../../shared/models';
           <div 
             class="border rounded-lg p-4 relative hover:border-primary cursor-pointer"
             [class.border-primary]="address.id === selectedId()"
-            (click)="onSelect(address)" (keydown)="onSelect(address)"
+            (click)="onSelect(address)" (keydown)="null"
             tabindex="0"
           >
             <!-- Default Badge -->

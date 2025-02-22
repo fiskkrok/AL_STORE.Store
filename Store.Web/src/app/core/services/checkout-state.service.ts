@@ -3,6 +3,8 @@
 import { Injectable, signal } from '@angular/core';
 import { CheckoutInformation } from '../../shared/models/checkout.model';
 import { Address } from '../../shared/models/address.model';
+import { PaymentMethod } from '../../shared/models';
+import { ConstPaymentMethods } from '../../shared/global/const-payment-methods.enum';
 
 
 interface CheckoutState {
@@ -10,6 +12,8 @@ interface CheckoutState {
     billingAddress: Address | null;
     guestEmail: string | null;
     isComplete: boolean;
+    paymentMethod: PaymentMethod | null;
+    selectedPaymentMethod: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,8 +25,20 @@ export class CheckoutStateService {
         shippingAddress: null,
         billingAddress: null,
         guestEmail: null,
-        isComplete: false
+        isComplete: false,
+        paymentMethod: null,
+        selectedPaymentMethod: null
     });
+    setPaymentMethod(paymentMethod: PaymentMethod) {
+        this.state.update(s => ({
+            ...s,
+            paymentMethod
+        }));
+    }
+
+    getPaymentMethod(): PaymentMethod | null {
+        return this.state().paymentMethod;
+    }
 
     setShippingAddress(address: Address) {
         console.log('Setting shipping address:', address); // Debug log
@@ -98,7 +114,9 @@ export class CheckoutStateService {
             shippingAddress: null,
             billingAddress: null,
             guestEmail: null,
-            isComplete: false
+            isComplete: false,
+            paymentMethod: null,
+            selectedPaymentMethod: null
         });
     }
 
@@ -126,5 +144,26 @@ export class CheckoutStateService {
     // Get current state for debugging/logging
     getDebugState() {
         return this.state();
+    }
+
+    getSelectedPaymentMethod(): string | null {
+        return this.state().selectedPaymentMethod;
+    }
+
+    setSelectedPaymentMethod(selectedPaymentMethod: string) {
+        this.state.update(s => ({
+            ...s,
+            selectedPaymentMethod
+        }));
+    }
+
+
+    getPaymentMethodOptions(): string[] {
+        return [ConstPaymentMethods.CREDIT_CARD, ConstPaymentMethods.KLARNA, ConstPaymentMethods.SWISH, ConstPaymentMethods.APPLE_PAY];
+    }
+
+
+    updatePaymentMethod(selectedPaymentMethod: string) {
+        this.setSelectedPaymentMethod(selectedPaymentMethod);
     }
 }

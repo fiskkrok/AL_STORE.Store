@@ -12,7 +12,7 @@ export const CHECKOUT_ROUTES: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: 'information',
+                redirectTo: 'payment',
                 pathMatch: 'full'
             },
             {
@@ -23,13 +23,9 @@ export const CHECKOUT_ROUTES: Routes = [
                 )]
             },
             {
-                path: 'information',
-                loadComponent: () => import('./checkout-information.component').then(m => m.CheckoutInformationComponent),
-            },
-            {
                 path: 'payment',
-                loadComponent: () => import('./checkout.component').then(m => m.CheckoutComponent),
-                canActivate: [checkoutGuard]
+                loadComponent: () => import('./new/checkout-page.component').then(m => m.CheckoutPageComponent),
+                // canActivate: [checkoutGuard]
             },
             {
                 path: 'confirmation',
