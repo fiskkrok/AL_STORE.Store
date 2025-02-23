@@ -164,7 +164,7 @@ export class CartComponent {
   async proceedToCheckout() {
     // If authenticated, go directly to shipping info
     if (await this.auth.isAuthenticated()) {
-      await this.router.navigate(['/checkout/information']);
+      await this.router.navigate(['/checkout']);
     } else {
       // If not authenticated, start with email collection
       await this.router.navigate(['/checkout/email']);

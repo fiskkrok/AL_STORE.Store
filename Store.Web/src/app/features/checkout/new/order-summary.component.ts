@@ -5,10 +5,10 @@ import { CartStore } from "../../../core/state";
 
 // order-summary.component.ts
 @Component({
-    selector: 'app-order-summary',
-    standalone: true,
-    imports: [CommonModule, CurrencyPipe],
-    template: `
+  selector: 'app-order-summary',
+  standalone: true,
+  imports: [CommonModule, CurrencyPipe],
+  template: `
     <div class="bg-background rounded-lg border p-6">
       <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
       
@@ -50,10 +50,10 @@ import { CartStore } from "../../../core/state";
   `
 })
 export class OrderSummaryComponent {
-    private readonly cartStore = inject(CartStore);
+  private readonly cartStore = inject(CartStore);
 
-    cartItems = this.cartStore.cartItems;
-    subtotal = this.cartStore.totalPrice;
-    tax = computed(() => klarnaHelpers.calculateTax(this.subtotal()));
-    total = computed(() => this.subtotal() + this.tax());
+  cartItems = this.cartStore.cartItems;
+  subtotal = this.cartStore.totalPrice;
+  tax = computed(() => klarnaHelpers.calculateTax(this.subtotal()));
+  total = computed(() => this.subtotal() + this.tax());
 }

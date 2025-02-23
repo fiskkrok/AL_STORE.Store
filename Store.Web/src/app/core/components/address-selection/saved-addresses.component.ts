@@ -16,7 +16,7 @@ import { Address } from '../../../shared/models';
         @for (address of addresses(); track address.id) {
           <div 
             class="border rounded-lg p-4 relative hover:border-primary cursor-pointer"
-            [class.border-primary]="address.id === selectedId()"
+            [class.bg-accent]="address.id === selectedId()"
             (click)="onSelect(address)" (keydown)="null"
             tabindex="0"
           >

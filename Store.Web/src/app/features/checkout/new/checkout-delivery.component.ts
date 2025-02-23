@@ -13,9 +13,7 @@ import { Component, signal } from "@angular/core";
     }
 
     @for (option of deliveryOptions(); track option.name) {
-      <div class="flex items-center justify-between border-b py-4">
-        <!-- class="px-4 py-2 text-sm border rounded-md hover:bg-accent" -->
-        <!-- [class.text-primary-foreground]="selectedOption() === option.name" -->
+      <div class="flex items-center justify-between border-b rounded-lg py-4 hover:border-primary hover:border  {{selectedOption() === option.name ? 'bg-accent' : ''}}">
         <button
         class="w-full px-4 py-2 text-left flex items-center justify-between rounded-md"
         [class.bg-accent]="selectedOption() === option.name"
@@ -66,7 +64,7 @@ export class CheckoutDeliveryComponent {
     { name: 'UPS', description: 'Express delivery - Next business day', price: 10, logo: 'ups.svg' },
   ]);
 
-  selectOption(option: any) {
+  selectOption(option: { name: string; description: string; price: number; logo: string }) {
     this.selectedOption.set(option.name);
     // Emit selection to parent/store
   }

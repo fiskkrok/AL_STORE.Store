@@ -9,12 +9,12 @@ import { CartStore } from '../../../core/state';
 import { ErrorService } from '../../../core/services/error.service';
 import { KlarnaSessionResponse } from '../../../shared/models';
 import { ThemeService } from '../../../core/services/theme.service';
+import { CreditCardFormComponent } from './credit-card-form.component';
 
-// checkout-payment.component.ts
 @Component({
   selector: 'app-checkout-payment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CreditCardFormComponent],
   template: `
     @if (loading()) {
       <div class="flex items-center justify-center h-64">
@@ -24,7 +24,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     <div class="space-y-4">
       <!-- Credit Card -->
-      <div class="border rounded-lg overflow-hidden">
+      <div class="border rounded-lg overflow-hidden hover:border-primary">
         <button 
           class="w-full px-4 py-2 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD"
@@ -48,19 +48,13 @@ import { ThemeService } from '../../../core/services/theme.service';
 
         @if (selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD) {
           <div class="p-4 border-t">
-            <div class="grid gap-4">
-              <input type="text" placeholder="Card Number" class="w-full px-4 py-3 border rounded-md" />
-              <div class="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="MM/YY" class="px-4 py-3 border rounded-md" />
-                <input type="text" placeholder="CVV" class="px-4 py-3 border rounded-md" />
+                <app-credit-card-form></app-credit-card-form>
               </div>
-            </div>
-          </div>
         }
       </div>
 
       <!-- Klarna -->
-      <div class="border rounded-lg overflow-hidden">
+      <div class="border rounded-lg overflow-hidden hover:border-primary">
         <button 
           class="w-full px-4 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.KLARNA"
@@ -87,7 +81,7 @@ import { ThemeService } from '../../../core/services/theme.service';
       </div>
 
       <!-- Swish -->
-      <div class="border rounded-lg overflow-hidden">
+      <div class="border rounded-lg overflow-hidden hover:border-primary">
         <button 
           class="w-full px-4 py-3 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.SWISH"
@@ -189,7 +183,7 @@ export class CheckoutPaymentComponent {
       });
     });
   }
-  // Kanske borde ligga i en service eller iag en egen fil
+
   private async initKlarnaCheckout() {
     this.loading.set(true);
     this.error.set(null);
@@ -243,8 +237,6 @@ export class CheckoutPaymentComponent {
     }
   }
 
-
-
   private loadPaymentWidget() {
     if (!window.Klarna) return;
 
@@ -272,54 +264,4 @@ export class CheckoutPaymentComponent {
       document.body.appendChild(script);
     });
   }
-
-  // async initiatePayment() {
-  //   if (!this.sessionId || !this.selectedPaymentMethod()) return;
-
-  //   this.loading.set(true);
-  //   this.error.set(null);
-
-  //   try {
-  //     await new Promise<void>((resolve, reject) => {
-  //       if (!window.Klarna?.Payments) {
-  //         reject(new Error('Klarna is not initialized'));
-  //         return;
-  //       }
-
-  //       window.Klarna.Payments.authorize({}, {}, async (response) => {
-  //         if (!response.approved) {
-  //           reject(new Error(response.error?.message || 'Payment not approved'));
-  //           return;
-  //         }
-  //         try {
-  //           const result = await firstValueFrom(
-  //             this.checkoutService.authorizePayment({ sessionId: this.sessionId! })
-  //           );
-
-  //           if (result.success) {
-  //             // Clear checkout state on successful payment
-  //             this.checkoutState.clearCheckoutState();
-
-  //             this.router.navigate(['/checkout/confirmation'], {
-  //               queryParams: { orderId: result.orderId }
-  //             });
-  //           } else {
-  //             reject(new Error(result.error?.message ?? 'Authorization failed'));
-  //           }
-  //         } catch (err) {
-  //           reject(new Error(err instanceof Error ? err.message : 'Payment processing failed'));
-  //         }
-  //         resolve();
-  //       });
-  //     });
-  //   } catch (err) {
-  //     this.error.set(err instanceof Error ? err.message : 'Payment failed');
-  //     this.errorService.addError('PAYMENT_ERROR', 'Failed to process payment', {
-  //       severity: 'error',
-  //       context: { error: err }
-  //     });
-  //   } finally {
-  //     this.loading.set(false);
-  //   }
-  // }
 }
