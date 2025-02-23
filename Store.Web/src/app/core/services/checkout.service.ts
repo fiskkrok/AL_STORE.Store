@@ -33,6 +33,10 @@ export class CheckoutService {
         });
     }
 
+    // If there already is an session id, we can use it to retrieve the session
+    getKlarnaSession(sessionId: string) {
+        return this.http.get<KlarnaSessionResponse>(`${this.storeApiUrl}/sessions/${sessionId}`);
+    }
     private generateIdempotencyKey(cart: CartItem[]): string {
         const cartString = JSON.stringify(cart.map(item => ({
             id: item.id,

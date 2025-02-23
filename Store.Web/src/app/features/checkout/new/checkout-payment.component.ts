@@ -1,11 +1,14 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { PaymentMethod } from '../../../shared/models';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
 import { CheckoutStateService } from '../../../core/services/checkout-state.service';
-import { CheckoutService } from '../../../core/services/checkout.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConstPaymentMethods } from '../../../shared/global/const-payment-methods.enum';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { CheckoutService } from '../../../core/services/checkout.service';
+import { CartStore } from '../../../core/state';
+import { ErrorService } from '../../../core/services/error.service';
+import { KlarnaSessionResponse } from '../../../shared/models';
+import { ThemeService } from '../../../core/services/theme.service';
 
 // checkout-payment.component.ts
 @Component({
@@ -19,30 +22,100 @@ import { ConstPaymentMethods } from '../../../shared/global/const-payment-method
       </div>
     }
 
-    <!-- Payment Method Selection -->
     <div class="space-y-4">
-      <div class="grid gap-4">
-        @for(method of paymentMethods(); track method) {
-          <button class="w-full px-4 py-3 text-left border rounded-md" [class.border-primary]="selectedPaymentMethod() === method" (click)="selectPaymentMethod(method)">
-            <div class="flex items-center gap-3">
-              <span>{{ method }}</span>
+      <!-- Credit Card -->
+      <div class="border rounded-lg overflow-hidden">
+        <button 
+          class="w-full px-4 py-2 text-left flex items-center justify-between"
+          [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD"
+          [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD"
+          (click)="selectPaymentMethod(constPaymentMethods.CREDIT_CARD)"
+        >
+         <div class="flex items-center gap-3"> 
+            <div class="border rounded-full w-5 h-5 flex items-center justify-center">
+              @if (selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD) {
+                <div class="w-3 h-3 bg-primary rounded-full"></div>
+              }
             </div>
-          </button>
+            <span>Credit Card</span>
+          </div>
+          <!-- Placeholder for card logos -->
+          <div class="flex gap-2">
+            <img class="{{currentTheme() === 'light' ? '' : 'hidden'}}" src="assets/websitelogos/credit-card.svg" alt="Visa" class="h-10 w-12">
+            <img class="{{currentTheme() === 'light' ? 'hidden' : ''}}" src="assets/websitelogos/credit-card-white.svg" alt="Visa" class="h-10 w-12">
+          </div>
+        </button>
+
+        @if (selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD) {
+          <div class="p-4 border-t">
+            <div class="grid gap-4">
+              <input type="text" placeholder="Card Number" class="w-full px-4 py-3 border rounded-md" />
+              <div class="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="MM/YY" class="px-4 py-3 border rounded-md" />
+                <input type="text" placeholder="CVV" class="px-4 py-3 border rounded-md" />
+              </div>
+            </div>
+          </div>
         }
       </div>
-      @if (selectedPaymentMethod() === 'credit_card') {
-        <div class="grid gap-4">
-          <input type="text" placeholder="Card Number" class="w-full px-4 py-3 border rounded-md" [inputMode]="creditCard.cardNumber" />
-          <input type="text" placeholder="Expiry Date" class="w-full px-4 py-3 border rounded-md" [inputMode]="creditCard.expiryDate" />
-          <input type="text" placeholder="CVV" class="w-full px-4 py-3 border rounded-md" [inputMode]="creditCard.cvv" />
+
+      <!-- Klarna -->
+      <div class="border rounded-lg overflow-hidden">
+        <button 
+          class="w-full px-4 text-left flex items-center justify-between"
+          [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.KLARNA"
+          [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.KLARNA"
+          (click)="selectPaymentMethod(constPaymentMethods.KLARNA)"
+        >
+          <div class="flex items-center gap-3">
+            <div class="border rounded-full w-5 h-5 flex items-center justify-center">
+              @if (selectedPaymentMethod() === constPaymentMethods.KLARNA) {
+                <div class="w-3 h-3 bg-primary rounded-full"></div>
+              }
+            </div>
+            <span>Klarna</span>
+          </div>
+          <!-- Placeholder for Klarna logo -->
+          <div class="flex  gap-2">
+           <img src="assets/svg/klarna-svgrepo-com.svg" alt="KLARNA" class="h-14 w-14">
+          </div>
+        </button>
+
+        <div class="p-4 border-t {{ selectedPaymentMethod() !== constPaymentMethods.KLARNA ? 'hidden' : '' }}">
+          <div id="klarna-payments-container" class="bg-background w-full h-full"></div>
         </div>
-      } @else if (selectedPaymentMethod()) {
-        <div class="grid gap-4">
-          <div class="w-full px-4 py-3 border rounded-md"></div>
-          <div class="w-full px-4 py-3 border rounded-md"></div>
-          <div class="w-full px-4 py-3 border rounded-md"></div>
-        </div>
-      }
+      </div>
+
+      <!-- Swish -->
+      <div class="border rounded-lg overflow-hidden">
+        <button 
+          class="w-full px-4 py-3 text-left flex items-center justify-between"
+          [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.SWISH"
+          [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.SWISH"
+          (click)="selectPaymentMethod(constPaymentMethods.SWISH)"
+        >
+          <div class="flex items-center gap-3">
+            <div class="border rounded-full w-5 h-5 flex items-center justify-center">
+              @if (selectedPaymentMethod() === constPaymentMethods.SWISH) {
+                <div class="w-3 h-3 bg-primary rounded-full"></div>
+              }
+            </div>
+            <span>Swish</span>
+          </div>
+          <!-- Placeholder for Swish logo -->
+            <div class="flex  gap-2">
+             <img src="assets/websitelogos/swish-logo.png" alt="SWISH" class="h-5 w-16">
+          </div>
+        </button>
+
+        @if (selectedPaymentMethod() === constPaymentMethods.SWISH) {
+          <div class="p-4 border-t">
+            <!-- Swish payment content -->
+              <input type="number" placeholder="PHONENUMBER" class="px-4 py-3 border rounded-md" />
+          </div>
+        }
+      </div>
+
     </div>
 
     @if (error()) {
@@ -54,214 +127,199 @@ import { ConstPaymentMethods } from '../../../shared/global/const-payment-method
 })
 export class CheckoutPaymentComponent {
   private readonly checkoutState = inject(CheckoutStateService);
+  private readonly checkoutService = inject(CheckoutService);
+  private readonly errorService = inject(ErrorService);
+  private readonly theme = inject(ThemeService);
   private readonly auth = inject(AuthService);
+  private readonly cartStore = inject(CartStore);
+  currentTheme = computed(() => {
+    const theme = this.theme.currentTheme();
+    return theme;
+  })
+  cartItems = this.cartStore.cartItems;
   loading = signal(false);
-  paymentMethods = signal<string[]>([ConstPaymentMethods.CREDIT_CARD, ConstPaymentMethods.KLARNA, ConstPaymentMethods.SWISH, ConstPaymentMethods.APPLE_PAY]);
+  constPaymentMethods = ConstPaymentMethods;
   error = signal<string | null>(null);
   selectedPaymentMethod = signal<string | null>(null);
+  shippingInfo = computed(() => this.checkoutState.getShippingInformation());
   creditCard = {
     cardNumber: '',
     expiryDate: '',
     cvv: ''
   };
   sessionId: string | null = null;
+  sessionData = signal<KlarnaSessionResponse | undefined>(undefined);
+  private readonly KLARNA_SESSION_KEY = 'klarnaSession';
+  private readonly KLARNA_SESSION_TTL = 30 * 60 * 1000; // 30 minutes
+
+  private saveKlarnaSession(session: KlarnaSessionResponse) {
+    const sessionData = {
+      session,
+      expiry: Date.now() + this.KLARNA_SESSION_TTL
+    };
+    localStorage.setItem(this.KLARNA_SESSION_KEY, JSON.stringify(sessionData));
+  }
+
+  private getKlarnaSession(): KlarnaSessionResponse | null {
+    const sessionData = localStorage.getItem(this.KLARNA_SESSION_KEY);
+    if (!sessionData) return null;
+
+    const { session, expiry } = JSON.parse(sessionData);
+    if (Date.now() > expiry) {
+      localStorage.removeItem(this.KLARNA_SESSION_KEY);
+      return null;
+    }
+    return session;
+  }
+
   selectPaymentMethod(payment: string) {
     this.checkoutState.setSelectedPaymentMethod(payment);
     this.selectedPaymentMethod.set(payment);
+    if (payment === ConstPaymentMethods.KLARNA) {
+      this.loadPaymentWidget();
+    }
+  }
+  constructor() {
+    // Subscribe to auth state and shipping info
+    effect(() => {
+      firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
+        if (isAuthenticated && this.shippingInfo()) {
+          this.initKlarnaCheckout();
+        }
+      });
+    });
+  }
+  // Kanske borde ligga i en service eller iag en egen fil
+  private async initKlarnaCheckout() {
+    this.loading.set(true);
+    this.error.set(null);
+
+    try {
+      let session = this.getKlarnaSession();
+      if (!session) {
+        const info = this.shippingInfo();
+        if (!info) {
+          throw new Error('Shipping information is required');
+        }
+
+        session = await firstValueFrom(
+          this.checkoutService.createKlarnaSession(this.cartItems(), {
+            email: info.email ?? '',
+            phone: info.phone,
+            shippingAddress: {
+              street: info.street,
+              city: info.city,
+              state: info.city, // Using city as state for Sweden
+              country: info.country,
+              postalCode: info.postalCode,
+              id: '',
+              type: 'shipping',
+              firstName: '',
+              lastName: '',
+              isDefault: false
+            }
+          })
+        );
+        this.saveKlarnaSession(session);
+      }
+      this.sessionData.set(session);
+      this.sessionId = session.sessionId;
+
+      await this.loadKlarnaScript();
+      if (window.Klarna) {
+        window.Klarna.Payments.init({ client_token: session.clientToken });
+        this.loadPaymentWidget();
+      } else {
+        this.error.set('Klarna is not available at this time');
+      }
+    } catch (err) {
+      this.error.set('Failed to initialize checkout. Please try again.');
+      this.errorService.addError('CHECKOUT_ERROR', 'Failed to initialize checkout', {
+        severity: 'error',
+        context: { error: err }
+      });
+    } finally {
+      this.loading.set(false);
+    }
   }
 
+
+
+  private loadPaymentWidget() {
+    if (!window.Klarna) return;
+
+    window.Klarna.Payments.load({
+      container: '#klarna-payments-container',
+      payment_method_category: 'pay_later'
+    }, {}, (res) => {
+      if (!res.show_form) {
+        this.error.set('Selected payment method is not available at this time');
+      }
+    });
+  }
+
+  private loadKlarnaScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (window.Klarna) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Klarna script'));
+      document.body.appendChild(script);
+    });
+  }
+
+  // async initiatePayment() {
+  //   if (!this.sessionId || !this.selectedPaymentMethod()) return;
+
+  //   this.loading.set(true);
+  //   this.error.set(null);
+
+  //   try {
+  //     await new Promise<void>((resolve, reject) => {
+  //       if (!window.Klarna?.Payments) {
+  //         reject(new Error('Klarna is not initialized'));
+  //         return;
+  //       }
+
+  //       window.Klarna.Payments.authorize({}, {}, async (response) => {
+  //         if (!response.approved) {
+  //           reject(new Error(response.error?.message || 'Payment not approved'));
+  //           return;
+  //         }
+  //         try {
+  //           const result = await firstValueFrom(
+  //             this.checkoutService.authorizePayment({ sessionId: this.sessionId! })
+  //           );
+
+  //           if (result.success) {
+  //             // Clear checkout state on successful payment
+  //             this.checkoutState.clearCheckoutState();
+
+  //             this.router.navigate(['/checkout/confirmation'], {
+  //               queryParams: { orderId: result.orderId }
+  //             });
+  //           } else {
+  //             reject(new Error(result.error?.message ?? 'Authorization failed'));
+  //           }
+  //         } catch (err) {
+  //           reject(new Error(err instanceof Error ? err.message : 'Payment processing failed'));
+  //         }
+  //         resolve();
+  //       });
+  //     });
+  //   } catch (err) {
+  //     this.error.set(err instanceof Error ? err.message : 'Payment failed');
+  //     this.errorService.addError('PAYMENT_ERROR', 'Failed to process payment', {
+  //       severity: 'error',
+  //       context: { error: err }
+  //     });
+  //   } finally {
+  //     this.loading.set(false);
+  //   }
+  // }
 }
-
-
-
-// import { Component, computed, effect, inject, signal } from '@angular/core';
-// import { PaymentMethod } from '../../../shared/models';
-// import { CommonModule } from '@angular/common';
-// import { firstValueFrom } from 'rxjs';
-// import { CheckoutStateService } from '../../../core/services/checkout-state.service';
-// import { CheckoutService } from '../../../core/services/checkout.service';
-// import { ErrorService } from '../../../core/services/error.service';
-
-// // checkout-payment.component.ts
-// @Component({
-//   selector: 'app-checkout-payment',
-//   standalone: true,
-//   imports: [CommonModule],
-//   template: `
-//     @if (loading()) {
-//       <div class="flex items-center justify-center h-64">
-//         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-//       </div>
-//     }
-
-//     <!-- Payment Method Selection -->
-//     <!-- @if (paymentMethods().length > 0) {
-//       <div class="space-y-4">
-//         <div class="grid gap-4">
-//           @for (method of paymentMethods(); track method.id) {
-//             <button
-//               class="w-full px-4 py-3 text-left border rounded-md"
-//               [class.border-primary]="selectedPaymentMethod() === method.identifier"
-//               (click)="selectPaymentMethod(method.identifier)"
-//             >
-//               <div class="flex items-center gap-3">
-//                 <img [src]="method.assetUrls?.descriptive" [alt]="method.name" 
-//                      class="w-8 h-8">
-//                 <span>{{ method.name }}</span>
-//               </div>
-//             </button>
-//           }
-//         </div>
-
-//         <div id="klarna-payments-container" class="bg-background"></div>
-
-//       </div> -->
-//     }
-
-//     @if (error()) {
-//       <div class="p-4 mt-4 bg-red-50 text-red-700 rounded-lg">
-//         {{ error() }}
-//       </div>
-//     }
-//   `
-// })
-// export class CheckoutPaymentComponent {
-//   private readonly checkoutState = inject(CheckoutStateService);
-//   private readonly checkoutService = inject(CheckoutService);
-//   private readonly errorService = inject(ErrorService);
-//   shippingInfo = computed(() => this.checkoutState.getShippingInformation());
-//   loading = signal(false);
-//   error = signal<string | null>(null);
-//   paymentMethods = signal<PaymentMethod[]>([]);
-//   selectedPaymentMethod = signal<string | null>(null);
-//   sessionId: string | null = null;
-//   selectPaymentMethod(payment: PaymentMethod) {
-//     this.checkoutState.setPaymentMethod(payment);
-//   }
-//   // selectPaymentMethod(identifier: string) {
-//   //   this.selectedPaymentMethod.set(identifier);
-//   //   this.loadPaymentWidget();
-//   // }
-
-//   private loadPaymentWidget() {
-//     if (!window.Klarna || !this.selectedPaymentMethod()) return;
-
-//     window.Klarna.Payments.load({
-//       container: '#klarna-payments-container',
-//       payment_method_category: this.selectedPaymentMethod() ?? undefined
-//     }, {}, (res) => {
-//       if (!res.show_form) {
-//         this.error.set('Selected payment method is not available at this time');
-//       }
-//     });
-//   }
-//   // async initiatePayment() {
-//   //   if (!this.sessionId || !this.selectedPaymentMethod()) return;
-
-//   //   this.loading.set(true);
-//   //   this.error.set(null);
-
-//   //   try {
-//   //     await new Promise<void>((resolve, reject) => {
-//   //       if (!window.Klarna?.Payments) {
-//   //         reject(new Error('Klarna is not initialized'));
-//   //         return;
-//   //       }
-
-//   //       window.Klarna.Payments.authorize({}, {}, async (response) => {
-//   //         if (!response.approved) {
-//   //           reject(new Error(response.error?.message || 'Payment not approved'));
-//   //           return;
-//   //         }
-
-//   //         try {
-//   //           const result = await firstValueFrom(
-//   //             this.checkoutService.authorizePayment({ sessionId: this.sessionId! })
-//   //           );
-
-//   //           if (result.success) {
-//   //             // Clear checkout state on successful payment
-//   //             this.checkoutState.clearCheckoutState();
-//   //           } else {
-//   //             reject(new Error(result.error?.message ?? 'Authorization failed'));
-//   //           }
-//   //         } catch (err) {
-//   //           reject(new Error(err instanceof Error ? err.message : 'Payment processing failed'));
-//   //         }
-//   //         resolve();
-//   //       });
-//   //     });
-//   //   } catch (err) {
-//   //     this.error.set(err instanceof Error ? err.message : 'Payment failed');
-//   //     this.errorService.addError('PAYMENT_ERROR', 'Failed to process payment', {
-//   //       severity: 'error',
-//   //       context: { error: err }
-//   //     });
-//   //   } finally {
-//   //     this.loading.set(false);
-//   //   }
-//   // }
-//   constructor() {
-//       // Subscribe to auth state and shipping info
-//       effect(() => {
-//         firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
-//           if (isAuthenticated && this.shippingInfo()) {
-//             this.initKlarnaCheckout();
-//           }
-//         });
-//       });
-//     }
-
-//     editShippingInfo() {
-//       this.router.navigate(['/checkout/information']);
-//     }
-
-//     private async initKlarnaCheckout() {
-//       this.loading.set(true);
-//       this.error.set(null);
-
-//       try {
-//         const info = this.shippingInfo();
-//         if (!info) {
-//           throw new Error('Shipping information is required');
-//         }
-
-//         const session = await firstValueFrom(
-//           this.checkoutService.createKlarnaSession(this.cartItems(), {
-//             email: info.email ?? '',
-//             phone: info.phone,
-//             shippingAddress: {
-//               street: info.street,
-//               city: info.city,
-//               state: info.city, // Using city as state for Sweden
-//               country: info.country,
-//               postalCode: info.postalCode,
-//               id: '',
-//               type: 'shipping',
-//               firstName: '',
-//               lastName: '',
-//               isDefault: false
-//             }
-//           })
-//         );
-
-//         this.sessionId = session.session_id;
-//         this.paymentMethods.set(session.paymentMethods);
-
-//         if (session.paymentMethods.length > 0) {
-//           this.selectPaymentMethod(session.paymentMethods[0].identifier);
-//         }
-//       }
-//       catch (err) {
-//         this.error.set(err instanceof Error ? err.message : 'Failed to initialize payment');
-//         this.errorService.addError('PAYMENT_INIT_ERROR', 'Failed to initialize payment', {
-//           severity: 'error',
-//           context: { error: err }
-//         });
-//       }
-//       finally {
-//         this.loading.set(false);
-//       }
-//     }
-  
-// }

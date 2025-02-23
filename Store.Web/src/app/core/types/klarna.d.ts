@@ -24,3 +24,12 @@ declare global {
 }
 
 export { };
+
+// interface payment_method_category {
+//     identifier: string;
+//     name: string;
+//     assetUrls: {
+//         descriptive: string;
+//         standard: string;
+//     };
+// }

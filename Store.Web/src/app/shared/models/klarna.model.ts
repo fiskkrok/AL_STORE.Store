@@ -19,8 +19,8 @@ export interface KlarnaSessionRequest {
 }
 
 export interface KlarnaSessionResponse {
-    session_id: string;
-    client_token: string;
+    sessionId: string;
+    clientToken: string;
     paymentMethods: PaymentMethod[];
 }
 export interface PaymentMethod {
