@@ -13,4 +13,5 @@ export enum ConstPaymentMethods {
     KLARNA = 'klarna',
     SWISH = 'swish',
     APPLE_PAY = 'apple_pay',
+    BANK_PAYMENT = 'bank_payment',
 }
