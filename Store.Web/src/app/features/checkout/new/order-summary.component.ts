@@ -1,6 +1,6 @@
 import { CommonModule, CurrencyPipe } from "@angular/common";
 import { Component, inject, computed } from "@angular/core";
-import { klarnaHelpers } from "../../../core/config/klarna.config";
+import { klarnaHelpers } from "../../../shared/klarna/klarna.config";
 import { CartStore } from "../../../core/state";
 
 // order-summary.component.ts

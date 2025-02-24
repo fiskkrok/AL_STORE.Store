@@ -8,7 +8,7 @@ import { AuthService } from '@auth0/auth0-angular';
 import { CustomerService } from '../../../core/services/customer.service';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { CheckoutSessionService } from '../../../core/services/checkout-session';
-import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner/loading-spinner.component";
+import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner.component";
 import { ErrorService } from '../../../core/services/error.service';
 import { InputFieldType } from '../../../shared/forms/formly/input-field.type';
 import { SelectFieldType } from '../../../shared/forms/formly/select-field.type';

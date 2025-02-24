@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from "./core/components/layout/navbar/navbar.component";
-import { ConnectionMonitorComponent } from './core/components/connection-monitor/connection-monitor.component';
-import { FooterComponent } from './core/components/footer/footer.component';
+import { ConnectionMonitorComponent } from './core/components/connection-monitor.component';
+import { FooterComponent } from './core/components/footer.component';
 
 @Component({
   selector: 'app-root',

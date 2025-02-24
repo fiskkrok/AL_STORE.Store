@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 // src/app/core/components/api-health-dashboard.component.ts
 import { Component, inject } from '@angular/core';
 import { ApiMonitorService } from '../services/api-monitor.service';

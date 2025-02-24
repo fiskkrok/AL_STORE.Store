@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CustomerService } from '../../core/services/customer.service';
-import { LoadingSpinnerComponent } from '../../core/components/loading-spinner/loading-spinner.component';
+import { LoadingSpinnerComponent } from '../../core/components/loading-spinner.component';
 import { PersonalInfoComponent } from "./personal-info.component";
 import { AddressBookComponent } from "./address-book.component";
 import { OrderHistoryComponent } from "./order-history.component";

@@ -4,11 +4,19 @@ using Store.Application.Contracts;
 
 namespace Store.API.Endpoints.Payments;
 
+/// <summary>
+/// Endpoint for retrieving a payment session based on its identifier.
+/// </summary>
 public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, CreatePaymentSessionResponse>
 {
     private readonly ILogger<GetPaymentSessionEndpoint> _logger;
     private readonly IPaymentSessionRepository _sessionRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetPaymentSessionEndpoint"/> class.
+    /// </summary>
+    /// <param name="sessionRepository">The repository for accessing payment sessions.</param>
+    /// <param name="logger">The logger instance.</param>
     public GetPaymentSessionEndpoint(
         IPaymentSessionRepository sessionRepository,
         ILogger<GetPaymentSessionEndpoint> logger)
@@ -17,6 +25,9 @@ public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, Crea
         _logger = logger;
     }
 
+    /// <summary>
+    /// Configures the endpoint route and metadata.
+    /// </summary>
     public override void Configure()
     {
         Get("/checkout/sessions/{Id}");
@@ -29,6 +40,12 @@ public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, Crea
             .WithOpenApi());
     }
 
+    /// <summary>
+    /// Handles the incoming request to retrieve a payment session.
+    /// </summary>
+    /// <param name="req">The request containing the payment session identifier.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public override async Task HandleAsync(GetPaymentSessionRequest req, CancellationToken ct)
     {
         var session = await _sessionRepository.GetByIdAsync(req.Id, ct);
@@ -55,7 +72,7 @@ public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, Crea
                 }
             }
         };
-
+        _logger.LogInformation("Returning payment session {Id}", session.Id);
         await SendOkAsync(response, ct);
     }
 }

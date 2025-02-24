@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // src/app/core/types/klarna.d.ts
 declare global {
     interface Window {
@@ -16,7 +16,9 @@ declare global {
                 authorize: (
                     options: Record<string, unknown>,
                     data: Record<string, unknown>,
-                    callback: (response: { approved: boolean; show_form: boolean; error?: any }) => void
+                    callback: (response: {
+                        authorization_token: any; approved: boolean; show_form: boolean; error?: any
+                    }) => void
                 ) => void;
             };
         };

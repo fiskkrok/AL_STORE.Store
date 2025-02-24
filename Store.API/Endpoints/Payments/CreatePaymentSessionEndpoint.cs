@@ -6,6 +6,18 @@ using Store.Application.Contracts;
 
 namespace Store.API.Endpoints.Payments;
 
+/// <summary>
+/// Endpoint to create a new payment session.
+/// </summary>
+/// <remarks>
+/// This endpoint handles the creation of a new payment session. It ensures idempotency by checking the Idempotency-Key header.
+/// If the request is successful, it returns a 201 status code with the created payment session details.
+/// If the Idempotency-Key header is missing or the request is a duplicate, it returns appropriate error responses.
+/// </remarks>
+/// <response code="201">Payment session created successfully.</response>
+/// <response code="400">Bad request, typically due to missing Idempotency-Key header or validation errors.</response>
+/// <response code="409">Conflict, indicating a duplicate request detected by the Idempotency-Key.</response>
+/// <response code="500">Internal server error, typically due to unexpected errors during processing.</response>
 public class
     CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest, CreatePaymentSessionResponse, PaymentMapper>
 {
@@ -13,6 +25,12 @@ public class
     private readonly ILogger<CreatePaymentSessionEndpoint> _logger;
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mediator"></param>
+    /// <param name="idempotencyService"></param>
+    /// <param name="logger"></param>
     public CreatePaymentSessionEndpoint(
         IMediator mediator,
         IIdempotencyService idempotencyService,
@@ -23,6 +41,9 @@ public class
         _logger = logger;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Post("/checkout/sessions");
@@ -36,6 +57,11 @@ public class
             .WithOpenApi());
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="req"></param>
+    /// <param name="ct"></param>
     public override async Task HandleAsync(CreatePaymentSessionRequest req, CancellationToken ct)
     {
         var idempotencyKey = HttpContext.Request.Headers["Idempotency-Key"].ToString();
@@ -56,7 +82,7 @@ public class
                 return;
             }
 
-            var command = Map.ToEntity(req);
+            var command = await Map.ToEntityAsync(req, CancellationToken.None);
 
             var result = await _mediator.Send(command, ct);
 

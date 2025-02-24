@@ -7,14 +7,17 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { CheckoutService } from '../../../core/services/checkout.service';
 import { CartStore } from '../../../core/state';
 import { ErrorService } from '../../../core/services/error.service';
-import { KlarnaSessionResponse } from '../../../shared/models';
+import { KlarnaSessionResponse, PaymentMethod, PaymentSession } from '../../../shared/models';
 import { ThemeService } from '../../../core/services/theme.service';
 import { CreditCardFormComponent } from './credit-card-form.component';
+import { BankPaymentFormComponent } from './bank-payment-form.component';
+import { BankPaymentService } from '../../../core/services/bank-payment.service';
+import { PaymentProviderFactory } from '../../../core/providers/payment-provider.factory';
 
 @Component({
   selector: 'app-checkout-payment',
   standalone: true,
-  imports: [CommonModule, CreditCardFormComponent],
+  imports: [CommonModule, CreditCardFormComponent, BankPaymentFormComponent],
   template: `
     @if (loading()) {
       <div class="flex items-center justify-center h-64">
@@ -110,6 +113,35 @@ import { CreditCardFormComponent } from './credit-card-form.component';
         }
       </div>
 
+      <!-- Bank Payment -->
+      <div class="border rounded-lg overflow-hidden hover:border-primary">
+        <button 
+          class="w-full px-4 py-3 text-left flex items-center justify-between"
+          [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT"
+          [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT"
+          (click)="selectPaymentMethod(constPaymentMethods.BANK_PAYMENT)"
+        >
+          <div class="flex items-center gap-3">
+            <div class="border rounded-full w-5 h-5 flex items-center justify-center">
+              @if (selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT) {
+                <div class="w-3 h-3 bg-primary rounded-full"></div>
+              }
+            </div>
+            <span>Bank Payment</span>
+          </div>
+          <!-- Placeholder for Bank logos -->
+          <div class="flex  gap-2">
+            <img src="assets/websitelogos/bank-logo.png" alt="BANK" class="h-5 w-16">
+          </div>
+        </button>
+
+        @if (selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT) {
+          <div class="p-4 border-t">
+            <app-bank-payment-form></app-bank-payment-form>
+          </div>
+        }
+      </div>
+
     </div>
 
     @if (error()) {
@@ -126,6 +158,8 @@ export class CheckoutPaymentComponent {
   private readonly theme = inject(ThemeService);
   private readonly auth = inject(AuthService);
   private readonly cartStore = inject(CartStore);
+  private readonly bankPaymentService = inject(BankPaymentService);
+  private readonly paymentProviderFactory = inject(PaymentProviderFactory);
   currentTheme = computed(() => {
     const theme = this.theme.currentTheme();
     return theme;
@@ -134,6 +168,7 @@ export class CheckoutPaymentComponent {
   loading = signal(false);
   constPaymentMethods = ConstPaymentMethods;
   error = signal<string | null>(null);
+  paymentSession = signal<PaymentSession>({} as PaymentSession);
   selectedPaymentMethod = signal<string | null>(null);
   shippingInfo = computed(() => this.checkoutState.getShippingInformation());
   creditCard = {
@@ -166,11 +201,50 @@ export class CheckoutPaymentComponent {
     return session;
   }
 
-  selectPaymentMethod(payment: string) {
-    this.checkoutState.setSelectedPaymentMethod(payment);
-    this.selectedPaymentMethod.set(payment);
-    if (payment === ConstPaymentMethods.KLARNA) {
-      this.loadPaymentWidget();
+  async selectPaymentMethod(method: string) {
+    // Clear previous state
+    this.error.set(null);
+
+    // Update selection
+    this.selectedPaymentMethod.set(method);
+    this.checkoutState.setSelectedPaymentMethod(method);
+
+    // Initialize the selected payment method
+    if (method === 'klarna' || method === 'swish') {
+      await this.initializePaymentMethod(method);
+    }
+  }
+
+  private async initializePaymentMethod(method: string) {
+    this.loading.set(true);
+
+    try {
+      const provider = this.paymentProviderFactory.getProvider(method as PaymentMethod);
+
+      if (!provider) {
+        throw new Error(`Provider for ${method} not available`);
+      }
+
+      // Get total amount from cart
+      const amount = this.cartStore.totalPrice();
+
+      // Initialize payment session
+      const session = await provider.initializeSession(amount, 'SEK');
+
+      // Save to state
+      this.paymentSession.set(session);
+      this.checkoutState.setPaymentSessionId(session.sessionId);
+
+      // Method-specific handling
+      if (method === 'swish') {
+        // Fetch QR code or do other Swish-specific setup
+        // (This depends on your Swish implementation)
+      }
+    } catch (error) {
+      console.error(`Failed to initialize ${method}:`, error);
+      this.error.set(`Could not set up ${method} payment. Please try again.`);
+    } finally {
+      this.loading.set(false);
     }
   }
   constructor() {
@@ -263,5 +337,26 @@ export class CheckoutPaymentComponent {
       script.onerror = () => reject(new Error('Failed to load Klarna script'));
       document.body.appendChild(script);
     });
+  }
+
+  private async initBankPayment() {
+    this.loading.set(true);
+    this.error.set(null);
+
+    try {
+      const session = await firstValueFrom(this.bankPaymentService.createBankPaymentSession(this.cartItems()));
+      this.sessionData.set(session as unknown as KlarnaSessionResponse);
+      this.sessionId = (session as unknown as KlarnaSessionResponse).sessionId;
+
+      // Load bank payment widget or redirect to bank payment page
+    } catch (err) {
+      this.error.set('Failed to initialize bank payment. Please try again.');
+      this.errorService.addError('BANK_PAYMENT_ERROR', 'Failed to initialize bank payment', {
+        severity: 'error',
+        context: { error: err }
+      });
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 // src/app/core/components/layout/navbar.component.ts
 import { NgIf, AsyncPipe } from '@angular/common';
 import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';

@@ -44,7 +44,7 @@ export class ErrorService {
     // Implement fatal error handling
     this.logger.error('Fatal error encountered. Initiating full recovery.', error);
     // Lazy load the full-screen error component using dynamic import (assuming a lazy-loaded fatal error UI)
-    import('../components/fatal-error/fatal-error.component')
+    import('../components/fatal-error.component')
       .then(() => {
         // Here, you can display the full-screen error component if desired.
         // For example, using a component outlet or service to show the component.
