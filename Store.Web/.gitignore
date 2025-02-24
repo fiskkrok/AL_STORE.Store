@@ -12,6 +12,8 @@ angular.json
 .prettierrc
 .editorconfig
 eslint.config.js
+# Add everything in the assets folder
+/assets/*
 
 # Node
 /node_modules
