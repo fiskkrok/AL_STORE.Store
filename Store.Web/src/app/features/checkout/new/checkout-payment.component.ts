@@ -131,7 +131,7 @@ import { PaymentProviderFactory } from '../../../core/providers/payment-provider
           </div>
           <!-- Placeholder for Bank logos -->
           <div class="flex  gap-2">
-            <img src="assets/websitelogos/bank-logo.png" alt="BANK" class="h-5 w-16">
+            <img src="assets/websitelogos/credit-card.svg" alt="BANK" class="h-5 w-16">
           </div>
         </button>
 
@@ -170,7 +170,7 @@ export class CheckoutPaymentComponent {
   error = signal<string | null>(null);
   paymentSession = signal<PaymentSession>({} as PaymentSession);
   selectedPaymentMethod = signal<string | null>(null);
-  shippingInfo = computed(() => this.checkoutState.getShippingInformation());
+  shippingInfo = computed(() => this.checkoutState.getShippingAddress());
   creditCard = {
     cardNumber: '',
     expiryDate: '',
@@ -219,7 +219,7 @@ export class CheckoutPaymentComponent {
     this.loading.set(true);
 
     try {
-      const provider = this.paymentProviderFactory.getProvider(method as PaymentMethod);
+      const provider = this.paymentProviderFactory.getProvider(method);
 
       if (!provider) {
         throw new Error(`Provider for ${method} not available`);
@@ -247,16 +247,16 @@ export class CheckoutPaymentComponent {
       this.loading.set(false);
     }
   }
-  constructor() {
-    // Subscribe to auth state and shipping info
-    effect(() => {
-      firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
-        if (isAuthenticated && this.shippingInfo()) {
-          this.initKlarnaCheckout();
-        }
-      });
-    });
-  }
+  // constructor() {
+  //   // Subscribe to auth state and shipping info
+  //   effect(() => {
+  //     firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
+  //       if (isAuthenticated && this.shippingInfo()) {
+  //         this.initKlarnaCheckout();
+  //       }
+  //     });
+  //   });
+  // }
 
   private async initKlarnaCheckout() {
     this.loading.set(true);

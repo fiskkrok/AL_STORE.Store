@@ -2,6 +2,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { LoggerService } from './logger.service';
 import { AppError, ErrorOptions } from '../../shared/models/error.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ErrorService {
@@ -36,6 +37,10 @@ export class ErrorService {
 
     // Handle fatal errors differently
     if (error.severity === 'fatal') {
+      if (!environment.production) {
+        console.log('Fatal error detected:', error);
+        return;
+      }
       this.handleFatalError(error);
     }
   }

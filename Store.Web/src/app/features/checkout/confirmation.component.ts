@@ -4,10 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OrderService } from '../../core/services/order.service';
 import { CartStore } from '../../core/state/cart.store';
 import { CheckoutStateService } from '../../core/services/checkout-state.service';
-import { EmailService } from '../../core/services/email.service';
-import { OrderConfirmation } from '../../shared/models/order.model';
 import { CurrencyPipe } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { OrderConfirmation } from '../../shared/models';
+import { EmailService } from '../../core/services/email.service';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -66,10 +66,10 @@ import { environment } from '../../../environments/environment';
             <h2 class="font-semibold text-lg mb-2">Shipping Address</h2>
             @if (orderDetails()?.shippingAddress) {
               <div class="text-sm text-muted-foreground">
-                <p>{{ orderDetails()?.shippingAddress.firstName }} {{ orderDetails()?.shippingAddress.lastName }}</p>
-                <p>{{ orderDetails()?.shippingAddress.street }}</p>
-                <p>{{ orderDetails()?.shippingAddress.city }}, {{ orderDetails()?.shippingAddress.postalCode }}</p>
-                <p>{{ orderDetails()?.shippingAddress.country }}</p>
+                <p>{{ orderDetails()?.shippingAddress?.firstName }} {{ orderDetails()?.shippingAddress?.lastName }}</p>
+                <p>{{ orderDetails()?.shippingAddress?.street }}</p>
+                <p>{{ orderDetails()?.shippingAddress?.city }}, {{ orderDetails()?.shippingAddress?.postalCode }}</p>
+                <p>{{ orderDetails()?.shippingAddress?.country }}</p>
               </div>
             }
           </div>

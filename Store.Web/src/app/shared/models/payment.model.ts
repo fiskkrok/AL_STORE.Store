@@ -1,4 +1,4 @@
-// src/app/core/models/payment.model.ts
+// src/app/shared/models/payment.model.ts
 export interface PaymentProvider {
     initializeSession(amount: number, currency: string): Promise<PaymentSession>;
     processPayment(sessionId: string): Promise<PaymentResult>;
@@ -17,5 +17,9 @@ export type PaymentSessionStatus = 'pending' | 'processing' | 'completed' | 'fai
 export interface PaymentResult {
     success: boolean;
     message: string;
-    // add additional properties if required
+    transactionId?: string;
+    error?: {
+        code: string;
+        details?: any;
+    };
 }

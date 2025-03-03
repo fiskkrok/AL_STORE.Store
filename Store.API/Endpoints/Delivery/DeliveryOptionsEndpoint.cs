@@ -28,24 +28,51 @@ public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDe
         {
             DeliveryOptions = new List<DeliveryOption>
             {
-                new DeliveryOption
+                new()
                 {
-                    Id = Guid.NewGuid(),
-                    Name = "Standard",
-                    Price = 5.99m,
-                    EstimatedDelivery = TimeSpan.FromDays(3)
+                    Id = "postnord-home",
+                    Name = "PostNord Hemleverans",
+                    Description = "Leverans direkt till din dörr",
+                    EstimatedDelivery = "1-3 arbetsdagar",
+                    Price = 49,
+                    Currency = "SEK",
+                    Logo = "assets/delivery/postnord-logo.png"
                 },
-                new DeliveryOption
+                new()
                 {
-                    Id = Guid.NewGuid(),
-                    Name = "Express",
-                    Price = 9.99m,
-                    EstimatedDelivery = TimeSpan.FromDays(1)
+                    Id = "postnord-pickup",
+                    Name = "PostNord Ombud",
+                    Description = "Hämta ditt paket hos ombud",
+                    EstimatedDelivery = "1-2 arbetsdagar",
+                    Price = 0,
+                    Currency = "SEK",
+                    Logo = "assets/delivery/postnord-logo.png"
+                },
+                new()
+                {
+                    Id = "instabox",
+                    Name = "Instabox",
+                    Description = "Leverans till Instabox-skåp",
+                    EstimatedDelivery = "Inom 24 timmar",
+                    Price = 29,
+                    Currency = "SEK",
+                    Logo = "assets/delivery/instabox-logo.png"
+                },
+                new()
+                {
+                    Id = "dhl",
+                    Name = "DHL Express",
+                    Description = "Expressleverans direkt till dörren",
+                    EstimatedDelivery = "Nästa arbetsdag",
+                    Price = 99,
+                    Currency = "SEK",
+                    Logo = "assets/delivery/dhl-logo.png"
                 }
             }
         };
-        await SendAsync(response,200, ct);
+        await SendAsync(response, 200, ct);
     }
+
 }
 
 public class GetDeliveryOptionsRequest
@@ -60,8 +87,50 @@ public class GetDeliveryOptionsResponse
 
 public class DeliveryOption
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; }
     public string Name { get; set; }
+    public string Description { get; set; }
+    public string EstimatedDelivery { get; set; }
+    public string Logo { get; set; }
+    public string Currency { get; set; }
     public decimal Price { get; set; }
-    public TimeSpan EstimatedDelivery { get; set; }
 }
+
+
+
+//{
+//id: 'postnord-home',
+//name: 'PostNord Hemleverans',
+//description: 'Leverans direkt till din dörr',
+//estimatedDelivery: '1-3 arbetsdagar',
+//price: 49,
+//currency: 'SEK',
+//logo: 'assets/delivery/postnord.svg'
+//},
+//{
+//id: 'postnord-pickup',
+//name: 'PostNord Ombud',
+//description: 'Hämta ditt paket hos ombud',
+//estimatedDelivery: '1-2 arbetsdagar',
+//price: 0,
+//currency: 'SEK',
+//logo: 'assets/delivery/postnord.svg'
+//},
+//{
+//id: 'instabox',
+//name: 'Instabox',
+//description: 'Leverans till Instabox-skåp',
+//estimatedDelivery: 'Inom 24 timmar',
+//price: 29,
+//currency: 'SEK',
+//logo: 'assets/delivery/instabox.svg'
+//},
+//{
+//id: 'dhl',
+//name: 'DHL Express',
+//description: 'Expressleverans direkt till dörren',
+//estimatedDelivery: 'Nästa arbetsdag',
+//price: 99,
+//currency: 'SEK',
+//logo: 'assets/delivery/dhl.svg'
+//}

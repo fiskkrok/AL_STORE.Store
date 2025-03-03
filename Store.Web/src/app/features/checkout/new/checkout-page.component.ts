@@ -19,6 +19,7 @@ import { PaymentRecoveryService, PaymentError } from "../../../core/services/pay
 // checkout-page.component.ts
 @Component({
   selector: 'app-checkout-page',
+  standalone: true,
   template: `
      <!-- Existing template with added test controls -->
     <div class="container mx-auto px-4 py-8">
@@ -33,7 +34,9 @@ import { PaymentRecoveryService, PaymentError } from "../../../core/services/pay
                 <span class="text-green-600">✓ Complete</span>
               }
             </div>
+            @if (!checkoutState.hasShippingInformation() && !checkoutState.hasPaymentMethod()) {
             <app-checkout-information />
+            }
           </section>
 
           <!-- Payment Section -->

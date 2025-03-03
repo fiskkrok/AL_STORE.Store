@@ -1,25 +1,26 @@
 ﻿using FastEndpoints;
+
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Contracts;
 
-namespace Store.API.Endpoints.Payments;
+namespace Store.API.Endpoints.Payments.Klarna;
 
 /// <summary>
 /// Endpoint for retrieving a payment session based on its identifier.
 /// </summary>
-public class GetPaymentSessionEndpoint : Endpoint<GetPaymentSessionRequest, CreatePaymentSessionResponse>
+public class GetKlarnaSessionEndpoint : Endpoint<GetPaymentSessionRequest, CreatePaymentSessionResponse>
 {
-    private readonly ILogger<GetPaymentSessionEndpoint> _logger;
+    private readonly ILogger<GetKlarnaSessionEndpoint> _logger;
     private readonly IPaymentSessionRepository _sessionRepository;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GetPaymentSessionEndpoint"/> class.
+    /// Initializes a new instance of the <see cref="GetKlarnaSessionEndpoint"/> class.
     /// </summary>
     /// <param name="sessionRepository">The repository for accessing payment sessions.</param>
     /// <param name="logger">The logger instance.</param>
-    public GetPaymentSessionEndpoint(
+    public GetKlarnaSessionEndpoint(
         IPaymentSessionRepository sessionRepository,
-        ILogger<GetPaymentSessionEndpoint> logger)
+        ILogger<GetKlarnaSessionEndpoint> logger)
     {
         _sessionRepository = sessionRepository;
         _logger = logger;

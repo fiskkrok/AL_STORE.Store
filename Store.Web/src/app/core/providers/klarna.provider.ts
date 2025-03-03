@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import { KlarnaSessionResponse, PaymentProvider, PaymentResult, PaymentSession } from "../../shared/models";
+import { KlarnaSessionRequest, KlarnaSessionResponse, PaymentProvider, PaymentResult, PaymentSession } from "../../shared/models";
 import { environment } from "../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
 
@@ -58,33 +58,38 @@ export class KlarnaProvider implements PaymentProvider {
                         next: (result) => resolve(result),
                         error: () => resolve({
                             success: false,
-                            error: 'Failed to authorize payment'
+                            error: { code: res.error?.code, details: res.error?.details },
+                            message: res.error?.message || 'Payment not approved'
                         })
                     });
                 } else {
                     resolve({
                         success: false,
-                        error: res.error?.message || 'Payment not approved'
+                        error: {
+                            code: res.error?.code,
+                            details: res.error?.details
+                        },
+                        message: res.error?.message || 'Payment not approved'
                     });
                 }
             });
         });
     }
 
-    private async createKlarnaSession(config: PaymentConfig): Promise<KlarnaSession> {
+    private async createKlarnaSession(config: KlarnaSessionRequest): Promise<KlarnaSessionResponse> {
         return firstValueFrom(
-            this.http.post<KlarnaSession>('/api/payments/klarna/create-session', {
-                amount: config.amount,
-                currency: config.currency,
+            this.http.post<KlarnaSessionResponse>('/api/payments/klarna/create-session', {
+                amount: config.order_amount,
+                currency: config.purchase_currency,
                 locale: config.locale,
-                order_lines: config.items
+                order_lines: config.order_lines
             })
         );
     }
 
     private loadKlarnaPaymentOptions(sessionId: string): void {
         // Load Klarna payment widget into the container
-        window.Klarna.Payments.load({
+        window.Klarna!.Payments.load({
             container: '#klarna-payments-container'
         }, {}, (res) => {
             if (!res.show_form) {

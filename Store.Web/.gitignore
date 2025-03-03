@@ -13,8 +13,8 @@ angular.json
 .editorconfig
 eslint.config.js
 # Add everything in the assets folder
-/assets/*
-
+src/assets/*
+src/assets/**/*
 # Node
 /node_modules
 npm-debug.log

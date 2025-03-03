@@ -1,6 +1,6 @@
+// src/app/core/services/checkout-session.service.ts
 import { Injectable } from "@angular/core";
 
-// core/services/checkout-session.service.ts
 @Injectable({ providedIn: 'root' })
 export class CheckoutSessionService {
     private readonly SESSION_DURATION = 30 * 60 * 1000; // 30 minutes

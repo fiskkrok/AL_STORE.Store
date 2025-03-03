@@ -1,9 +1,9 @@
+// src/app/features/checkout/order-summary.component.ts
 import { CommonModule, CurrencyPipe } from "@angular/common";
 import { Component, inject, computed } from "@angular/core";
 import { klarnaHelpers } from "../../../shared/klarna/klarna.config";
 import { CartStore } from "../../../core/state";
 
-// order-summary.component.ts
 @Component({
   selector: 'app-order-summary',
   standalone: true,

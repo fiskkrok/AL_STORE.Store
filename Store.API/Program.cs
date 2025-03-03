@@ -77,6 +77,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseFastEndpoints(o => { o.Endpoints.RoutePrefix = "api"; }).UseSwaggerGen();
+app.MapSignalRHubs();
 app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseRealTimeServices();

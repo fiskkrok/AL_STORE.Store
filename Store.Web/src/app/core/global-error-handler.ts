@@ -1,6 +1,6 @@
 // src/app/core/error-handling/global-error-handler.ts
 import { ErrorHandler, Injectable, inject } from '@angular/core';
-import { ErrorService } from '../services/error.service';
+import { ErrorService } from './services/error.service';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {

@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@microsoft/signalr";
 import { catchError, Observable, of } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { HttpClient } from "@angular/common/http";
 
 // services/delivery.service.ts
 export interface DeliveryOption {
@@ -13,17 +13,21 @@ export interface DeliveryOption {
   currency: string;
   logo: string;
 }
+export interface DeliveryOptionsResponse {
+  deliveryOptions: DeliveryOption[];
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class DeliveryService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/api/delivery`;
 
-  getDeliveryOptions(postalCode: string): Observable<DeliveryOption[]> {
-    return this.http.get<DeliveryOption[]>(`${this.apiUrl}/options`, {
+  getDeliveryOptions(postalCode: string): Observable<DeliveryOptionsResponse> {
+    return this.http.get<DeliveryOptionsResponse>(`${this.apiUrl}/options`, {
       params: { postalCode }
     }).pipe(
-      catchError(() => of(this.getFallbackOptions()))
+      catchError(() => of({ deliveryOptions: this.getFallbackOptions() }))
     );
   }
 

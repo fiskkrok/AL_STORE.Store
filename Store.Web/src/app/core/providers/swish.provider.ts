@@ -2,24 +2,33 @@ import { Injectable, inject, Component, OnInit, Input, Output, EventEmitter, sig
 import { firstValueFrom } from "rxjs";
 import { PaymentProvider, PaymentResult, PaymentSession } from "../../shared/models";
 import { HttpClient } from "@angular/common/http";
+import { environment } from "../../../environments/environment";
 
+
+interface SwishResponse {
+    qrCode: string;
+    paymentReference: string;
+}
+
+interface SwishStatus {
+
+    status: 'PAID' | 'CANCELLED' | 'ERROR';
+    paymentReference: string;
+}
 
 
 // providers/swish.provider.ts
 @Injectable()
 export class SwishProvider implements PaymentProvider {
-    initializeSession(amount: number, currency: string): Promise<PaymentSession> {
+    async initializeSession(amount: number, currency: string): Promise<PaymentSession> {
         throw new Error("Method not implemented.");
     }
-    processPayment(sessionId: string): Promise<PaymentResult> {
+    async processPayment(sessionId: string): Promise<PaymentResult> {
         throw new Error("Method not implemented.");
     }
     private readonly http = inject(HttpClient);
 
-    async initialize(config: PaymentConfig): Promise<void> {
-        // Swish doesn't need initialization like Klarna
-        // The integration happens when we call process()
-    }
+
 
     async process(amount: number, currency: string): Promise<PaymentResult> {
         try {
@@ -34,10 +43,11 @@ export class SwishProvider implements PaymentProvider {
 
             // For Swish, we need to poll for status
             return this.pollSwishStatus(response.paymentReference);
-        } catch (error) {
+        } catch {
             return {
                 success: false,
-                error: 'Failed to create Swish payment'
+                error: { code: 'SWISH_ERROR', details: '' },
+                message: 'Failed to process Swish payment'
             };
         }
     }
@@ -55,13 +65,15 @@ export class SwishProvider implements PaymentProvider {
                     if (status.status === 'PAID') {
                         resolve({
                             success: true,
-                            transactionId: status.paymentReference
+                            transactionId: status.paymentReference,
+                            message: 'Payment successful'
                         });
                         return;
                     } else if (status.status === 'CANCELLED' || status.status === 'ERROR') {
                         resolve({
                             success: false,
-                            error: 'Payment was cancelled or failed'
+                            error: { code: 'PAYMENT_ERROR', details: status.status },
+                            message: 'Payment was cancelled or failed'
                         });
                         return;
                     }
@@ -71,7 +83,8 @@ export class SwishProvider implements PaymentProvider {
                 } catch {
                     resolve({
                         success: false,
-                        error: 'Failed to check payment status'
+                        error: { code: 'POLLING_ERROR', details: '' },
+                        message: 'Failed to check payment status'
                     });
                 }
             };
@@ -82,9 +95,9 @@ export class SwishProvider implements PaymentProvider {
     }
 }
 
-// Component for Swish integration
 @Component({
     selector: 'app-swish-payment',
+    standalone: true,
     template: `
     <div class="text-center">
       @if (qrCode()) {
@@ -133,7 +146,7 @@ export class SwishPaymentComponent implements OnInit {
     private async initializeSwish() {
         try {
             const response = await firstValueFrom(
-                this.http.post<SwishPaymentResponse>('/api/payments/swish/init', {
+                this.http.post<SwishPaymentResponse>(`${environment.apiUrl}/api/payments/swish/init`, {
                     amount: this.amount,
                     currency: 'SEK'
                 })
@@ -148,7 +161,7 @@ export class SwishPaymentComponent implements OnInit {
             this.loading.set(false);
             this.paymentComplete.emit({
                 success: false,
-                error: 'Failed to initialize Swish payment'
+                message: 'Failed to initialize Swish payment'
             });
         }
     }
@@ -159,6 +172,13 @@ export class SwishPaymentComponent implements OnInit {
     }
 
     private async pollPaymentStatus(reference: string) {
-        // Implementation similar to the provider
+        // Implement polling for payment status
+        // Will periodically check if payment is completed
     }
+}
+
+interface SwishPaymentResponse {
+    reference: string;
+    qrCode: string;
+    status: string;
 }

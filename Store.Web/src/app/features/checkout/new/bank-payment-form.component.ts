@@ -1,11 +1,12 @@
+// src/app/features/checkout/bank-payment-form.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-bank-payment-form',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-bank-payment-form',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div>
       <h3>Bank Payment</h3>
       <form>

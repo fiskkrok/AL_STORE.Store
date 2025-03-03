@@ -7,7 +7,7 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { AuthService } from '@auth0/auth0-angular';
 import { CustomerService } from '../../../core/services/customer.service';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { CheckoutSessionService } from '../../../core/services/checkout-session';
+import { CheckoutSessionService } from '../../../core/services/checkout-session.service';
 import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner.component";
 import { ErrorService } from '../../../core/services/error.service';
 import { InputFieldType } from '../../../shared/forms/formly/input-field.type';
@@ -348,11 +348,8 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       console.log('Updated shipping address:', shippingAddress);
 
       // Add visual indication that address was selected
-      this.errorService.addError(
-        'ADDRESS_SELECTED',
-        'Shipping address selected',
-        { severity: 'info', timeout: 2000 }
-      );
+      console.log('Address selected:', address);
+
     } catch {
       this.errorService.addError(
         'ADDRESS_ERROR',

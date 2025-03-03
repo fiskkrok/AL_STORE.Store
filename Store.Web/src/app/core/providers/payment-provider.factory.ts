@@ -11,7 +11,7 @@ export class PaymentProviderFactory {
     private readonly klarnaProvider = inject(KlarnaProvider);
     private readonly swishProvider = inject(SwishProvider);
 
-    getProvider(method: PaymentMethod): PaymentProvider | null {
+    getProvider(method: string): PaymentProvider | null {
         switch (method) {
             case 'klarna': return this.klarnaProvider;
             case 'swish': return this.swishProvider;

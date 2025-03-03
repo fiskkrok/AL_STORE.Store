@@ -1,13 +1,13 @@
- 
+
 // src/app/core/components/layout/navbar.component.ts
 import { NgIf, AsyncPipe } from '@angular/common';
 import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-import { CartDropdownComponent } from '../../cart-dropdown/cart-dropdown.component';
 import { CartStore } from '../../../state/cart.store';
 import { AuthService } from '../../../services/auth.service';
 import { ThemeService } from '../../../services/theme.service';
+import { CartDropdownComponent } from '../../cart-dropdown.component';
 
 
 @Component({

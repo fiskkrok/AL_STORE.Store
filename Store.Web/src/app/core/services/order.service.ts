@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderConfirmation, OrderStatus } from '../../shared/models/order.model';
+import { OrderConfirmation, OrderStatus } from '../../shared/models';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -54,7 +54,8 @@ export class OrderService {
                 email: 'customer@example.com',
                 id: '',
                 type: 'shipping',
-                isDefault: false
+                isDefault: false,
+                state: ''
             },
             total: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
             paymentMethod,

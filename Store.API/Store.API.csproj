@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Endpoints\Payments\Swish\" />
     <Folder Include="Filters\" />
   </ItemGroup>
 

@@ -2,8 +2,8 @@
 import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
-import { fadeAnimation } from '../../animations/fade.animation/fade.animation';
-import { CartStore } from '../../state/cart.store';
+import { fadeAnimation } from '../animations/fade.animation/fade.animation';
+import { CartStore } from '../state';
 
 
 @Component({

@@ -1,10 +1,10 @@
-// src/app/core/config/klarna.config.ts
+// src/app/shared/klarna/klarna.config.ts
 export const KLARNA_CONFIG = {
     country: 'SE',
     currency: 'SEK',
     locale: 'sv-SE',
     taxRate: 2500, // 25% in basis points
-    merchantName: 'Your Store Name', // Update this
+    merchantName: 'Your Store Name',
     returnUrl: `${window.location.origin}/checkout/confirmation`,
     termsUrl: `${window.location.origin}/terms`,
     checkoutUrl: `${window.location.origin}/checkout`,

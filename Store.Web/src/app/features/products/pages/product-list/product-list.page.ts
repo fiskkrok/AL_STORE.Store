@@ -3,11 +3,11 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { ErrorDisplayComponent } from '../../../../core/components/error-display/error-display.component';
 import { ProductStore } from '../../../../core/state/product.store';
 import { ProductGridComponent } from '../../product-grid.component';
 import { ProductFiltersComponent } from '../../product-filters.component';
 import { ProductSearchComponent } from '../../product-search.component';
+import { ErrorDisplayComponent } from '../../../../core/components/error-display.component';
 
 
 

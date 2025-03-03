@@ -1,20 +1,21 @@
 ﻿using FastEndpoints;
+
 using MediatR;
 
 using Store.Application.Contracts;
 using Store.Application.Payments.Commands;
 
-namespace Store.API.Endpoints.Payments;
+namespace Store.API.Endpoints.Payments.Klarna;
 
-public class AuthorizePaymentEndpoint :EndpointWithoutRequest<AuthorizePaymentResponse>
+public class AuthorizeKlarnaEndpoint :EndpointWithoutRequest<AuthorizePaymentResponse>
 {
     private readonly IIdempotencyService _idempotencyService;
-    private readonly ILogger<AuthorizePaymentEndpoint> _logger;
+    private readonly ILogger<AuthorizeKlarnaEndpoint> _logger;
     private readonly IMediator _mediator;
-    public AuthorizePaymentEndpoint(
+    public AuthorizeKlarnaEndpoint(
         IMediator mediator,
         IIdempotencyService idempotencyService,
-        ILogger<AuthorizePaymentEndpoint> logger)
+        ILogger<AuthorizeKlarnaEndpoint> logger)
     {
         _mediator = mediator;
         _idempotencyService = idempotencyService;
@@ -22,7 +23,7 @@ public class AuthorizePaymentEndpoint :EndpointWithoutRequest<AuthorizePaymentRe
     }
     public override void Configure()
     {
-        Post("/payments/authorize");
+        Post("/payments/klarna/authorize");
         Description(d => d
             .WithTags("Payments")
             .Produces<AuthorizePaymentResponse>(200)

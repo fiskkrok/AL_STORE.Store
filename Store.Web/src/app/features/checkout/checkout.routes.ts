@@ -29,8 +29,8 @@ export const CHECKOUT_ROUTES: Routes = [
             },
             {
                 path: 'confirmation',
-                loadComponent: () => import('./confirmation.component').then(m => m.ConfirmationComponent),
-                canActivate: [checkoutGuard]
+                loadComponent: () => import('./confirmation.component').then(m => m.OrderConfirmationComponent),
+                // canActivate: [checkoutGuard]
             }
         ]
     }

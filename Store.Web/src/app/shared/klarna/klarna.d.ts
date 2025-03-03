@@ -1,5 +1,4 @@
-
-// src/app/core/types/klarna.d.ts
+// src/app/shared/klarna/klarna.d.ts
 declare global {
     interface Window {
         Klarna?: {
@@ -17,7 +16,10 @@ declare global {
                     options: Record<string, unknown>,
                     data: Record<string, unknown>,
                     callback: (response: {
-                        authorization_token: any; approved: boolean; show_form: boolean; error?: any
+                        authorization_token: string;
+                        approved: boolean;
+                        show_form: boolean;
+                        error?: any;
                     }) => void
                 ) => void;
             };
@@ -26,12 +28,3 @@ declare global {
 }
 
 export { };
-
-// interface payment_method_category {
-//     identifier: string;
-//     name: string;
-//     assetUrls: {
-//         descriptive: string;
-//         standard: string;
-//     };
-// }

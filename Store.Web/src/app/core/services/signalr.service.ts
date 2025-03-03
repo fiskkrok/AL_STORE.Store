@@ -25,16 +25,36 @@ export class SignalRService {
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`${environment.apiUrl}/hubs/store`)
+      .withUrl(`${environment.apiUrl}/storehub`)
       .withAutomaticReconnect()
       .build();
 
     this.setupConnectionHandlers();
     this.setupProductUpdatesHandlers();
+
+    this.hubConnection.start().then(() => {
+      this.connectionState.next(true);
+    }).catch(() => {
+      this.connectionState.next(false);
+    });
   }
 
   private setupConnectionHandlers(): void {
     // ...existing code...
+    this.hubConnection.onreconnecting(() => {
+      this.connectionState.next(false);
+    });
+    this.hubConnection.onreconnected(() => {
+      this.connectionState.next(true);
+    });
+    this.hubConnection.onclose(() => {
+      this.connectionState.next(false);
+    });
+    this.hubConnection.start().then(() => {
+      this.connectionState.next(true);
+    }).catch(() => {
+      this.connectionState.next(false);
+    });
   }
 
   private setupProductUpdatesHandlers(): void {

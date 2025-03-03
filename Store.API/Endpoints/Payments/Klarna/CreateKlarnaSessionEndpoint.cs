@@ -1,10 +1,12 @@
 ﻿using FastEndpoints;
+
 using MediatR;
+
 using Store.API.Endpoints.Payments.Mapper;
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Contracts;
 
-namespace Store.API.Endpoints.Payments;
+namespace Store.API.Endpoints.Payments.Klarna;
 
 /// <summary>
 /// Endpoint to create a new payment session.
@@ -19,10 +21,10 @@ namespace Store.API.Endpoints.Payments;
 /// <response code="409">Conflict, indicating a duplicate request detected by the Idempotency-Key.</response>
 /// <response code="500">Internal server error, typically due to unexpected errors during processing.</response>
 public class
-    CreatePaymentSessionEndpoint : Endpoint<CreatePaymentSessionRequest, CreatePaymentSessionResponse, PaymentMapper>
+    CreateKlarnaSessionEndpoint : Endpoint<CreatePaymentSessionRequest, CreatePaymentSessionResponse, PaymentMapper>
 {
     private readonly IIdempotencyService _idempotencyService;
-    private readonly ILogger<CreatePaymentSessionEndpoint> _logger;
+    private readonly ILogger<CreateKlarnaSessionEndpoint> _logger;
     private readonly IMediator _mediator;
 
     /// <summary>
@@ -31,10 +33,10 @@ public class
     /// <param name="mediator"></param>
     /// <param name="idempotencyService"></param>
     /// <param name="logger"></param>
-    public CreatePaymentSessionEndpoint(
+    public CreateKlarnaSessionEndpoint(
         IMediator mediator,
         IIdempotencyService idempotencyService,
-        ILogger<CreatePaymentSessionEndpoint> logger)
+        ILogger<CreateKlarnaSessionEndpoint> logger)
     {
         _mediator = mediator;
         _idempotencyService = idempotencyService;
@@ -46,7 +48,7 @@ public class
     /// </summary>
     public override void Configure()
     {
-        Post("/checkout/sessions");
+        Post("/payments/klarna/sessions");
         AllowAnonymous();
         Description(d => d
             .WithTags("Checkout")
@@ -105,7 +107,7 @@ public class
                     }).ToList()
                 };
 
-                await SendCreatedAtAsync<GetPaymentSessionEndpoint>(
+                await SendCreatedAtAsync<GetKlarnaSessionEndpoint>(
                     new { id = response.SessionId },
                     response,
                     cancellation: ct);

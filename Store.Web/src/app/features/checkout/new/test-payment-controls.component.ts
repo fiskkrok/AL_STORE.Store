@@ -1,13 +1,13 @@
 // src/app/features/checkout/test-payment-controls.component.ts
 import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MockPaymentOptions } from '../../core/services/mock-payment.service';
+import { MockPaymentOptions } from '../../../core/services/mock-payment.service';
 
 @Component({
-    selector: 'app-test-payment-controls',
-    standalone: true,
-    imports: [FormsModule],
-    template: `
+  selector: 'app-test-payment-controls',
+  standalone: true,
+  imports: [FormsModule],
+  template: `
     <div class="p-4 border border-yellow-300 bg-yellow-50 rounded-lg mt-8">
       <h3 class="font-bold text-yellow-800 mb-2">Test Payment Controls</h3>
       <p class="text-sm text-yellow-700 mb-4">
@@ -55,17 +55,17 @@ import { MockPaymentOptions } from '../../core/services/mock-payment.service';
   `
 })
 export class TestPaymentControlsComponent {
-    options: MockPaymentOptions = {
-        shouldSucceed: true,
-        simulateNetworkError: false,
-        simulateTimeout: false,
-        simulateExpiredSession: false
-    };
+  options: MockPaymentOptions = {
+    shouldSucceed: true,
+    simulateNetworkError: false,
+    simulateTimeout: false,
+    simulateExpiredSession: false
+  };
 
-    @Output() optionsChanged = new EventEmitter<MockPaymentOptions>();
+  @Output() optionsChanged = new EventEmitter<MockPaymentOptions>();
 
-    updateOptions(key: keyof MockPaymentOptions, value: boolean): void {
-        this.options = { ...this.options, [key]: value };
-        this.optionsChanged.emit(this.options);
-    }
+  updateOptions(key: keyof MockPaymentOptions, value: boolean): void {
+    this.options = { ...this.options, [key]: value };
+    this.optionsChanged.emit(this.options);
+  }
 }

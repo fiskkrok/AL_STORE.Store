@@ -3,30 +3,30 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderConfirmation } from '../../shared/models/order.model';
+import { OrderConfirmation } from '../../shared/models/checkout.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmailService {
-    private readonly http = inject(HttpClient);
-    private readonly apiUrl = `${environment.apiUrl}/api/emails`;
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/emails`;
 
-    sendOrderConfirmation(order: OrderConfirmation): Observable<void> {
-        if (!environment.useRealApi) {
-            // For development/testing, log the email that would be sent
-            console.log('Sending order confirmation email to:', order.customerEmail);
-            console.log('Order details:', order);
-            return of(void 0);
-        }
-
-        return this.http.post<void>(`${this.apiUrl}/order-confirmation`, {
-            orderNumber: order.orderNumber,
-            email: order.customerEmail
-        });
+  sendOrderConfirmation(order: OrderConfirmation): Observable<void> {
+    if (!environment.useRealApi) {
+      // For development/testing, log the email that would be sent
+      console.log('Sending order confirmation email to:', order.customerEmail);
+      console.log('Order details:', order);
+      return of(void 0);
     }
 
-    // For testing purposes, we can render what the email would look like
-    getEmailPreview(order: OrderConfirmation): string {
-        return `
+    return this.http.post<void>(`${this.apiUrl}/order-confirmation`, {
+      orderNumber: order.orderNumber,
+      email: order.customerEmail
+    });
+  }
+
+  // For testing purposes, we can render what the email would look like
+  getEmailPreview(order: OrderConfirmation): string {
+    return `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #1A2238; padding: 20px; text-align: center; color: white;">
           <h1>Order Confirmation</h1>
@@ -86,5 +86,5 @@ export class EmailService {
         </div>
       </div>
     `;
-    }
+  }
 }
