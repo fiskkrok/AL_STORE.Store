@@ -363,3 +363,12 @@ MigrationBackup/
 FodyWeavers.xsd
 # Ignore all files in any Migrations folder
 **/Migrations/*
+/Store.Infrastructure/Migrations/20250126182857_Initial.cs
+/Store.Infrastructure/Migrations/20250128034639_EnhancedProductClass.cs
+/Store.Infrastructure/Migrations/20250131202856_Added-Fields-To-Categories.cs
+/Store.Infrastructure/Migrations/20250205185516_Klarna.cs
+/Store.Infrastructure/Migrations/20250207212810_Customer.cs
+/Store.Infrastructure/Migrations/20250208163321_FixingConfigurations.cs
+/Store.Infrastructure/Migrations/20250208163952_FixOwnedEntityConfiguration.cs
+/Store.Infrastructure/Migrations/20250208172420_IncreaseClientTokenSize.cs
+/Store.Infrastructure/Migrations/20250209152547_AddedAntityFunc.cs
