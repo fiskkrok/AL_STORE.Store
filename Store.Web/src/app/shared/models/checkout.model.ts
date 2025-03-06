@@ -15,10 +15,15 @@ export interface CheckoutInformation extends Address {
 }
 
 export interface OrderSummary {
+    orderNumber: string;
+    created: string;
+    status: string;
+    totalAmount: number;
+    currency: string;
+    itemCount: number;
     items: CartItem[];
-    subtotal: number;
-    shipping: number;
-    total: number;
+    shippingAddress: CheckoutAddress;
+    billingAddress: CheckoutAddress;
 }
 
 export interface CheckoutSessionRequest {
@@ -53,6 +58,7 @@ export interface OrderConfirmation {
     createdAt: string;
     paymentMethod: string;
 }
+
 
 export enum OrderStatus {
     Pending = 'pending',

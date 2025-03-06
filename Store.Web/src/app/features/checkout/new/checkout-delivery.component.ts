@@ -20,7 +20,7 @@ import { CurrencyPipe } from "@angular/common";
           <button
             class="w-full px-4 py-2 text-left flex items-center justify-between rounded-md"
             [class.bg-accent]="selectedOption() === option.id"
-            (click)="selectedOption.set(option.id)"
+            (click)="updateSelectedOption(option.id)"
           >
             <div class="flex items-center gap-4">
               <!-- Radio indicator -->
@@ -51,6 +51,15 @@ import { CurrencyPipe } from "@angular/common";
   `
 })
 export class CheckoutDeliveryComponent implements OnInit {
+  updateSelectedOption(id: string) {
+    this.selectedOption.set(id);
+    const option = this.deliveryOptions().find(o => o.id === id);
+    if (option) {
+      this.checkoutState.setDeliveryMethod(option);
+    } else {
+      console.warn('Selected option not found:', id);
+    }
+  }
   private readonly deliveryService = inject(DeliveryService);
   private readonly checkoutState = inject(CheckoutStateService);
   loading = signal(true);

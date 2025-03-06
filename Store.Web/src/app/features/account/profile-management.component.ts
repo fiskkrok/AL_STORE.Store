@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CustomerService } from '../../core/services/customer.service';
 import { LoadingSpinnerComponent } from '../../core/components/loading-spinner.component';
 import { PersonalInfoComponent } from "./personal-info.component";
 import { AddressBookComponent } from "./address-book.component";
 import { OrderHistoryComponent } from "./order-history.component";
 import { PreferencesComponent } from "./preferences.component";
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-profile-management',
@@ -57,8 +58,9 @@ import { PreferencesComponent } from "./preferences.component";
         </div>
     `
 })
-export class ProfileManagementComponent {
+export class ProfileManagementComponent implements OnInit {
     public customerService = inject(CustomerService);
+    private route = inject(ActivatedRoute);
 
     sections = [
         { id: 'personal', label: 'Personal Information' },
@@ -68,6 +70,16 @@ export class ProfileManagementComponent {
     ] as const;
 
     activeSection = signal<(typeof this.sections)[number]['id']>('personal');
+
+    ngOnInit() {
+        // Check for tab query parameter
+        this.route.queryParams.subscribe(params => {
+            const tab = params['tab'];
+            if (tab && this.sections.some(section => section.id === tab)) {
+                this.activeSection.set(tab as any);
+            }
+        });
+    }
 
     setActiveSection(section: (typeof this.sections)[number]['id']) {
         this.activeSection.set(section);

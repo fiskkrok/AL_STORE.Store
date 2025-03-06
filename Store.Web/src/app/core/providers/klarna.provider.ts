@@ -1,39 +1,68 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, computed, inject } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import { KlarnaSessionRequest, KlarnaSessionResponse, PaymentProvider, PaymentResult, PaymentSession } from "../../shared/models";
+import { CartItem, CheckoutSessionRequest, KlarnaSessionResponse, PaymentProvider, PaymentResult, PaymentSession } from "../../shared/models";
 import { environment } from "../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
+import { CheckoutStateService } from "../services/checkout-state.service";
+import { CartStore } from "../state";
+import { KlarnaScriptService } from "../services/klarna-script.service";
 
 // providers/klarna.provider.ts
 @Injectable({ providedIn: 'root' })
 export class KlarnaProvider implements PaymentProvider {
-    processPayment(sessionId: string): Promise<PaymentResult> {
-        throw new Error("Method not implemented.");
-    }
+
+    private readonly KLARNA_SESSION_KEY = 'klarnaSession';
+    private readonly KLARNA_SESSION_TTL = 30 * 60 * 1000; // 30 minutes
     private readonly http = inject(HttpClient);
+    private readonly checkoutState = inject(CheckoutStateService);
+    private readonly klarnaScriptService = inject(KlarnaScriptService); // New service
+    private readonly cartStore = inject(CartStore);
     private readonly apiUrl = `${environment.apiUrl}/api/payments/klarna`;
+    shippingInfo = computed(() => this.checkoutState.getShippingAddress());
 
     async initializeSession(amount: number, currency: string): Promise<PaymentSession> {
         try {
-            // Load script first to avoid timing issues
-            await this.loadKlarnaScript();
+            // Use the service instead of the component
+            await this.klarnaScriptService.loadKlarnaScript();
 
-            const response = await firstValueFrom(
-                this.http.post<KlarnaSessionResponse>(`${this.apiUrl}/sessions`, {
-                    amount,
-                    currency,
-                    locale: 'sv-SE' // Swedish locale by default
-                })
-            );
+            let session = this.getKlarnaSession();
+            if (!session) {
+                const info = this.shippingInfo();
+                if (!info) {
+                    throw new Error('Shipping information is required');
+                }
+
+                session = await firstValueFrom(
+                    this.createKlarnaSession(this.cartStore.cartItems(), {
+                        email: info.email ?? '',
+                        phone: info.phone,
+                        shippingAddress: {
+                            street: info.street,
+                            city: info.city,
+                            state: info.city, // Using city as state for Sweden
+                            country: info.country,
+                            postalCode: info.postalCode,
+                            id: '',
+                            type: 'shipping',
+                            firstName: '',
+                            lastName: '',
+                            isDefault: false
+                        }
+                    })
+                );
+                this.saveKlarnaSession(session);
+            }
 
             if (window.Klarna) {
-                window.Klarna.Payments.init({ client_token: response.clientToken });
+                // Initialize Klarna using the service
+                this.klarnaScriptService.initializeKlarnaPayments(session.clientToken);
+                // Note: We don't load the widget here - that's the component's responsibility
             } else {
-                throw new Error('Klarna script failed to load properly');
+                throw new Error('Klarna is not available at this time');
             }
 
             return {
-                sessionId: response.sessionId,
+                sessionId: session.sessionId,
                 amount,
                 currency,
                 status: 'pending',
@@ -44,10 +73,15 @@ export class KlarnaProvider implements PaymentProvider {
             throw new Error('Unable to initialize payment session');
         }
     }
+    async processPayment(sessionId: string): Promise<PaymentResult> {
+
+        const response = await firstValueFrom(this.http.post<PaymentResult>(`${this.apiUrl}/sessions/${sessionId}/confirm`, {}));
+        return response;
+    }
 
     async process(amount: number, currency: string): Promise<PaymentResult> {
         return new Promise((resolve) => {
-            window.Klarna!.Payments.authorize({}, {}, (res) => {
+            window.Klarna!.Payments.authorize({}, {}, (res: { approved: any; authorization_token: any; error: { code: any; details: any; message: any; }; }) => {
                 if (res.approved) {
                     // Send the authorization to your backend
                     this.http.post<PaymentResult>('/api/payments/klarna/authorize', {
@@ -76,38 +110,52 @@ export class KlarnaProvider implements PaymentProvider {
         });
     }
 
-    private async createKlarnaSession(config: KlarnaSessionRequest): Promise<KlarnaSessionResponse> {
-        return firstValueFrom(
-            this.http.post<KlarnaSessionResponse>('/api/payments/klarna/create-session', {
-                amount: config.order_amount,
-                currency: config.purchase_currency,
-                locale: config.locale,
-                order_lines: config.order_lines
-            })
-        );
-    }
+    createKlarnaSession(cart: CartItem[], customerInfo: Omit<CheckoutSessionRequest['customer'], 'shippingAddress'> & { shippingAddress: CheckoutSessionRequest['customer']['shippingAddress'] }) {
+        const idempotencyKey = this.generateIdempotencyKey(cart);
 
-    private loadKlarnaPaymentOptions(sessionId: string): void {
-        // Load Klarna payment widget into the container
-        window.Klarna!.Payments.load({
-            container: '#klarna-payments-container'
-        }, {}, (res) => {
-            if (!res.show_form) {
-                console.error('Failed to load Klarna payment form');
+        const request: CheckoutSessionRequest = {
+            items: cart.map(item => ({
+                productId: item.productId,
+                productName: item.name,
+                sku: item.id,
+                quantity: item.quantity,
+                unitPrice: item.price
+            })),
+            currency: 'SEK',
+            locale: 'sv-SE',
+            customer: customerInfo
+        };
+
+        return this.http.post<KlarnaSessionResponse>(`${this.apiUrl}/sessions`, request, {
+            headers: {
+                'Idempotency-Key': idempotencyKey
             }
         });
     }
+    private generateIdempotencyKey(cart: CartItem[]): string {
+        const cartString = JSON.stringify(cart.map(item => ({
+            id: item.id,
+            quantity: item.quantity
+        })));
+        const timestamp = new Date().getTime();
+        return btoa(`${cartString}-${timestamp}`);
+    }
+    private getKlarnaSession(): KlarnaSessionResponse | null {
+        const sessionData = localStorage.getItem(this.KLARNA_SESSION_KEY);
+        if (!sessionData) return null;
 
-    private async loadKlarnaScript(): Promise<void> {
-        if (window.Klarna) return;
-
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject();
-            document.head.appendChild(script);
-        });
+        const { session, expiry } = JSON.parse(sessionData);
+        if (Date.now() > expiry) {
+            localStorage.removeItem(this.KLARNA_SESSION_KEY);
+            return null;
+        }
+        return session;
+    }
+    private saveKlarnaSession(session: KlarnaSessionResponse) {
+        const sessionData = {
+            session,
+            expiry: Date.now() + this.KLARNA_SESSION_TTL
+        };
+        localStorage.setItem(this.KLARNA_SESSION_KEY, JSON.stringify(sessionData));
     }
 }

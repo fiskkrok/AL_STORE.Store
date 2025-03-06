@@ -3,7 +3,50 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderConfirmation, OrderStatus } from '../../shared/models';
+import { OrderConfirmation, OrderStatus, OrderSummary } from '../../shared/models';
+
+export interface OrderDetailDto {
+    id: string;
+    orderNumber: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+    totalAmount: number;
+    items: {
+        productId: string;
+        name: string;
+        quantity: number;
+        price: number;
+        imageUrl?: string;
+    }[];
+    shippingAddress: {
+        firstName: string;
+        lastName: string;
+        street: string;
+        city: string;
+        state: string;
+        postalCode: string;
+        country: string;
+        email: string;
+    };
+    billingAddress?: {
+        firstName: string;
+        lastName: string;
+        street: string;
+        city: string;
+        state: string;
+        postalCode: string;
+        country: string;
+        email: string;
+    };
+    paymentMethod: string;
+    paymentDetails?: any;
+    trackingInfo?: {
+        carrier: string;
+        trackingNumber: string;
+        estimatedDelivery: string;
+    };
+}
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -30,6 +73,34 @@ export class OrderService {
 
     getOrderStatus(orderNumber: string): Observable<OrderStatus> {
         return this.http.get<OrderStatus>(`${this.apiUrl}/${orderNumber}/status`);
+    }
+
+    /**
+     * Get customer order by ID - requests a specific order with complete details
+     * Maps to /customers/orders/{id} endpoint
+     */
+    getCustomerOrderById(orderId: string): Observable<OrderDetailDto | null> {
+        return this.http.get<{ order: OrderDetailDto }>(`${environment.apiUrl}/api/customers/orders/${orderId}`).pipe(
+            map(response => response.order),
+            catchError(error => {
+                console.error('Failed to fetch order details:', error);
+                return of(null);
+            })
+        );
+    }
+
+    /**
+     * Get all customer orders - fetches the order history for the authenticated customer
+     * Maps to /customers/orders endpoint
+     */
+    getCustomerOrders(): Observable<OrderSummary[]> {
+        return this.http.get<{ orders: OrderSummary[] }>(`${environment.apiUrl}/api/customers/orders`).pipe(
+            map(response => response.orders),
+            catchError(error => {
+                console.error('Failed to fetch order history:', error);
+                return of([]);
+            })
+        );
     }
 
     // For mocking during testing, we'll have a method that creates orders locally

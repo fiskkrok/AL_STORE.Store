@@ -1,6 +1,6 @@
 // src/app/features/checkout/confirmation.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../../core/services/order.service';
 import { CartStore } from '../../core/state/cart.store';
 import { CheckoutStateService } from '../../core/services/checkout-state.service';
@@ -12,7 +12,7 @@ import { EmailService } from '../../core/services/email.service';
 @Component({
   selector: 'app-order-confirmation',
   standalone: true,
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, RouterLink],
   template: `
     <div class="container mx-auto py-8">
       @if (loading()) {
@@ -79,9 +79,9 @@ import { EmailService } from '../../core/services/email.service';
             <a routerLink="/" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80">
               Continue Shopping
             </a>
-            <a routerLink="/account/orders" class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-              View All Orders
-            </a>
+            <a routerLink="/account/profile-management" [queryParams]="{tab: 'orders'}" class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+  View All Orders
+</a>
           </div>
         </div>
       } @else {

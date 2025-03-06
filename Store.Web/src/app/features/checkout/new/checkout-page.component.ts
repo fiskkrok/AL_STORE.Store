@@ -55,7 +55,12 @@ import { PaymentRecoveryService, PaymentError } from "../../../core/services/pay
           
          @if (checkoutState.hasShippingInformation() && checkoutState.hasPaymentMethod()) {
             <section class="bg-background rounded-lg border p-6">
+               <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-semibold mb-4">3. Delivery Options</h2>
+               @if (checkoutState.hasShippingInformation() && checkoutState.hasPaymentMethod() &&checkoutState.hasDeliveryMethod()) {
+                <span class="text-green-600">✓ Complete</span>
+               }
+            </div>
               <app-checkout-delivery />
             </section>
           }
@@ -63,7 +68,7 @@ import { PaymentRecoveryService, PaymentError } from "../../../core/services/pay
           <!-- (click)="initiatePayment()" -->
          <button
             class="w-full px-4 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-            [disabled]="loading() || !isCheckoutComplete()"
+            [disabled]="loading() || !this.checkoutState.isCheckoutComplete()"
             (click)="initiatePayment()"
           >
             @if (loading()) {
@@ -106,7 +111,6 @@ export class CheckoutPageComponent {
   private readonly mockPaymentService = inject(MockPaymentService);
   environment = environment;
   loading = signal(false);
-  isCheckoutComplete = computed(() => this.checkoutState.isCheckoutComplete());
   testOptions: MockPaymentOptions = {
     shouldSucceed: true
   };
@@ -116,7 +120,7 @@ export class CheckoutPageComponent {
   }
 
   async initiatePayment(): Promise<void> {
-    if (!this.isCheckoutComplete()) {
+    if (!this.checkoutState.isCheckoutComplete()) {
       this.errorService.addError(
         'CHECKOUT_INCOMPLETE',
         'Please complete all required checkout information'

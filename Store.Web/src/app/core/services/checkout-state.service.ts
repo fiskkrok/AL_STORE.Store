@@ -21,13 +21,24 @@ export class CheckoutStateService {
     private readonly transactionId = signal<string | null>(null);
 
     // Public computed state
-    readonly hasShippingInformation = computed(() => !!this.shippingAddress());
-    readonly hasDeliveryMethod = computed(() => !!this.deliveryMethod());
-    readonly hasPaymentMethod = computed(() => !!this.paymentMethod());
-    readonly isCheckoutComplete = computed(() =>
-        this.hasShippingInformation() &&
-        this.hasDeliveryMethod() &&
-        this.hasPaymentMethod()
+    readonly hasShippingInformation = computed(() => {
+        const hasShipping = this.shippingAddress();
+        return !!hasShipping;
+    })
+    readonly hasDeliveryMethod = computed(() => {
+        const hasDelivery = this.deliveryMethod();
+        return !!hasDelivery;
+    })
+    readonly hasPaymentMethod = computed(() => {
+        const hasPayment = this.paymentMethod();
+        return !!hasPayment;
+    })
+    readonly isCheckoutComplete = computed(() => {
+        const hasShipping = this.hasShippingInformation();
+        const hasDelivery = this.hasDeliveryMethod();
+        const hasPayment = this.hasPaymentMethod();
+        return hasShipping && hasDelivery && hasPayment;
+    }
     );
 
     // Session timeout tracking (30 minutes)

@@ -10,8 +10,8 @@ export const ACCOUNT_ROUTES: Routes = [
             {
                 path: 'profile-management',
                 loadComponent: () => import('./profile-management.component')
-                    .then(m => m.ProfileManagementComponent)
-            }
+                    .then(m => m.ProfileManagementComponent),
+            },
         ]
     }
 ];

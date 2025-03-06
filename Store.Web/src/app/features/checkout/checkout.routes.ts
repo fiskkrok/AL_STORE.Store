@@ -1,6 +1,5 @@
 // checkout.routes.ts
 import { Routes } from '@angular/router';
-import { checkoutGuard } from '../../core/guards/checkout.guard';
 import { AuthService } from '@auth0/auth0-angular';
 import { inject } from '@angular/core';
 import { map } from 'rxjs';
@@ -31,7 +30,7 @@ export const CHECKOUT_ROUTES: Routes = [
                 path: 'confirmation',
                 loadComponent: () => import('./confirmation.component').then(m => m.OrderConfirmationComponent),
                 // canActivate: [checkoutGuard]
-            }
+            },
         ]
     }
 ];

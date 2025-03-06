@@ -1,3 +1,5 @@
+import { CartItem } from "./cart.model";
+
 // src/app/shared/models/payment.model.ts
 export interface PaymentProvider {
     initializeSession(amount: number, currency: string): Promise<PaymentSession>;

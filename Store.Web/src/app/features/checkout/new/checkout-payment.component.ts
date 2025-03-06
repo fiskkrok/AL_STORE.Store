@@ -1,18 +1,14 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CheckoutStateService } from '../../../core/services/checkout-state.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { ConstPaymentMethods } from '../../../shared/global/const-payment-methods.enum';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
-import { CheckoutService } from '../../../core/services/checkout.service';
 import { CartStore } from '../../../core/state';
-import { ErrorService } from '../../../core/services/error.service';
-import { KlarnaSessionResponse, PaymentMethod, PaymentSession } from '../../../shared/models';
+import { PaymentSession } from '../../../shared/models';
 import { ThemeService } from '../../../core/services/theme.service';
 import { CreditCardFormComponent } from './credit-card-form.component';
 import { BankPaymentFormComponent } from './bank-payment-form.component';
-import { BankPaymentService } from '../../../core/services/bank-payment.service';
 import { PaymentProviderFactory } from '../../../core/providers/payment-provider.factory';
+import { KlarnaScriptService } from '../../../core/services/klarna-script.service';
 
 @Component({
   selector: 'app-checkout-payment',
@@ -153,12 +149,9 @@ import { PaymentProviderFactory } from '../../../core/providers/payment-provider
 })
 export class CheckoutPaymentComponent {
   private readonly checkoutState = inject(CheckoutStateService);
-  private readonly checkoutService = inject(CheckoutService);
-  private readonly errorService = inject(ErrorService);
   private readonly theme = inject(ThemeService);
-  private readonly auth = inject(AuthService);
   private readonly cartStore = inject(CartStore);
-  private readonly bankPaymentService = inject(BankPaymentService);
+  private readonly klarnaScriptService = inject(KlarnaScriptService);
   private readonly paymentProviderFactory = inject(PaymentProviderFactory);
   currentTheme = computed(() => {
     const theme = this.theme.currentTheme();
@@ -170,36 +163,11 @@ export class CheckoutPaymentComponent {
   error = signal<string | null>(null);
   paymentSession = signal<PaymentSession>({} as PaymentSession);
   selectedPaymentMethod = signal<string | null>(null);
-  shippingInfo = computed(() => this.checkoutState.getShippingAddress());
   creditCard = {
     cardNumber: '',
     expiryDate: '',
     cvv: ''
   };
-  sessionId: string | null = null;
-  sessionData = signal<KlarnaSessionResponse | undefined>(undefined);
-  private readonly KLARNA_SESSION_KEY = 'klarnaSession';
-  private readonly KLARNA_SESSION_TTL = 30 * 60 * 1000; // 30 minutes
-
-  private saveKlarnaSession(session: KlarnaSessionResponse) {
-    const sessionData = {
-      session,
-      expiry: Date.now() + this.KLARNA_SESSION_TTL
-    };
-    localStorage.setItem(this.KLARNA_SESSION_KEY, JSON.stringify(sessionData));
-  }
-
-  private getKlarnaSession(): KlarnaSessionResponse | null {
-    const sessionData = localStorage.getItem(this.KLARNA_SESSION_KEY);
-    if (!sessionData) return null;
-
-    const { session, expiry } = JSON.parse(sessionData);
-    if (Date.now() > expiry) {
-      localStorage.removeItem(this.KLARNA_SESSION_KEY);
-      return null;
-    }
-    return session;
-  }
 
   async selectPaymentMethod(method: string) {
     // Clear previous state
@@ -234,9 +202,13 @@ export class CheckoutPaymentComponent {
       // Save to state
       this.paymentSession.set(session);
       this.checkoutState.setPaymentSessionId(session.sessionId);
-
-      // Method-specific handling
-      if (method === 'swish') {
+      if (method === 'klarna') {
+        // Load the payment widget in the component after session is initialized
+        this.klarnaScriptService.loadPaymentWidget('#klarna-payments-container',
+          (errorMessage) => this.error.set(errorMessage));
+        // Method-specific handling
+      }
+      else if (method === 'swish') {
         // Fetch QR code or do other Swish-specific setup
         // (This depends on your Swish implementation)
       }
@@ -247,116 +219,5 @@ export class CheckoutPaymentComponent {
       this.loading.set(false);
     }
   }
-  // constructor() {
-  //   // Subscribe to auth state and shipping info
-  //   effect(() => {
-  //     firstValueFrom(this.auth.isAuthenticated$).then(isAuthenticated => {
-  //       if (isAuthenticated && this.shippingInfo()) {
-  //         this.initKlarnaCheckout();
-  //       }
-  //     });
-  //   });
-  // }
 
-  private async initKlarnaCheckout() {
-    this.loading.set(true);
-    this.error.set(null);
-
-    try {
-      let session = this.getKlarnaSession();
-      if (!session) {
-        const info = this.shippingInfo();
-        if (!info) {
-          throw new Error('Shipping information is required');
-        }
-
-        session = await firstValueFrom(
-          this.checkoutService.createKlarnaSession(this.cartItems(), {
-            email: info.email ?? '',
-            phone: info.phone,
-            shippingAddress: {
-              street: info.street,
-              city: info.city,
-              state: info.city, // Using city as state for Sweden
-              country: info.country,
-              postalCode: info.postalCode,
-              id: '',
-              type: 'shipping',
-              firstName: '',
-              lastName: '',
-              isDefault: false
-            }
-          })
-        );
-        this.saveKlarnaSession(session);
-      }
-      this.sessionData.set(session);
-      this.sessionId = session.sessionId;
-
-      await this.loadKlarnaScript();
-      if (window.Klarna) {
-        window.Klarna.Payments.init({ client_token: session.clientToken });
-        this.loadPaymentWidget();
-      } else {
-        this.error.set('Klarna is not available at this time');
-      }
-    } catch (err) {
-      this.error.set('Failed to initialize checkout. Please try again.');
-      this.errorService.addError('CHECKOUT_ERROR', 'Failed to initialize checkout', {
-        severity: 'error',
-        context: { error: err }
-      });
-    } finally {
-      this.loading.set(false);
-    }
-  }
-
-  private loadPaymentWidget() {
-    if (!window.Klarna) return;
-
-    window.Klarna.Payments.load({
-      container: '#klarna-payments-container',
-      payment_method_category: 'pay_later'
-    }, {}, (res) => {
-      if (!res.show_form) {
-        this.error.set('Selected payment method is not available at this time');
-      }
-    });
-  }
-
-  private loadKlarnaScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.Klarna) {
-        resolve();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Klarna script'));
-      document.body.appendChild(script);
-    });
-  }
-
-  private async initBankPayment() {
-    this.loading.set(true);
-    this.error.set(null);
-
-    try {
-      const session = await firstValueFrom(this.bankPaymentService.createBankPaymentSession(this.cartItems()));
-      this.sessionData.set(session as unknown as KlarnaSessionResponse);
-      this.sessionId = (session as unknown as KlarnaSessionResponse).sessionId;
-
-      // Load bank payment widget or redirect to bank payment page
-    } catch (err) {
-      this.error.set('Failed to initialize bank payment. Please try again.');
-      this.errorService.addError('BANK_PAYMENT_ERROR', 'Failed to initialize bank payment', {
-        severity: 'error',
-        context: { error: err }
-      });
-    } finally {
-      this.loading.set(false);
-    }
-  }
 }

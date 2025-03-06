@@ -84,7 +84,7 @@ public class
                 return;
             }
 
-            var command = await Map.ToEntityAsync(req, CancellationToken.None);
+            var command = Map.ToEntity(req);
 
             var result = await _mediator.Send(command, ct);
 
