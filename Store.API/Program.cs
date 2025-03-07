@@ -56,12 +56,18 @@ app.Use(async (context, next) =>
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
     logger.LogInformation(
-        "Request {Method} {Path} - Auth: {IsAuthenticated}, User: {User}",
+        "Request {Method} {Path}",
         context.Request.Method,
-        context.Request.Path,
-        context.User?.Identity?.IsAuthenticated,
-        context.User?.Identity?.Name
+        context.Request.Path
     );
+
+    //logger.LogInformation(
+    //    "Request {Method} {Path} - Auth: {IsAuthenticated}, User: {User}",
+    //    context.Request.Method,
+    //    context.Request.Path,
+    //    context.User?.Identity?.IsAuthenticated,
+    //    context.User?.Identity?.Name
+    //);
 
     if (context.User?.Identity?.IsAuthenticated == true)
     {

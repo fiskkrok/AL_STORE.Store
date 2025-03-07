@@ -8,10 +8,12 @@ namespace Store.API.Endpoints.Orders;
 public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersResponse>
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<GetCustomerOrdersEndpoint> _logger;
 
-    public GetCustomerOrdersEndpoint(IMediator mediator)
+    public GetCustomerOrdersEndpoint(IMediator mediator, ILogger<GetCustomerOrdersEndpoint> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     public override void Configure()
@@ -32,11 +34,13 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
 
         if (result.IsSuccess)
         {
-            await SendOkAsync(new CustomerOrdersResponse { Orders = result.Value }, ct);
+            _logger.LogInformation("Got {Value} for customer {user}", result.Value, User.Identity?.Name);
+            await SendOkAsync(new CustomerOrdersResponse { Orders = result.Value! }, ct);
         }
         else
         {
             foreach (var error in result.Errors) AddError(error.Message);
+            _logger.LogError("Errors: {error}", string.Join(", ", result.Errors.Select(e => e)) );
             await SendErrorsAsync(400, ct);
         }
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from "@angular/core";
+import { Component, OnInit, inject, signal, Output, EventEmitter } from "@angular/core";
 import { CheckoutStateService } from "../../../core/services/checkout-state.service";
 import { DeliveryService, DeliveryOption } from "../../../core/services/delivery.service";
 import { firstValueFrom } from "rxjs";
@@ -51,15 +51,20 @@ import { CurrencyPipe } from "@angular/common";
   `
 })
 export class CheckoutDeliveryComponent implements OnInit {
+  @Output() completed = new EventEmitter<void>();
+
   updateSelectedOption(id: string) {
     this.selectedOption.set(id);
     const option = this.deliveryOptions().find(o => o.id === id);
     if (option) {
       this.checkoutState.setDeliveryMethod(option);
+      // Emit completion event when a delivery option is selected
+      this.completed.emit();
     } else {
       console.warn('Selected option not found:', id);
     }
   }
+
   private readonly deliveryService = inject(DeliveryService);
   private readonly checkoutState = inject(CheckoutStateService);
   loading = signal(true);
@@ -74,7 +79,7 @@ export class CheckoutDeliveryComponent implements OnInit {
     this.loading.set(true);
     try {
       const shippingAddress = this.checkoutState.getShippingAddress();
-      const postalCode = shippingAddress?.postalCode || '10000'; // Default fallback
+      const postalCode = shippingAddress?.postalCode ?? '10000'; // Using nullish coalescing
 
       const response = await firstValueFrom(
         this.deliveryService.getDeliveryOptions(postalCode)
@@ -83,7 +88,7 @@ export class CheckoutDeliveryComponent implements OnInit {
       // Cast or type check the response to handle both possible structures
       if (response && typeof response === 'object' && 'deliveryOptions' in response) {
         // The response has the expected structure with a deliveryOptions array
-        const options = response.deliveryOptions as DeliveryOption[];
+        const options = response.deliveryOptions;
         this.deliveryOptions.set(options);
       } else if (Array.isArray(response)) {
         // Direct array response

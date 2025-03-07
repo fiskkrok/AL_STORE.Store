@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CheckoutStateService } from '../../../core/services/checkout-state.service';
 import { ConstPaymentMethods } from '../../../shared/global/const-payment-methods.enum';
@@ -148,6 +148,8 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
   `
 })
 export class CheckoutPaymentComponent {
+  @Output() completed = new EventEmitter<void>();
+
   private readonly checkoutState = inject(CheckoutStateService);
   private readonly theme = inject(ThemeService);
   private readonly cartStore = inject(CartStore);
@@ -180,6 +182,9 @@ export class CheckoutPaymentComponent {
     // Initialize the selected payment method
     if (method === 'klarna' || method === 'swish') {
       await this.initializePaymentMethod(method);
+    } else {
+      // For payment methods that don't need async initialization, emit completion immediately
+      this.completed.emit();
     }
   }
 
@@ -212,6 +217,9 @@ export class CheckoutPaymentComponent {
         // Fetch QR code or do other Swish-specific setup
         // (This depends on your Swish implementation)
       }
+
+      // Emit completion event after the payment method is fully initialized
+      this.completed.emit();
     } catch (error) {
       console.error(`Failed to initialize ${method}:`, error);
       this.error.set(`Could not set up ${method} payment. Please try again.`);

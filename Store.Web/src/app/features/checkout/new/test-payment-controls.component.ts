@@ -1,5 +1,5 @@
 // src/app/features/checkout/test-payment-controls.component.ts
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MockPaymentOptions } from '../../../core/services/mock-payment.service';
 

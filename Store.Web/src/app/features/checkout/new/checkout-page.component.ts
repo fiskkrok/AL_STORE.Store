@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from "@angular/core";
+import { Component, inject, signal, ViewChild } from "@angular/core";
 import { CheckoutStateService } from "../../../core/services/checkout-state.service";
 import { CheckoutInformationComponent } from "./checkout-information.component";
 import { CheckoutPaymentComponent } from "./checkout-payment.component";
@@ -13,80 +13,170 @@ import { firstValueFrom } from "rxjs";
 import { environment } from "../../../../environments/environment";
 import { MockPaymentService, MockPaymentOptions } from "../../../core/services/mock-payment.service";
 import { PaymentRecoveryService, PaymentError } from "../../../core/services/payment-recovery.service";
+import { CommonModule } from "@angular/common";
+import { MatStepperModule } from '@angular/material/stepper';
+import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/stepper";
 
-
-// checkout-page.component.ts
 // checkout-page.component.ts
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
+  providers: [
+    {
+      provide: STEPPER_GLOBAL_OPTIONS,
+      useValue: { displayDefaultIndicatorType: false, showError: true }
+    }
+  ],
   template: `
-     <!-- Existing template with added test controls -->
     <div class="container mx-auto px-4 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Main Checkout Flow -->
-        <div class="lg:col-span-8 space-y-8">
-          <!-- Shipping Section -->
-          <section class="bg-background rounded-lg border p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold">1. Shipping Information</h2>
-              @if (checkoutState.hasShippingInformation()) {
-                <span class="text-green-600">✓ Complete</span>
-              }
-            </div>
-            @if (!checkoutState.hasShippingInformation() && !checkoutState.hasPaymentMethod()) {
-            <app-checkout-information />
-            }
-          </section>
-
-          <!-- Payment Section -->
-          @if (checkoutState.hasShippingInformation()) {
-            <section class="bg-background rounded-lg border p-6">
-              <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold">2. Payment</h2>
-              <!-- Update condition to check for filled payment information -->
-               @if (checkoutState.hasShippingInformation() && checkoutState.hasPaymentMethod()) {
-                <span class="text-green-600">✓ Complete</span>
-               }
-            </div>
-              <app-checkout-payment />
-            </section>
-          }
-          
-         @if (checkoutState.hasShippingInformation() && checkoutState.hasPaymentMethod()) {
-            <section class="bg-background rounded-lg border p-6">
-               <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold mb-4">3. Delivery Options</h2>
-               @if (checkoutState.hasShippingInformation() && checkoutState.hasPaymentMethod() &&checkoutState.hasDeliveryMethod()) {
-                <span class="text-green-600">✓ Complete</span>
-               }
-            </div>
-              <app-checkout-delivery />
-            </section>
-          }
-          
-          <!-- (click)="initiatePayment()" -->
-         <button
-            class="w-full px-4 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-            [disabled]="loading() || !this.checkoutState.isCheckoutComplete()"
-            (click)="initiatePayment()"
+        <div class="lg:col-span-8">
+          <mat-stepper 
+            #stepper 
+            [linear]="true" 
+            orientation="vertical" 
+            class="bg-background rounded-lg border shadow-sm"
+            (selectionChange)="onStepChange($event)"
           >
-            @if (loading()) {
-              <span class="flex items-center justify-center">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                Processing...
-              </span>
-            } @else {
-              Complete Purchase
-            }
-          </button>
+            <!-- Shipping Information Step -->
+            <mat-step 
+              [completed]="checkoutState.hasShippingInformation()" 
+              [editable]="true"
+            >
+              <ng-template matStepLabel>
+                <div class="font-medium">
+                  Shipping Information
+                  @if (checkoutState.hasShippingInformation()) {
+                    <span class="ml-2 text-green-600 text-sm">✓</span>
+                  }
+                </div>
+              </ng-template>
+              
+              <div class="py-4">
+                <app-checkout-information (completed)="nextStep()" />
+              </div>
+            </mat-step>
+            
+            <!-- Payment Method Step -->
+            <mat-step 
+              [completed]="checkoutState.hasPaymentMethod()"
+              [editable]="true"
+            >
+              <ng-template matStepLabel>
+                <div class="font-medium">
+                  Payment Method
+                  @if (checkoutState.hasPaymentMethod()) {
+                    <span class="ml-2 text-green-600 text-sm">✓</span>
+                  }
+                </div>
+              </ng-template>
+              
+              <div class="py-4">
+                <app-checkout-payment (completed)="nextStep()" />
+              </div>
+            </mat-step>
+            
+            <!-- Delivery Options Step -->
+            <mat-step 
+              [completed]="checkoutState.hasDeliveryMethod()" 
+              [editable]="true"
+            >
+              <ng-template matStepLabel>
+                <div class="font-medium">
+                  Delivery Options
+                  @if (checkoutState.hasDeliveryMethod()) {
+                    <span class="ml-2 text-green-600 text-sm">✓</span>
+                  }
+                </div>
+              </ng-template>
+              
+              <div class="py-4">
+                <app-checkout-delivery (completed)="nextStep()" />
+              </div>
+            </mat-step>
+            
+            <!-- Review & Pay Step -->
+            <mat-step [completed]="false">
+              <ng-template matStepLabel>
+                <div class="font-medium">Review & Complete</div>
+              </ng-template>
+              
+              <div class="py-6">
+                <h2 class="text-xl font-semibold mb-6">Review Your Order</h2>
+                
+                <div class="mb-8 space-y-4">
+                  @if (checkoutState.hasShippingInformation()) {
+                    <div class="rounded-lg bg-muted/30 p-4">
+                      <h3 class="text-lg font-medium mb-2">Shipping Address</h3>
+                      <div class="text-sm text-muted-foreground">
+                        @if (checkoutState.getShippingAddress(); as address) {
+                          <p>{{ address.firstName }} {{ address.lastName }}</p>
+                          <p>{{ address.street }}</p>
+                          <p>{{ address.city }}, {{ address.postalCode }}</p>
+                          <p>{{ address.country }}</p>
+                        }
+                      </div>
+                    </div>
+                  }
+                  
+                  @if (checkoutState.hasPaymentMethod()) {
+                    <div class="rounded-lg bg-muted/30 p-4">
+                      <h3 class="text-lg font-medium mb-2">Payment Method</h3>
+                      <p class="text-sm text-muted-foreground capitalize">{{ checkoutState.getSelectedPaymentMethod() }}</p>
+                    </div>
+                  }
+                  
+                  @if (checkoutState.hasDeliveryMethod()) {
+                    <div class="rounded-lg bg-muted/30 p-4">
+                      <h3 class="text-lg font-medium mb-2">Delivery Option</h3>
+                      @if (checkoutState.getDeliveryMethod(); as delivery) {
+                        <div class="text-sm text-muted-foreground">
+                          <p>{{ delivery.name }}</p>
+                          <p>{{ delivery.description }}</p>
+                          <p>{{ delivery.estimatedDelivery }}</p>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+                
+                <button
+                  class="w-full px-4 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+                  [disabled]="loading() || !checkoutState.isCheckoutComplete()"
+                  (click)="initiatePayment()"
+                >
+                  @if (loading()) {
+                    <span class="flex items-center justify-center">
+                      <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  } @else {
+                    Complete Purchase
+                  }
+                </button>
+                
+                <div class="mt-4 flex justify-between">
+                  <button 
+                    mat-button 
+                    color="primary" 
+                    (click)="stepper.previous()"
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+            </mat-step>
+          </mat-stepper>
 
           <!-- Testing Controls (only in development) -->
           @if (!environment.production) {
-            <app-test-payment-controls (optionsChanged)="updateTestOptions($event)" />
+            <div class="mt-4">
+              <app-test-payment-controls (optionsChanged)="updateTestOptions($event)" />
+            </div>
           }
         </div>
 
@@ -99,9 +189,18 @@ import { PaymentRecoveryService, PaymentError } from "../../../core/services/pay
       </div>
     </div>
   `,
-  imports: [OrderSummaryComponent, CheckoutDeliveryComponent, CheckoutPaymentComponent, CheckoutInformationComponent, TestPaymentControlsComponent]
+  imports: [
+    CommonModule,
+    MatStepperModule,
+    OrderSummaryComponent,
+    CheckoutDeliveryComponent,
+    CheckoutPaymentComponent,
+    CheckoutInformationComponent,
+    TestPaymentControlsComponent
+  ]
 })
 export class CheckoutPageComponent {
+
   readonly checkoutState = inject(CheckoutStateService);
   private readonly cartStore = inject(CartStore);
   private readonly router = inject(Router);
@@ -115,8 +214,53 @@ export class CheckoutPageComponent {
     shouldSucceed: true
   };
 
+  // For stepper control
+  nextStep(): void {
+    setTimeout(() => {
+      // this.stepper.next();
+    }, 300); // Short delay for better UX
+  }
+
+  onStepChange(event: StepperSelectionEvent): void {
+    // This could be used to track step changes if needed
+    console.log('Step changed:', event.selectedIndex);
+  }
+
   updateTestOptions(options: MockPaymentOptions): void {
     this.testOptions = options;
+  }
+
+  // Simplified error handling to reduce cognitive complexity
+  private handlePaymentError(error: any): void {
+    console.error('Payment error:', error);
+
+    if (error && typeof error === 'object' && 'code' in error) {
+      this.handleStructuredError(error as PaymentError);
+    } else {
+      this.errorService.addError(
+        'PAYMENT_ERROR',
+        'An unexpected error occurred. Please try again.',
+        { severity: 'error' }
+      );
+    }
+  }
+
+  private async handleStructuredError(error: PaymentError): Promise<void> {
+    const recovered = await this.paymentRecoveryService.attemptRecovery(error);
+
+    if (recovered) {
+      this.errorService.addError(
+        'PAYMENT_RECOVERED',
+        'We\'ve fixed the issue with your payment. Please try again.',
+        { severity: 'info' }
+      );
+    } else {
+      this.errorService.addError(
+        'PAYMENT_FAILED',
+        error instanceof Error ? error.message : 'Payment failed. Please try again with a different method.',
+        { severity: 'error' }
+      );
+    }
   }
 
   async initiatePayment(): Promise<void> {
@@ -149,32 +293,7 @@ export class CheckoutPageComponent {
         await this.processMockPayment(paymentMethod);
       }
     } catch (error) {
-      console.error('Payment error:', error);
-
-      // Try to recover from error
-      if (error && typeof error === 'object' && 'code' in error) {
-        const recovered = await this.paymentRecoveryService.attemptRecovery(error as PaymentError);
-
-        if (recovered) {
-          this.errorService.addError(
-            'PAYMENT_RECOVERED',
-            'We\'ve fixed the issue with your payment. Please try again.',
-            { severity: 'info' }
-          );
-        } else {
-          this.errorService.addError(
-            'PAYMENT_FAILED',
-            error instanceof Error ? error.message : 'Payment failed. Please try again with a different method.',
-            { severity: 'error' }
-          );
-        }
-      } else {
-        this.errorService.addError(
-          'PAYMENT_ERROR',
-          'An unexpected error occurred. Please try again.',
-          { severity: 'error' }
-        );
-      }
+      this.handlePaymentError(error);
     } finally {
       this.loading.set(false);
     }
@@ -201,10 +320,7 @@ export class CheckoutPageComponent {
     if (result.success) {
       await this.handleSuccessfulPayment(sessionId);
     } else {
-      throw {
-        code: 'PAYMENT_FAILED',
-        message: result.message || 'Payment failed'
-      };
+      throw new Error(result.message || 'Payment failed');
     }
   }
 
@@ -213,50 +329,48 @@ export class CheckoutPageComponent {
     const mockSessionId = `mock_session_${Date.now()}`;
     this.checkoutState.setPaymentSessionId(mockSessionId);
 
-    // Use different mock implementations based on payment method
-    if (paymentMethod === 'klarna') {
-      const result = await firstValueFrom(
-        this.mockPaymentService.mockKlarnaPayment(this.testOptions)
-      );
+    try {
+      // Use different mock implementations based on payment method
+      if (paymentMethod === 'klarna') {
+        await firstValueFrom(
+          this.mockPaymentService.mockKlarnaPayment(this.testOptions)
+        );
 
-      // Simulate successful payment
-      await this.handleSuccessfulPayment(mockSessionId);
-    } else if (paymentMethod === 'swish') {
-      const result = await firstValueFrom(
-        this.mockPaymentService.mockSwishPayment(this.testOptions)
-      );
-
-      // For Swish, check the status after a delay
-      const reference = result.reference;
-
-      // Wait 4 seconds to simulate user completing payment in Swish app
-      await new Promise(resolve => setTimeout(resolve, 4000));
-
-      const status = await firstValueFrom(
-        this.mockPaymentService.checkSwishStatus(reference)
-      );
-
-      if (status.status === 'PAID') {
+        // Simulate successful payment
         await this.handleSuccessfulPayment(mockSessionId);
-      } else {
-        throw {
-          code: 'PAYMENT_CANCELLED',
-          message: 'The payment was cancelled by the user'
-        };
-      }
-    } else {
-      // Other payment methods
-      // Simulate a 2-second processing time
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      } else if (paymentMethod === 'swish') {
+        const result = await firstValueFrom(
+          this.mockPaymentService.mockSwishPayment(this.testOptions)
+        );
 
-      if (this.testOptions.shouldSucceed !== false) {
-        await this.handleSuccessfulPayment(mockSessionId);
+        // For Swish, check the status after a delay
+        const reference = result.reference;
+
+        // Wait 4 seconds to simulate user completing payment in Swish app
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
+        const status = await firstValueFrom(
+          this.mockPaymentService.checkSwishStatus(reference)
+        );
+
+        if (status.status === 'PAID') {
+          await this.handleSuccessfulPayment(mockSessionId);
+        } else {
+          throw new Error('The payment was cancelled by the user');
+        }
       } else {
-        throw {
-          code: 'PAYMENT_REJECTED',
-          message: 'The payment was rejected'
-        };
+        // Other payment methods
+        // Simulate a 2-second processing time
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        if (this.testOptions.shouldSucceed !== false) {
+          await this.handleSuccessfulPayment(mockSessionId);
+        } else {
+          throw new Error('The payment was rejected');
+        }
       }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 
@@ -265,5 +379,8 @@ export class CheckoutPageComponent {
     await this.router.navigate(['/checkout/confirmation'], {
       queryParams: { sessionId }
     });
+    // Clear localstorage cart items
+    localStorage.removeItem('shopping-cart');
+
   }
 }

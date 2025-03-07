@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CheckoutStateService } from '../../../core/services/checkout-state.service';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
@@ -22,7 +22,6 @@ import { AddAddressRequest, Address } from '../../../shared/models';
   selector: 'app-checkout-information',
   standalone: true,
   imports: [ReactiveFormsModule, FormlyModule, FormlyBootstrapModule, LoadingSpinnerComponent, SavedAddressesComponent, AddressFormComponent],
-  providers: [FormBuilder],
   template: `
   @if (!state().loading) {
     <div>
@@ -49,6 +48,8 @@ import { AddAddressRequest, Address } from '../../../shared/models';
 
 })
 export class CheckoutInformationComponent implements OnInit, OnDestroy {
+  @Output() completed = new EventEmitter<void>();
+
   protected state = signal<{
     addresses: Address[];
     selectedAddressId: string | null;
@@ -176,7 +177,6 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly customerService = inject(CustomerService);
   authService = inject(AuthService);
@@ -315,6 +315,9 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
         { severity: 'info', timeout: 3000 }
       );
 
+      // Emit completion event
+      this.completed.emit();
+
     } catch {
       // Errors already handled by services
     } finally {
@@ -341,7 +344,7 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
 
     try {
       // Save address to checkout state
-      await this.checkoutAddressService.selectShippingAddress(address.id);
+      const result = await this.checkoutAddressService.selectShippingAddress(address.id);
 
       // Verify the state was updated
       const shippingAddress = this.checkoutState.getShippingAddress();
@@ -349,6 +352,9 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
 
       // Add visual indication that address was selected
       console.log('Address selected:', address);
+
+      // Emit completion event
+      this.completed.emit();
 
     } catch {
       this.errorService.addError(
@@ -360,8 +366,9 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       this.state.update(s => ({ ...s, loading: false }));
     }
   }
+
   async onAddressDelete(addressId: string) {
-    await this.checkoutAddressService.deleteShippingAddress(addressId);
+    this.checkoutAddressService.deleteShippingAddress(addressId);
   }
 
   onAddNew(): void {
@@ -376,7 +383,10 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       await this.checkoutSession.initializeSession();
       const shippingInformation = createCheckoutInformation(this.model);
       this.checkoutState.setShippingAddress(shippingInformation);
-      await this.router.navigate(['/checkout/payment']);
+      this.router.navigate(['/checkout/payment']);
+
+      // Emit completion event
+      this.completed.emit();
     } catch {
       // Handle error appropriately
       this.errorService.addError('CHECKOUT_ERROR', 'Failed to proceed to payment');
@@ -384,36 +394,19 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       this.state.update(s => ({ ...s, loading: false }));
     }
   }
-  private async loadCustomerData() {
-    this.state().loading = true;
-    try {
-      const profile = await this.customerService.customerProfile();
-      if (profile) {
-        this.form.patchValue({
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          street: profile.addresses[0].street,
-          city: profile.addresses[0].city,
-          postalCode: profile.addresses[0].postalCode,
-          country: profile.addresses[0].country
-        });
-      }
-    } finally {
-      this.state().loading = false;
-    }
-  }
+
   ngOnDestroy() {
     const subscription = this.formSubscription();
     if (subscription) {
       subscription.unsubscribe();
     }
   }
+
   // Not new
   showFieldError(fieldName: string): boolean {
     const control = this.form.get(fieldName);
     return control ? control.invalid && control.touched : false;
   }
-
 }
 
 interface ShippingFormModel {
