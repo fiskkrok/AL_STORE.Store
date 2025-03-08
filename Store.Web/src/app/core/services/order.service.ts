@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderConfirmation, OrderStatus, OrderSummary } from '../../shared/models';
+import { OrderConfirmation, OrderHistory, OrderStatus, OrderSummary } from '../../shared/models';
 
 export interface OrderDetailDto {
     id: string;
@@ -93,8 +93,8 @@ export class OrderService {
      * Get all customer orders - fetches the order history for the authenticated customer
      * Maps to /customers/orders endpoint
      */
-    getCustomerOrders(): Observable<OrderSummary[]> {
-        return this.http.get<{ orders: OrderSummary[] }>(`${environment.apiUrl}/api/customers/orders`).pipe(
+    getCustomerOrders(): Observable<OrderHistory[]> {
+        return this.http.get<{ orders: OrderHistory[] }>(`${environment.apiUrl}/api/customers/orders`).pipe(
             map(response => response.orders),
             catchError(error => {
                 console.error('Failed to fetch order history:', error);

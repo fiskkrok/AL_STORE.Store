@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
+
+using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Payments.Models;
 using Store.Domain.Common;
@@ -26,13 +30,13 @@ public class
     private readonly IOrderRepository _orderRepository;
     private readonly IPaymentSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly ICurrentUser _currentUser;
     public CreatePaymentSessionCommandHandler(
         IOrderRepository orderRepository,
         IPaymentSessionRepository sessionRepository,
         IKlarnaService klarnaService,
         IUnitOfWork unitOfWork,
-        ILogger<CreatePaymentSessionCommandHandler> logger, IMapper mapper)
+        ILogger<CreatePaymentSessionCommandHandler> logger, IMapper mapper, ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
         _sessionRepository = sessionRepository;
@@ -40,6 +44,7 @@ public class
         _unitOfWork = unitOfWork;
         _logger = logger;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<PaymentSessionDto>> Handle(
@@ -51,6 +56,7 @@ public class
             // Calculate order total
             var totalAmount = request.Items.Sum(i => i.UnitPrice * i.Quantity);
             var orderTotal = Money.FromDecimal(totalAmount, request.Currency);
+            var userId = _currentUser.Id;
 
             // Create shipping address value object
             var shippingAddressResult = request.Customer.ShippingAddress != null
@@ -93,7 +99,7 @@ public class
             // Create order with separate address instances
             var order = new Order(
                 orderNumber,
-                null, // Guest checkout
+                userId, // Guest checkout
                 shippingAddressResult.Value!,
                 billingAddressResult.Value!, // Using separate instance
                 orderTotal,

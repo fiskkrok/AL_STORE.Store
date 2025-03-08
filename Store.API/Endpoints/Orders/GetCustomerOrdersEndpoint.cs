@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using FastEndpoints.Security;
 using MediatR;
 using Store.Application.Orders.Queries;
 using Store.Application.Orders.Models;
@@ -34,7 +35,7 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
 
         if (result.IsSuccess)
         {
-            _logger.LogInformation("Got {Value} for customer {user}", result.Value, User.Identity?.Name);
+            _logger.LogInformation("Got {Value} for customer {user}", result.Value, User.ClaimValue("name"));
             await SendOkAsync(new CustomerOrdersResponse { Orders = result.Value! }, ct);
         }
         else

@@ -14,8 +14,9 @@ import { environment } from "../../../../environments/environment";
 import { MockPaymentService, MockPaymentOptions } from "../../../core/services/mock-payment.service";
 import { PaymentRecoveryService, PaymentError } from "../../../core/services/payment-recovery.service";
 import { CommonModule } from "@angular/common";
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule, } from '@angular/material/stepper';
 import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/stepper";
+import { MatIconModule } from "@angular/material/icon";
 
 // checkout-page.component.ts
 @Component({
@@ -24,18 +25,18 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
   providers: [
     {
       provide: STEPPER_GLOBAL_OPTIONS,
-      useValue: { displayDefaultIndicatorType: false, showError: true }
-    }
+      useValue: { displayDefaultIndicatorType: false, showError: true },
+    },
   ],
   template: `
     <div class="container mx-auto px-4 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Main Checkout Flow -->
         <div class="lg:col-span-8">
-          <mat-stepper 
+          <mat-vertical-stepper
             #stepper 
-            [linear]="true" 
-            orientation="vertical" 
+            [animationDuration]="'300'"
+            [linear]="false"
             class="bg-background rounded-lg border shadow-sm"
             (selectionChange)="onStepChange($event)"
           >
@@ -47,12 +48,8 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
               <ng-template matStepLabel>
                 <div class="font-medium">
                   Shipping Information
-                  @if (checkoutState.hasShippingInformation()) {
-                    <span class="ml-2 text-green-600 text-sm">✓</span>
-                  }
                 </div>
               </ng-template>
-              
               <div class="py-4">
                 <app-checkout-information (completed)="nextStep()" />
               </div>
@@ -66,12 +63,8 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
               <ng-template matStepLabel>
                 <div class="font-medium">
                   Payment Method
-                  @if (checkoutState.hasPaymentMethod()) {
-                    <span class="ml-2 text-green-600 text-sm">✓</span>
-                  }
                 </div>
               </ng-template>
-              
               <div class="py-4">
                 <app-checkout-payment (completed)="nextStep()" />
               </div>
@@ -85,12 +78,8 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
               <ng-template matStepLabel>
                 <div class="font-medium">
                   Delivery Options
-                  @if (checkoutState.hasDeliveryMethod()) {
-                    <span class="ml-2 text-green-600 text-sm">✓</span>
-                  }
                 </div>
               </ng-template>
-              
               <div class="py-4">
                 <app-checkout-delivery (completed)="nextStep()" />
               </div>
@@ -99,7 +88,9 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
             <!-- Review & Pay Step -->
             <mat-step [completed]="false">
               <ng-template matStepLabel>
-                <div class="font-medium">Review & Complete</div>
+                  <div class="font-medium">
+                    Review & Complete
+                  </div>
               </ng-template>
               
               <div class="py-6">
@@ -170,7 +161,8 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
                 </div>
               </div>
             </mat-step>
-          </mat-stepper>
+          
+          </mat-vertical-stepper>
 
           <!-- Testing Controls (only in development) -->
           @if (!environment.production) {
@@ -196,11 +188,12 @@ import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/step
     CheckoutDeliveryComponent,
     CheckoutPaymentComponent,
     CheckoutInformationComponent,
-    TestPaymentControlsComponent
-  ]
+    TestPaymentControlsComponent,
+    MatIconModule
+  ],
 })
 export class CheckoutPageComponent {
-
+  @ViewChild('stepper') stepper!: MatStepper;
   readonly checkoutState = inject(CheckoutStateService);
   private readonly cartStore = inject(CartStore);
   private readonly router = inject(Router);
@@ -217,7 +210,7 @@ export class CheckoutPageComponent {
   // For stepper control
   nextStep(): void {
     setTimeout(() => {
-      // this.stepper.next();
+      this.stepper.next();
     }, 300); // Short delay for better UX
   }
 

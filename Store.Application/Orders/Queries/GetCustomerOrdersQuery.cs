@@ -51,7 +51,13 @@ public class GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQu
             Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount.Amount,
             Currency = order.TotalAmount.Currency,
-            ItemCount = order.OrderLines.Count
+            OrderLineItems = order.OrderLines.Select(o => new OrderLineItemDto
+            {
+                ProductName = o.ProductName,
+                Quantity = o.Quantity,
+                LineTotal = o.LineTotal.Amount,
+                UnitPrice = o.UnitPrice.Amount,
+            }).ToList()
         }).ToList();
 
         return Result<IReadOnlyList<OrderSummaryDto>>.Success(orderDtos);

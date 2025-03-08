@@ -25,6 +25,28 @@ export interface OrderSummary {
     shippingAddress: CheckoutAddress;
     billingAddress: CheckoutAddress;
 }
+export interface OrderHistory {
+    id: string;
+    orderNumber: string;
+    created: string;
+    status: string;
+    totalAmount: number;
+    currency: string;
+    itemCount: number;
+    orderLineItems: OrderLineItem[];
+    shippingAddress: CheckoutAddress;
+    billingAddress: CheckoutAddress;
+}
+
+export interface OrderLineItem {
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+    currency: string;
+    productImageUrl: string;
+}
 
 export interface CheckoutSessionRequest {
     items: {

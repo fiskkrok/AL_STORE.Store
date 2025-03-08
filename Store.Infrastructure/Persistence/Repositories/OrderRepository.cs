@@ -31,7 +31,7 @@ internal class OrderRepository : Repository<Order>, IOrderRepository
     {
         return await _context.Set<Order>()
             .Where(o => o.CustomerId == customerId)
-            .OrderByDescending(o => o.Created)
+            .OrderByDescending(o => o.Created).Include(o => o.OrderLines)
             .ToListAsync(ct);
     }
 
