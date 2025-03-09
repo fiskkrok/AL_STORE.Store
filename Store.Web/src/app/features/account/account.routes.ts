@@ -12,6 +12,11 @@ export const ACCOUNT_ROUTES: Routes = [
                 loadComponent: () => import('./profile-management.component')
                     .then(m => m.ProfileManagementComponent),
             },
-        ]
-    }
+            {
+                path: 'orders/:id',
+                loadComponent: () => import('./orders/order-history-details.component')
+                    .then(m => m.OrderHistoryDetailsComponent),
+            },
+        ],
+    },
 ];

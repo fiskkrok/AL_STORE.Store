@@ -23,8 +23,8 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
 
     <div class="space-y-4">
       <!-- Credit Card -->
-      <div class="border rounded-lg overflow-hidden hover:border-primary">
-        <button 
+      <div class="border rounded-lg overflow-hidden {{!checkoutState.hasShippingInformation() ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary'}} ">
+        <button [disabled]="!checkoutState.hasShippingInformation()"
           class="w-full px-4 py-2 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD"
           [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.CREDIT_CARD"
@@ -53,8 +53,8 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
       </div>
 
       <!-- Klarna -->
-      <div class="border rounded-lg overflow-hidden hover:border-primary">
-        <button 
+      <div class="border rounded-lg overflow-hidden {{!checkoutState.hasShippingInformation() ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary'}} ">
+        <button [disabled]="!checkoutState.hasShippingInformation()"
           class="w-full px-4 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.KLARNA"
           [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.KLARNA"
@@ -80,8 +80,8 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
       </div>
 
       <!-- Swish -->
-      <div class="border rounded-lg overflow-hidden hover:border-primary">
-        <button 
+      <div class="border rounded-lg overflow-hidden {{!checkoutState.hasShippingInformation() ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary'}} ">
+        <button [disabled]="!checkoutState.hasShippingInformation()"
           class="w-full px-4 py-3 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.SWISH"
           [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.SWISH"
@@ -110,8 +110,8 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
       </div>
 
       <!-- Bank Payment -->
-      <div class="border rounded-lg overflow-hidden hover:border-primary">
-        <button 
+      <div class="border rounded-lg overflow-hidden {{!checkoutState.hasShippingInformation() ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary'}} ">
+        <button [disabled]="!checkoutState.hasShippingInformation()"
           class="w-full px-4 py-3 text-left flex items-center justify-between"
           [class.bg-accent]="selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT"
           [class.border-primary]="selectedPaymentMethod() === constPaymentMethods.BANK_PAYMENT"
@@ -150,7 +150,7 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
 export class CheckoutPaymentComponent {
   @Output() completed = new EventEmitter<void>();
 
-  private readonly checkoutState = inject(CheckoutStateService);
+  readonly checkoutState = inject(CheckoutStateService);
   private readonly theme = inject(ThemeService);
   private readonly cartStore = inject(CartStore);
   private readonly klarnaScriptService = inject(KlarnaScriptService);

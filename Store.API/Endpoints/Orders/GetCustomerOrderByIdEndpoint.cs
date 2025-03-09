@@ -32,7 +32,7 @@ public class GetCustomerOrderByIdEndpoint : Endpoint<GetCustomerOrderByIdRequest
             .ProducesProblem(401)
             .ProducesProblem(404)
             .WithTags("Customer Orders"));
-        Permissions("read: profile");
+        Permissions("read:profile");
     }
 
     public override async Task HandleAsync(GetCustomerOrderByIdRequest req, CancellationToken ct)

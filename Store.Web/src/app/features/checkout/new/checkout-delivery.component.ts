@@ -16,8 +16,8 @@ import { CurrencyPipe } from "@angular/common";
       </div>
     } @else {
       @for (option of deliveryOptions(); track option) {
-        <div class="flex items-center justify-between border-b py-4 hover:border-primary hover:border rounded-lg p-4 {{selectedOption() === option.id ? 'bg-accent' : ''}}">
-          <button
+        <div class="flex items-center justify-between border-b py-4  {{(!checkoutState.hasShippingInformation() || !checkoutState.hasPaymentMethod()) ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:border'}} rounded-lg p-4 {{selectedOption() === option.id ? 'bg-accent' : ''}}">
+          <button [disabled]="!checkoutState.hasShippingInformation() || !checkoutState.hasPaymentMethod()"
             class="w-full px-4 py-2 text-left flex items-center justify-between rounded-md"
             [class.bg-accent]="selectedOption() === option.id"
             (click)="updateSelectedOption(option.id)"
@@ -66,7 +66,7 @@ export class CheckoutDeliveryComponent implements OnInit {
   }
 
   private readonly deliveryService = inject(DeliveryService);
-  private readonly checkoutState = inject(CheckoutStateService);
+  readonly checkoutState = inject(CheckoutStateService);
   loading = signal(true);
   deliveryOptions = signal<DeliveryOption[]>([]);
   selectedOption = signal<string | null>(null);

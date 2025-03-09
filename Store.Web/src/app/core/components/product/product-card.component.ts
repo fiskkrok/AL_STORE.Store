@@ -1,9 +1,10 @@
 // src/app/core/components/product/product-card.component.ts
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartItem } from '../../state/cart.store';
 import { Product } from '../../../shared/models/product.model';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-product-card',
@@ -16,7 +17,7 @@ import { Product } from '../../../shared/models/product.model';
         @if (!loading()) {
           <!-- [src]="product().images[0]?.url" -->
           <img
-            [src]="imageUrl()"
+            [src]=" this.productService.imageUrl()"
             [alt]="product().name"
             class="product-image"
             loading="lazy"
@@ -141,15 +142,7 @@ import { Product } from '../../../shared/models/product.model';
   `
 })
 export class ProductCardComponent {
-  imageUrl = computed<string>(() => {
-    if (this.product().images && this.product().images.length > 0 && this.product().images[0].url) {
-      return this.product().images[0].url;
-    }
-    // Use product.id to select an image deterministically if possible
-    const num = parseInt(this.product().id, 10);
-    const n = !isNaN(num) ? (num % 29) + 1 : Math.floor(Math.random() * 29) + 1;
-    return `assets/Pics/${n}.webp`;
-  });
+  productService = inject(ProductService);
   // Inputs
   product = input.required<Product>();
   loading = input(false);
@@ -179,7 +172,7 @@ export class ProductCardComponent {
       name: this.product().name,
       price: this.product().price,
       quantity: 1,
-      imageUrl: this.imageUrl(),
+      imageUrl: this.productService.imageUrl(),
       id: ''
     });
   }

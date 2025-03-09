@@ -3,7 +3,7 @@ import { CustomerService } from '../../core/services/customer.service';
 import { LoadingSpinnerComponent } from '../../core/components/loading-spinner.component';
 import { PersonalInfoComponent } from "./personal-info.component";
 import { AddressBookComponent } from "./address-book.component";
-import { OrderHistoryComponent } from "./order-history.component";
+import { OrderHistoryComponent } from "./orders/order-history.component";
 import { PreferencesComponent } from "./preferences.component";
 import { ActivatedRoute } from '@angular/router';
 

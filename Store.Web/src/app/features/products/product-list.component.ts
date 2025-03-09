@@ -1,6 +1,5 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ErrorDisplayComponent } from '../../core/components/error-display/error-display.component';
 import { ContainerComponent } from '../../core/components/layout/container.component';
 import { GridComponent } from '../../core/components/layout/grid.component';
 import { SectionComponent } from '../../core/components/layout/section.component';
@@ -10,6 +9,7 @@ import { ErrorService } from '../../core/services/error.service';
 import { CartStore } from '../../core/state/cart.store';
 import { ProductStore } from '../../core/state/product.store';
 import { Product } from '../../shared/models/product.model';
+import { ErrorDisplayComponent } from '../../core/components/error-display.component';
 
 
 @Component({

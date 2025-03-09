@@ -45,9 +45,11 @@ public static class DependencyInjection
         services.AddScoped<IKlarnaService, KlarnaService>();
         services.AddScoped<IIdempotencyService, IdempotencyService>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        // Add email service
+        services.AddEmailService(configuration);
         services.AddLogging(o => o.AddConsole());
-         // Redis Configuration
-         services.AddStackExchangeRedisCache(options =>
+        // Redis Configuration
+        services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = configuration.GetConnectionString("Redis");
             options.InstanceName = "StoreCache:";

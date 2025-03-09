@@ -1,0 +1,39 @@
+<div class="container order-history-item">
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <h4>{{ orderHistoryItem.productName }}</h4>
+            <p>Order ID: {{ orderHistoryItem.orderId }}</p>
+            <p>Order Date: {{ orderHistoryItem.orderDate | date }}</p>
+        </div>
+        <div class="col-12 col-md-6 text-end">
+            <button (click)="viewDetails(orderHistoryItem.orderId)" class="btn btn-primary">View Details</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p>Status: {{ orderHistoryItem.status }}</p>
+            <p>Total Amount: {{ orderHistoryItem.totalAmount | currency }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p>Shipping Address: {{ orderHistoryItem.shippingAddress }}</p>
+            <p>Billing Address: {{ orderHistoryItem.billingAddress }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p>Payment Method: {{ orderHistoryItem.paymentMethod }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p>Items:</p>
+            <ul>
+                <li *ngFor="let item of orderHistoryItem.items">
+                    {{ item.productName }} - {{ item.quantity }} x {{ item.price | currency }}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

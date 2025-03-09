@@ -1,7 +1,7 @@
 
 
 // src/app/core/services/product.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
@@ -61,4 +61,11 @@ export class ProductService {
 
     return this.http.get<Product>(url, { headers });
   }
+
+  imageUrl = computed<string>(() => {
+    // Use product.id to select an image deterministically if possible
+    const n = Math.floor(Math.random() * 29) + 1;
+    return `assets/Pics/${n}.webp`;
+  });
+
 }

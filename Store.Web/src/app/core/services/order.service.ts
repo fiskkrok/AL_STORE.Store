@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderConfirmation, OrderHistory, OrderStatus, OrderSummary } from '../../shared/models';
+import { OrderConfirmation, OrderHistory, OrderStatus } from '../../shared/models';
 
 export interface OrderDetailDto {
     id: string;
@@ -14,10 +14,12 @@ export interface OrderDetailDto {
     totalAmount: number;
     items: {
         productId: string;
-        name: string;
+        productName: string;
         quantity: number;
-        price: number;
-        imageUrl?: string;
+        unitPrice: number;
+        lineTotal: number;
+        currency: string;
+        productImageUrl: string;
     }[];
     shippingAddress: {
         firstName: string;

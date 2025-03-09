@@ -13,6 +13,13 @@ internal class OrderRepository : Repository<Order>, IOrderRepository
         _context = context;
     }
 
+    public override async Task<Order?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.Set<Order>()
+            .Include(o => o.OrderLines)
+            .FirstOrDefaultAsync(o => o.Id == id, ct);
+    }
+
     public async Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default)
     {
         return await _context.Set<Order>()

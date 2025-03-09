@@ -63,6 +63,7 @@ import { MatIconModule } from "@angular/material/icon";
               <ng-template matStepLabel>
                 <div class="font-medium">
                   Payment Method
+                  @if (!checkoutState.hasShippingInformation() && currentStep() === 1 ) { <span class="text-red-500 text-xs">Please first fill in (Shipping Information)</span> }
                 </div>
               </ng-template>
               <div class="py-4">
@@ -72,12 +73,13 @@ import { MatIconModule } from "@angular/material/icon";
             
             <!-- Delivery Options Step -->
             <mat-step 
-              [completed]="checkoutState.hasDeliveryMethod()" 
-              [editable]="true"
+            [completed]="checkoutState.hasDeliveryMethod()" 
+            [editable]="true"
             >
-              <ng-template matStepLabel>
-                <div class="font-medium">
-                  Delivery Options
+            <ng-template matStepLabel>
+              <div class="font-medium">
+                Delivery Options
+                @if (!checkoutState.hasPaymentMethod() && currentStep() === 2 ) { <span class="text-red-500 text-xs">Please first fill in (Payment Method)</span> }
                 </div>
               </ng-template>
               <div class="py-4">
@@ -212,6 +214,10 @@ export class CheckoutPageComponent {
     setTimeout(() => {
       this.stepper.next();
     }, 300); // Short delay for better UX
+  }
+  // Get current stepper index
+  currentStep(): number {
+    return this.stepper?.selectedIndex;
   }
 
   onStepChange(event: StepperSelectionEvent): void {
