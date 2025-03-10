@@ -1,10 +1,10 @@
 // src/app/core/services/payment-recovery.service.ts
 import { Injectable, inject } from '@angular/core';
-import { CheckoutStateService } from './checkout-state.service';
 import { PaymentProviderFactory } from '../providers/payment-provider.factory';
 import { CartStore } from '../state/cart.store';
 import { Router } from '@angular/router';
 import { ErrorService } from './error.service';
+import { CheckoutService } from './checkout.service';
 
 export interface PaymentError {
     code: string;
@@ -14,7 +14,7 @@ export interface PaymentError {
 
 @Injectable({ providedIn: 'root' })
 export class PaymentRecoveryService {
-    private readonly checkoutState = inject(CheckoutStateService);
+    private readonly checkoutState = inject(CheckoutService);
     private readonly paymentProviderFactory = inject(PaymentProviderFactory);
     private readonly cartStore = inject(CartStore);
     private readonly router = inject(Router);

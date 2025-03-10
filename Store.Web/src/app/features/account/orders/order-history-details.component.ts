@@ -52,7 +52,7 @@ import { ProductService } from '../../../core/services/product.service';
             @for (item of order.orderLineItems; track $index) {
               <div class="flex justify-between items-center py-4 border-b">
                 <div class="flex items-center">
-                  <img src="{{  this.productService.imageUrl() }}" alt="{{ item.productName }}" class="w-16 h-16 rounded-md mr-4">
+                  <img src="{{ item.productImageUrl }}" alt="{{ item.productName }}" class="w-16 h-16 rounded-md mr-4">
                   <!-- <img src="{{ item.productImageUrl }}" alt="{{ item.productName }}" class="w-16 h-16 rounded-md mr-4"> -->
                   <div>
                     <div class="font-medium">
@@ -119,6 +119,7 @@ import { ProductService } from '../../../core/services/product.service';
   `
 })
 export class OrderHistoryDetailsComponent implements OnInit {
+
   productService = inject(ProductService);
 
   orderService = inject(OrderService);
@@ -127,7 +128,6 @@ export class OrderHistoryDetailsComponent implements OnInit {
 
   order: OrderHistory | null = null;
   error: string | null = null;
-
   ngOnInit(): void {
     this.loadOrder();
   }
@@ -222,7 +222,7 @@ export class OrderHistoryDetailsComponent implements OnInit {
       unitPrice: item.unitPrice,
       lineTotal: item.lineTotal,
       currency: 'SEK', // Default or could be specified in the DTO
-      productImageUrl: item.productImageUrl || 'assets/product-placeholder.jpg'
+      productImageUrl: item.productImageUrl || 'assets/Pics/1.webp'
     }));
 
     // Return the order in OrderHistory format

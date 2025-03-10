@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CustomerService } from '../../core/services/customer.service';
-import { CheckoutStateService } from '../../core/services/checkout-state.service';
+import { CheckoutService } from '../../core/services/checkout.service';
 
 @Component({
     selector: 'app-guest-email',
@@ -74,11 +74,11 @@ import { CheckoutStateService } from '../../core/services/checkout-state.service
     `
 })
 export class GuestEmailComponent {
-    private fb = inject(FormBuilder);
-    private auth = inject(AuthService);
-    private customerService = inject(CustomerService);
-    private router = inject(Router);
-    private checkoutState = inject(CheckoutStateService);
+    private readonly fb = inject(FormBuilder);
+    private readonly auth = inject(AuthService);
+    private readonly customerService = inject(CustomerService);
+    private readonly router = inject(Router);
+    private readonly checkoutState = inject(CheckoutService);
 
     form = this.fb.group({
         email: ['', [Validators.required, Validators.email]]

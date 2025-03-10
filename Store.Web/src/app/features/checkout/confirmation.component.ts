@@ -3,11 +3,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../../core/services/order.service';
 import { CartStore } from '../../core/state/cart.store';
-import { CheckoutStateService } from '../../core/services/checkout-state.service';
 import { CurrencyPipe } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { OrderConfirmation } from '../../shared/models';
 import { EmailService } from '../../core/services/email.service';
+import { CheckoutService } from '../../core/services/checkout.service';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -106,7 +106,7 @@ export class OrderConfirmationComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
   private readonly cartStore = inject(CartStore);
-  private readonly checkoutState = inject(CheckoutStateService);
+  private readonly checkoutState = inject(CheckoutService);
   private readonly emailService = inject(EmailService);
 
   loading = signal(true);

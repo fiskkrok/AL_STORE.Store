@@ -1,4 +1,3 @@
-import { CartItem } from "./cart.model";
 
 // src/app/shared/models/payment.model.ts
 export interface PaymentProvider {

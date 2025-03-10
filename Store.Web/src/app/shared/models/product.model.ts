@@ -1,4 +1,5 @@
-// src/app/core/models/product.model.ts
+
+// Base product interface 
 export interface Product {
     id: string;
     name: string;
@@ -21,6 +22,50 @@ export interface Product {
     };
 }
 
+// Product with variant details
+export interface ProductWithVariants extends Product {
+    variants: ProductVariant[];
+    selectedVariant?: ProductVariant;
+}
+
+// Simple product representation for lists
+export interface ProductSummary {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    compareAtPrice?: number;
+    imageUrl: string;
+    stockLevel: number;
+    ratings?: {
+        average: number;
+        count: number;
+    };
+}
+
+// Product with fully loaded details
+export interface ProductDetails extends Product {
+    specifications: ProductSpecification[];
+    relatedProducts: ProductSummary[];
+    reviews: ProductReview[];
+}
+
+// Helper interfaces
+export interface ProductSpecification {
+    name: string;
+    value: string;
+}
+
+export interface ProductReview {
+    id: string;
+    rating: number;
+    title: string;
+    comment: string;
+    author: string;
+    date: string;
+    verified: boolean;
+}
+
 export interface ProductQueryParams {
     page?: number;
     pageSize?: number;
@@ -30,6 +75,7 @@ export interface ProductQueryParams {
     maxPrice?: number;
     inStock?: boolean;
     sortBy?: 'price_asc' | 'price_desc' | 'newest';
+    excludeProduct?: string; // For related products
 }
 
 export interface ProductListResponse {

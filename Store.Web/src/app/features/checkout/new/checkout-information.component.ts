@@ -1,22 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CheckoutStateService } from '../../../core/services/checkout-state.service';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { AuthService } from '@auth0/auth0-angular';
 import { CustomerService } from '../../../core/services/customer.service';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { CheckoutSessionService } from '../../../core/services/checkout-session.service';
 import { LoadingSpinnerComponent } from "../../../core/components/loading-spinner.component";
 import { ErrorService } from '../../../core/services/error.service';
 import { InputFieldType } from '../../../shared/forms/formly/input-field.type';
 import { SelectFieldType } from '../../../shared/forms/formly/select-field.type';
-import { CheckoutAddressService } from '../../../core/services/checkout-address.service';
 import { SavedAddressesComponent } from "../../../core/components/address-selection/saved-addresses.component";
 import { AddressFormComponent, AddressFormData } from "../../../core/components/address-selection/address-form.component";
 import { CheckoutInformation } from '../../../shared/models/checkout.model';
 import { AddAddressRequest, Address } from '../../../shared/models';
+import { AddressService } from '../../../core/services/address.service';
+import { CheckoutService } from '../../../core/services/checkout.service';
 
 @Component({
   selector: 'app-checkout-information',
@@ -181,9 +180,8 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
   private readonly customerService = inject(CustomerService);
   authService = inject(AuthService);
   private readonly errorService = inject(ErrorService);
-  private readonly checkoutSession = inject(CheckoutSessionService);
-  readonly checkoutState = inject(CheckoutStateService);
-  private readonly checkoutAddressService = inject(CheckoutAddressService);
+  readonly checkoutService = inject(CheckoutService);
+  private readonly addressService = inject(AddressService);
   addresses = signal<Address[]>([]);
   formSubscription = signal<Subscription | null>(null);
 
@@ -215,7 +213,7 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       if (isAuthenticated) {
         this.state.update(s => ({ ...s, loading: true }));
         try {
-          await this.customerService.loadAddresses();
+          await this.addressService.loadAddresses();
           const defaultAddress = this.customerService.defaultShippingAddress();
           const profile = this.customerService.profile();
 
@@ -247,10 +245,10 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
 
     try {
       // Initialize checkout session
-      await this.checkoutSession.initializeSession();
+      await this.checkoutService.initializeSession();
 
       // Get the selected address from checkout state
-      const shippingAddress = this.checkoutState.getShippingAddress();
+      const shippingAddress = this.checkoutService.getShippingAddress();
 
       if (!shippingAddress) {
         throw new Error('No shipping address selected');
@@ -274,7 +272,7 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
       };
 
       // Set the information in checkout state
-      this.checkoutState.setShippingAddress(checkoutInfo);
+      this.checkoutService.setShippingAddress(checkoutInfo);
 
       // Navigate to payment
       await this.router.navigate(['/checkout/payment']);
@@ -344,10 +342,10 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
 
     try {
       // Save address to checkout state
-      const result = await this.checkoutAddressService.selectShippingAddress(address.id);
+      await this.checkoutService.selectShippingAddress(address.id);
 
       // Verify the state was updated
-      const shippingAddress = this.checkoutState.getShippingAddress();
+      const shippingAddress = this.checkoutService.getShippingAddress();
       console.log('Updated shipping address:', shippingAddress);
 
       // Add visual indication that address was selected
@@ -368,7 +366,7 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
   }
 
   async onAddressDelete(addressId: string) {
-    this.checkoutAddressService.deleteShippingAddress(addressId);
+    this.addressService.deleteAddress(addressId);
   }
 
   onAddNew(): void {
@@ -380,9 +378,9 @@ export class CheckoutInformationComponent implements OnInit, OnDestroy {
 
     this.state.update(s => ({ ...s, loading: true }));
     try {
-      await this.checkoutSession.initializeSession();
+      await this.checkoutService.initializeSession();
       const shippingInformation = createCheckoutInformation(this.model);
-      this.checkoutState.setShippingAddress(shippingInformation);
+      this.checkoutService.setShippingAddress(shippingInformation);
       this.router.navigate(['/checkout/payment']);
 
       // Emit completion event

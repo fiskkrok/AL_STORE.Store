@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CheckoutStateService } from '../../../core/services/checkout-state.service';
 import { ConstPaymentMethods } from '../../../shared/global/const-payment-methods.enum';
 import { CartStore } from '../../../core/state';
 import { PaymentSession } from '../../../shared/models';
@@ -9,6 +8,7 @@ import { CreditCardFormComponent } from './credit-card-form.component';
 import { BankPaymentFormComponent } from './bank-payment-form.component';
 import { PaymentProviderFactory } from '../../../core/providers/payment-provider.factory';
 import { KlarnaScriptService } from '../../../core/services/klarna-script.service';
+import { CheckoutService } from '../../../core/services/checkout.service';
 
 @Component({
   selector: 'app-checkout-payment',
@@ -150,7 +150,7 @@ import { KlarnaScriptService } from '../../../core/services/klarna-script.servic
 export class CheckoutPaymentComponent {
   @Output() completed = new EventEmitter<void>();
 
-  readonly checkoutState = inject(CheckoutStateService);
+  readonly checkoutState = inject(CheckoutService);
   private readonly theme = inject(ThemeService);
   private readonly cartStore = inject(CartStore);
   private readonly klarnaScriptService = inject(KlarnaScriptService);

@@ -1,5 +1,4 @@
 import { Component, inject, signal, ViewChild } from "@angular/core";
-import { CheckoutStateService } from "../../../core/services/checkout-state.service";
 import { CheckoutInformationComponent } from "./checkout-information.component";
 import { CheckoutPaymentComponent } from "./checkout-payment.component";
 import { OrderSummaryComponent } from "./order-summary.component";
@@ -17,6 +16,7 @@ import { CommonModule } from "@angular/common";
 import { MatStepper, MatStepperModule, } from '@angular/material/stepper';
 import { StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from "@angular/cdk/stepper";
 import { MatIconModule } from "@angular/material/icon";
+import { CheckoutService } from "../../../core/services/checkout.service";
 
 // checkout-page.component.ts
 @Component({
@@ -196,7 +196,7 @@ import { MatIconModule } from "@angular/material/icon";
 })
 export class CheckoutPageComponent {
   @ViewChild('stepper') stepper!: MatStepper;
-  readonly checkoutState = inject(CheckoutStateService);
+  readonly checkoutState = inject(CheckoutService);
   private readonly cartStore = inject(CartStore);
   private readonly router = inject(Router);
   private readonly errorService = inject(ErrorService);

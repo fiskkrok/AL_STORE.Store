@@ -1,104 +1,109 @@
-// src/app/features/products/components/product-grid/product-grid.component.ts
-import { Component, inject, signal } from '@angular/core';
-import { ProductCardComponent } from '../../core/components/product/product-card.component';
-import { QuickViewModalComponent } from '../../core/components/product/quick-view-modal.component';
-import { CartStore, CartItem } from '../../core/state/cart.store';
-import { ProductStore } from '../../core/state/product.store';
-import { IntersectionObserverDirective } from '../../directives/intersection-observer.directive';
-import { Product } from '../../shared/models/product.model';
+import { CommonModule } from "@angular/common";
+import { Component, input, output, computed } from "@angular/core";
+import { ProductCardComponent } from "../../core/components/product/product-card.component";
+import { CartItem } from "../../core/state";
+import { Product } from "../../shared/models";
 
 @Component({
   selector: 'app-product-grid',
   standalone: true,
-  imports: [
-    ProductCardComponent,
-    QuickViewModalComponent,
-    IntersectionObserverDirective,
-  ],
+  imports: [CommonModule, ProductCardComponent],
   template: `
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      @for (product of products(); track product.id) {
-        <app-product-card
-          [product]="product"
-          [loading]="isAddingToCart[product.id]"
-          appIntersectionObserver
-          (intersecting)="onIntersecting($event, product)"
-          (handleQuickView)="selectedProduct.set(product)"
-          (handleAddToCart)="onAddToCart($event)"
-        />
-      }
-
-      @if (selectedProduct() !== null) {
-        <app-quick-view-modal
-          [product]="selectedProduct()!"
-          [isOpen]="true"
-          (close)="selectedProduct.set(null)"
-        />
+    <div 
+      class="grid gap-6" 
+      [class]="gridClass()"
+    >
+      @if (loading()) {
+        @for (i of placeholders(); track i) {
+          <div class="animate-pulse">
+            <div class="bg-muted aspect-square rounded-lg"></div>
+            <div class="mt-4 space-y-3">
+              <div class="h-4 bg-muted rounded w-3/4"></div>
+              <div class="h-4 bg-muted rounded w-1/2"></div>
+            </div>
+          </div>
+        }
+      } @else if (products().length > 0) {
+        @for (product of products(); track trackByFn(product)) {
+          <app-product-card
+            [product]="product"
+            [loading]="itemLoading[product.id] === true"
+            [addingToCart]="addingToCart[product.id] === true"
+            (handleQuickView)="onQuickView(product)"
+            (handleAddToCart)="onAddToCart($event)"
+          />
+        }
+      } @else {
+        <div class="col-span-full flex items-center justify-center py-12 bg-gray-50 rounded-lg">
+          <div class="text-center">
+            <svg 
+              class="mx-auto h-12 w-12 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+            @if (emptyMessage()) {
+              <p class="mt-1 text-sm text-gray-500">{{ emptyMessage() }}</p>
+            }
+          </div>
+        </div>
       }
     </div>
-
-    @if (loading()) {
-      <div class="col-span-full flex items-center justify-center py-12">
-        <div class="flex items-center space-x-2">
-          <svg class="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-          <span class="text-lg text-muted-foreground">Loading products...</span>
-        </div>
-      </div>
-    }
-
-    @if (!loading() && products().length === 0) {
-      <div class="col-span-full flex items-center justify-center py-12">
-        <div class="text-center">
-          <svg 
-            class="mx-auto h-12 w-12 text-muted-foreground"
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium">No products found</h3>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Try adjusting your filters or search term.
-          </p>
-        </div>
-      </div>
-    }
   `
 })
 export class ProductGridComponent {
-  private readonly productStore = inject(ProductStore);
-  private readonly cartStore = inject(CartStore);
-  products = this.productStore.products;
-  loading = this.productStore.loading;
-  isAddingToCart: Record<string, boolean> = {};
-  selectedProduct = signal<Product | null>(null);
+  products = input.required<Product[]>({});
+  loading = input(false);
+  emptyMessage = input<string>('');
+  columns = input<1 | 2 | 3 | 4>(4);
+  limit = input<number | null>(null);
 
-  onIntersecting(isIntersecting: boolean, product: Product): void {
-    if (isIntersecting) {
-      // Could be used for analytics or lazy loading
-      console.log('Product in view:', product.id);
+  itemLoading: Record<string, boolean> = {};
+  addingToCart: Record<string, boolean> = {};
+
+  // Events
+  quickView = output<Product>();
+  addToCart = output<CartItem>();
+
+  placeholders = computed(() => {
+    const count = this.limit() ?? this.columns() * 2;
+    return Array.from({ length: count }, (_, i) => i);
+  });
+
+  gridClass = computed(() => {
+    const cols = this.columns();
+    switch (cols) {
+      case 1: return 'grid-cols-1';
+      case 2: return 'grid-cols-1 sm:grid-cols-2';
+      case 3: return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+      case 4:
+      default: return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
     }
+  });
+
+  trackByFn(product: Product): string {
+    return product.id;
   }
 
-  async onAddToCart(event: CartItem): Promise<void> {
-    const productId = event.productId;
-    this.isAddingToCart[productId] = true;
+  onQuickView(product: Product): void {
+    this.quickView.emit(product);
+  }
+
+  async onAddToCart(item: CartItem): Promise<void> {
+    const productId = item.productId;
+    this.addingToCart[productId] = true;
 
     try {
-      // Handle add to cart logic
-      await this.cartStore.addItem(event);
+      this.addToCart.emit(item);
     } finally {
-      this.isAddingToCart[productId] = false;
+      // Add small delay for better UX
+      setTimeout(() => {
+        this.addingToCart[productId] = false;
+      }, 500);
     }
   }
 }

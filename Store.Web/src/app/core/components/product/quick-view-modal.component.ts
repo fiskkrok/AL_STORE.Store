@@ -1,16 +1,20 @@
 // src/app/core/components/product/quick-view-modal.component.ts
-import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { CartStore } from '../../state/cart.store';
-import { ErrorService } from '../../services/error.service';
-import { Product } from '../../../shared/models/product.model';
+// imports
+
+import { CommonModule, CurrencyPipe } from "@angular/common";
+import { Component, inject, input, output, signal, computed } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { RouterLink } from "@angular/router";
+import { Product } from "../../../shared/models";
+import { ErrorService } from "../../services/error.service";
+import { ProductService } from "../../services/product.service";
+import { CartStore } from "../../state";
+import { RatingStarsComponent } from "../rating-stars/rating-stars.component";
 
 @Component({
   selector: 'app-quick-view-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, FormsModule, RouterLink, CurrencyPipe, RatingStarsComponent],
   template: `
     @if (isOpen()) {
       <div class="modal animate-in">
@@ -30,11 +34,10 @@ import { Product } from '../../../shared/models/product.model';
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Image Gallery -->
             <div class="relative aspect-square rounded-lg overflow-hidden">
-              <!-- [src]="product().images[selectedImage].url"  -->
               <img 
-                [src]="this.imageUrl()"
+                [src]="productService.getProductImageUrl()(product())"
                 [alt]="product().name"
-                class="product-image"
+                class="w-full h-full object-cover"
               />
               
               @if (product().images.length > 1) {
@@ -42,8 +45,8 @@ import { Product } from '../../../shared/models/product.model';
                   @for (image of product().images; track image.id; let i = $index) {
                     <button 
                       class="w-2 h-2 rounded-full transition-colors"
-                      [class]="i === selectedImage ? 'bg-primary' : 'bg-muted hover:bg-muted-foreground'"
-                      (click)="selectedImage = i"
+                      [class]="i === selectedImage() ? 'bg-primary' : 'bg-muted hover:bg-muted-foreground'"
+                      (click)="selectedImage.set(i)"
                     > </button>
                   }
                 </div>
@@ -69,6 +72,15 @@ import { Product } from '../../../shared/models/product.model';
                     </span>
                   }
                 </div>
+                
+                @if (product().ratings) {
+                  <div class="mt-2">
+                    <app-rating-stars 
+                      [rating]="product().ratings?.average ?? 0"
+                      [count]="product().ratings?.count ?? 0"
+                    ></app-rating-stars>
+                  </div>
+                }
               </div>
 
               <p class="text-muted-foreground">{{ product().description }}</p>
@@ -79,7 +91,7 @@ import { Product } from '../../../shared/models/product.model';
                   <label class="form-label" for="selectedVariant">Select Option</label>
                   <select 
                     id="selectedVariant"
-                    [(ngModel)]="selectedVariant"
+                    [(ngModel)]="selectedVariantId"
                     class="form-input"
                   >
                     @for (variant of product().variants; track variant.id) {
@@ -116,9 +128,9 @@ import { Product } from '../../../shared/models/product.model';
                 <button
                   class="btn btn-primary w-full btn-lg"
                   (click)="addToCart()"
-                  [disabled]="product().stockLevel === 0 || isAddingToCart"
+                  [disabled]="product().stockLevel === 0 || isAddingToCart()"
                 >
-                  @if (isAddingToCart) {
+                  @if (isAddingToCart()) {
                     <span class="flex items-center justify-center gap-2">
                       <span class="loading-spinner h-4 w-4"></span>
                       Adding...
@@ -168,44 +180,38 @@ import { Product } from '../../../shared/models/product.model';
 export class QuickViewModalComponent {
   private cartStore = inject(CartStore);
   private errorService = inject(ErrorService);
-  imageUrl = computed<string>(() => {
-    if (this.product().images && this.product().images.length > 0 && this.product().images[0].url) {
-      return this.product().images[0].url;
-    }
-    // Use product.id to select an image deterministically if possible
-    const num = parseInt(this.product().id, 10);
-    const n = !isNaN(num) ? (num % 29) + 1 : Math.floor(Math.random() * 29) + 1;
-    return `assets/Pics/${n}.webp`;
-  });
+  readonly productService = inject(ProductService);
+
   product = input.required<Product>();
   isOpen = input(false);
   close = output<void>();
 
-  selectedImage = 0;
-  selectedVariant: string | null = null;
-  quantity = signal(1); // Convert to signal  
-  isAddingToCart = false;
+  selectedImage = signal(0);
+  selectedVariantId = signal<string | null>(null);
+  quantity = signal(1);
+  isAddingToCart = signal(false);
+
   totalPrice = computed(() => {
-    const basePrice = this.selectedVariant
-      ? this.product().variants.find((v: { id: string | null; }) => v.id === this.selectedVariant)?.price
+    const basePrice = this.selectedVariantId()
+      ? this.product().variants.find(v => v.id === this.selectedVariantId())?.price
       : this.product().price;
 
     return (basePrice || 0) * this.quantity();
   });
+
   async addToCart() {
-    this.isAddingToCart = true;
+    this.isAddingToCart.set(true);
 
     try {
-      const variant = this.product().variants?.find((v: { id: string | null; }) => v.id === this.selectedVariant);
+      const variant = this.product().variants?.find(v => v.id === this.selectedVariantId());
 
       await this.cartStore.addItem({
         productId: this.product().id,
         variantId: variant?.id,
         name: this.product().name,
-        price: variant?.price ?? this.product().price, // Use raw number
+        price: variant?.price ?? this.product().price,
         quantity: this.quantity(),
-        // imageUrl: this.product().images[0].url
-        imageUrl: this.imageUrl(),
+        imageUrl: this.productService.getProductImageUrl()(this.product()),
       });
 
       this.close.emit();
@@ -214,7 +220,7 @@ export class QuickViewModalComponent {
         'CART_ERROR',
         'Failed to add item to cart. Please try again.');
     } finally {
-      this.isAddingToCart = false;
+      this.isAddingToCart.set(false);
     }
   }
 }

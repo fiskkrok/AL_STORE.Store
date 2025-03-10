@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+// src/app/core/services/klarna-script.service.ts
+import { Injectable, inject } from '@angular/core';
+import { ScriptLoaderService } from './script-loader.service';
 
 declare global {
     interface Window {
@@ -10,27 +12,13 @@ declare global {
     providedIn: 'root'
 })
 export class KlarnaScriptService {
-    private readonly scriptLoaded = signal(false);
+    private readonly scriptLoader = inject(ScriptLoaderService);
+    private readonly KLARNA_SCRIPT_URL = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
 
     loadKlarnaScript(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (window.Klarna) {
-                this.scriptLoaded.set(true);
-                resolve();
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = 'https://x.klarnacdn.net/kp/lib/v1/api.js';
-            script.async = true;
-
-            script.onload = () => {
-                this.scriptLoaded.set(true);
-                resolve();
-            };
-
-            script.onerror = () => reject(new Error('Failed to load Klarna script'));
-            document.body.appendChild(script);
+        return this.scriptLoader.loadScript({
+            url: this.KLARNA_SCRIPT_URL,
+            loadCheck: () => !!window.Klarna
         });
     }
 
@@ -54,6 +42,6 @@ export class KlarnaScriptService {
     }
 
     isScriptLoaded(): boolean {
-        return this.scriptLoaded();
+        return this.scriptLoader.isScriptLoaded(this.KLARNA_SCRIPT_URL);
     }
 }

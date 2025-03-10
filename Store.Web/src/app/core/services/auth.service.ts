@@ -102,11 +102,11 @@ export class AuthService {
     handleAuthCallback() {
         return this.auth0.handleRedirectCallback().pipe(
             catchError((error: unknown) => {
-                console.error('Auth0 callback error:', error); // Log the entire error object
-                if (error instanceof HttpErrorResponse) {
-                    console.error('Status code:', error.status);
-                    console.error('Error body:', error.error);
-                }
+                // console.error('Auth0 callback error:', error); // Log the entire error object
+                // if (error instanceof HttpErrorResponse) {
+                //     console.error('Status code:', error.status);
+                //     console.error('Error body:', error.error);
+                // }
                 this.authErrorService.handleError(error as Auth0Error);
                 this.router.navigate(['/']);
                 return throwError(() => error);
