@@ -377,3 +377,6 @@ FodyWeavers.xsd
 /Store.API/appsettings.json
 /Store.API/Store.API.http
 /Store.API/Setup/categories.json
+
+/Store.Web/src/environments/environment.prod.ts
+/Store.Web/src/environments/environment.development.ts
