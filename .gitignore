@@ -373,3 +373,7 @@ FodyWeavers.xsd
 /Store.Infrastructure/Migrations/20250208172420_IncreaseClientTokenSize.cs
 /Store.Infrastructure/Migrations/20250209152547_AddedAntityFunc.cs
 /Store.Infrastructure/Migrations/StoreDbContextModelSnapshot.cs
+/Store.API/appsettings.Development.json
+/Store.API/appsettings.json
+/Store.API/Store.API.http
+/Store.API/Setup/categories.json
