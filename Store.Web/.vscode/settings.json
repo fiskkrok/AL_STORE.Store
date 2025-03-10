@@ -1,3 +1,7 @@
 {
-    "terminal.explorerKind": "integrated"
+    "terminal.explorerKind": "integrated",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "fiskkrok",
+        "projectKey": "fiskkrok_AL_STORE.Store"
+    }
 }
