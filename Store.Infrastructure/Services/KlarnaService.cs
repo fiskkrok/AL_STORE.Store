@@ -110,36 +110,54 @@ public class KlarnaService : IKlarnaService
     }
 
     public async Task<Result<string>> AuthorizePaymentAsync(
-        string sessionId,
-        string authToken,
-        CancellationToken ct = default)
+     string sessionId,
+     string authToken,
+     CancellationToken ct = default)
     {
         try
         {
+            _logger.LogInformation("Authorizing payment with Klarna for session {SessionId}", sessionId);
+
+            var endpoint = $"payments/v1/authorizations/{authToken}/order";
+
+            // Build request
             var request = new KlarnaAuthorizationRequest
             {
                 AuthToken = authToken
             };
 
-            var response = await _httpClient.PostAsJsonAsync(
-                $"payments/v1/authorizations/{sessionId}",
-                request,
-                ct);
+            _logger.LogDebug("Sending authorization request to Klarna: {Endpoint}", endpoint);
+
+            var response = await _httpClient.PostAsJsonAsync(endpoint, request, ct);
 
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogError("Klarna payment authorization failed: {Error}", error);
+                _logger.LogError("Klarna payment authorization failed: {StatusCode} {Error}",
+                    response.StatusCode, error);
+
+                // Parse error response to get more specific error code
+                KlarnaErrorResponse? errorResponse = null;
+                try
+                {
+                    errorResponse = JsonSerializer.Deserialize<KlarnaErrorResponse>(error);
+                }
+                catch { /* Ignore deserialization errors */ }
+
                 return Result<string>.Failure(
-                    new Error("Klarna.Authorization.Failed", "Payment authorization failed"));
+                    new Error(
+                        $"Klarna.Authorization.{errorResponse?.ErrorCode ?? response.StatusCode.ToString()}",
+                        errorResponse?.ErrorMessage ?? "Payment authorization failed"));
             }
 
-            var authResponse = await response.Content.ReadFromJsonAsync<KlarnaAuthorizationResponse>(
-                ct);
+            var authResponse = await response.Content.ReadFromJsonAsync<KlarnaAuthorizationResponse>(ct);
 
             if (authResponse?.OrderId == null)
                 return Result<string>.Failure(
                     new Error("Klarna.Authorization.Invalid", "Invalid authorization response"));
+
+            _logger.LogInformation("Klarna payment authorization successful. Order ID: {OrderId}",
+                authResponse.OrderId);
 
             return Result<string>.Success(authResponse.OrderId);
         }

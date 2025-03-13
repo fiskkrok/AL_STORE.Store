@@ -6,6 +6,7 @@ import { CheckoutService } from "../services/checkout.service";
 import { CartItem, CartStore } from "../state";
 import { BasePaymentProvider } from "./base-payment-provider";
 import { KlarnaScriptService } from "../services/klarna-script.service";
+import { HttpHeaders } from "@angular/common/http";
 
 @Injectable({ providedIn: 'root' })
 export class KlarnaProvider extends BasePaymentProvider {
@@ -61,12 +62,12 @@ export class KlarnaProvider extends BasePaymentProvider {
         }
     }
 
-    async processPayment(sessionId: string): Promise<PaymentResult> {
-        const apiUrl = `${this.apiBaseUrl}/api/payments/klarna`;
-        return firstValueFrom(this.http.post<PaymentResult>(
-            `${apiUrl}/sessions/${sessionId}/confirm`, {}
-        ));
-    }
+    // async processPayment(sessionId: string): Promise<PaymentResult> {
+    //     const apiUrl = `${this.apiBaseUrl}/api/payments/klarna`;
+    //     return firstValueFrom(this.http.post<PaymentResult>(
+    //         `${apiUrl}/sessions/${sessionId}/confirm`, {}
+    //     ));
+    // }
 
     createKlarnaSession(cart: CartItem[], customerInfo: any) {
         const idempotencyKey = this.generateIdempotencyKey(cart);
@@ -103,4 +104,67 @@ export class KlarnaProvider extends BasePaymentProvider {
         };
         localStorage.setItem(this.KLARNA_SESSION_KEY, JSON.stringify(sessionData));
     }
+
+    async processPayment(sessionId: string): Promise<PaymentResult> {
+        try {
+            // Step 1: Authorize with Klarna client-side SDK
+            const authResult = await this.klarnaScriptService.authorizeKlarnaPayment();
+
+            if (!authResult.success) {
+                throw new Error(authResult.error || 'Failed to authorize Klarna payment');
+            }
+
+            console.log('Calling authorize endpoint...');
+
+
+
+            // Use firstValueFrom with proper request body
+            const authorizeResponse = await firstValueFrom(
+                this.http.post<AuthorizePaymentResponse>(
+                    `${this.apiBaseUrl}/payments/klarna/authorize`,
+                    {
+                        authorizationToken: authResult.token,
+                        sessionId: sessionId
+                    },
+                    {
+                        headers: new HttpHeaders({
+                            'Idempotency-Key': this.generateIdempotencyKeyV2()
+                        })
+                    }
+                )
+            );
+            console.log('Received response:', authorizeResponse);
+
+            if (!authorizeResponse) {
+                throw new Error('Received null response from authorization endpoint');
+            }
+
+            // Return success result
+            return {
+                success: true,
+                message: 'Payment authorized successfully',
+                transactionId: authorizeResponse.paymentId || sessionId
+            };
+        } catch (error) {
+            console.error('Full error details:', error);
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : 'Payment processing failed',
+                error: {
+                    code: 'PAYMENT_FAILED',
+                    details: error
+                }
+            };
+        }
+    }
+
+    private generateIdempotencyKeyV2(): string {
+        return `klarna_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    }
+}
+
+// Define interface to match your backend response
+interface AuthorizePaymentResponse {
+    paymentId: string;
+    status: string;
 }

@@ -1,21 +1,19 @@
 import { inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpResponse, HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { ApiMonitorService } from '../services/api-monitor.service';
-import { ApiCacheService } from '../services/api-cache.service';
+import { ApiService } from '../services/api.service';
 
 export class RetryStrategyInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-        const monitor = inject(ApiMonitorService);
-        const cache = inject(ApiCacheService);
+        const apiService = inject(ApiService);
 
         const endpointKey = getEndpointKey(req.url);
 
         // If it's a GET request and endpoint is cacheable, check cache
         if (req.method === 'GET' && endpointKey) {
-            const cachedData = cache.get(req.url);
+            const cachedData = apiService.getCache(req.url);
             if (cachedData) {
-                monitor.trackRequest({
+                apiService.trackRequest({
                     endpoint: endpointKey,
                     timestamp: Date.now(),
                     duration: 0,

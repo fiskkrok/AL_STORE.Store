@@ -284,7 +284,7 @@ export class CheckoutPageComponent {
       // Start a new transaction
       this.checkoutState.startNewTransaction();
 
-      if (environment.useRealApi) {
+      if (environment.useRealApi && !!sessionId) {
         // Use real payment providers
         await this.processRealPayment(paymentMethod, sessionId);
       } else {
@@ -313,7 +313,7 @@ export class CheckoutPageComponent {
       this.checkoutState.setPaymentSessionId(sessionId);
     }
 
-    // Process the payment
+    // Process the payment - the provider now handles all the specific logic
     const result = await provider.processPayment(sessionId);
 
     if (result.success) {
@@ -322,6 +322,7 @@ export class CheckoutPageComponent {
       throw new Error(result.message || 'Payment failed');
     }
   }
+
 
   private async processMockPayment(paymentMethod: string): Promise<void> {
     // Generate a mock session ID

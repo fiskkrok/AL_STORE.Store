@@ -7,11 +7,19 @@ using Store.Application.Payments.Commands;
 
 namespace Store.API.Endpoints.Payments.Klarna;
 
-public class AuthorizeKlarnaEndpoint :EndpointWithoutRequest<AuthorizePaymentResponse>
+public class AuthorizeKlarnaRequest
 {
+    public string AuthorizationToken { get; set; }
+    public string SessionId { get; set; }
+}
+
+public class AuthorizeKlarnaEndpoint : Endpoint<AuthorizeKlarnaRequest, AuthorizePaymentResponse>
+{
+
     private readonly IIdempotencyService _idempotencyService;
     private readonly ILogger<AuthorizeKlarnaEndpoint> _logger;
     private readonly IMediator _mediator;
+
     public AuthorizeKlarnaEndpoint(
         IMediator mediator,
         IIdempotencyService idempotencyService,
@@ -21,6 +29,7 @@ public class AuthorizeKlarnaEndpoint :EndpointWithoutRequest<AuthorizePaymentRes
         _idempotencyService = idempotencyService;
         _logger = logger;
     }
+
     public override void Configure()
     {
         Post("/payments/klarna/authorize");
@@ -32,52 +41,56 @@ public class AuthorizeKlarnaEndpoint :EndpointWithoutRequest<AuthorizePaymentRes
             .WithName("AuthorizePayment")
             .WithOpenApi());
     }
-    public override async Task<AuthorizePaymentResponse> HandleAsync(CancellationToken ct)
+
+    public override async Task HandleAsync(AuthorizeKlarnaRequest req, CancellationToken ct)
     {
+        // Validate input
+        if (string.IsNullOrEmpty(req.AuthorizationToken) || string.IsNullOrEmpty(req.SessionId))
+        {
+            AddError("Authorization token and session ID are required");
+            await SendErrorsAsync(400, ct);
+            return;
+        }
+
         var idempotencyKey = HttpContext.Request.Headers["Idempotency-Key"].ToString();
         if (string.IsNullOrEmpty(idempotencyKey))
         {
             AddError("Idempotency-Key header is required");
-            await SendErrorsAsync(400);
-            return null;
+            await SendErrorsAsync(400, ct);
+            return;
         }
+
         try
         {
             // Check if this request was already processed
-            if (await _idempotencyService.IsOperationProcessedAsync(idempotencyKey))
+            if (await _idempotencyService.IsOperationProcessedAsync(idempotencyKey, ct))
             {
                 _logger.LogWarning("Duplicate request detected with idempotency key: {Key}", idempotencyKey);
-                await SendErrorsAsync(409);
-                return null;
+                await SendErrorsAsync(409, ct);
+                return;
             }
-            // Authorize payment
+
+            // Authorize payment with Klarna
             var result = await _mediator.Send(new AuthorizePaymentCommand
             {
+                AuthorizationToken = req.AuthorizationToken,
+                SessionId = req.SessionId,
                 IdempotencyKey = idempotencyKey
-            });
+            }, ct);
+
             // Mark operation as processed
-            await _idempotencyService.MarkOperationAsProcessedAsync(idempotencyKey);
-            return new AuthorizePaymentResponse
-            {
-                PaymentId = result.PaymentId,
-                Status = result.Status
-            };
+            await _idempotencyService.MarkOperationAsProcessedAsync(idempotencyKey, ct);
+
+            // Return the result
+            await SendOkAsync(result, ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error authorizing payment");
-            await SendErrorsAsync(500);
-            return null;
+            await SendErrorsAsync(500, ct);
+            return;
         }
     }
 }
 
-
-
-public class AuthorizePaymentResponse
-{
-    public Guid PaymentId { get; set; }
-    public string Status { get; set; }
-
-}
 

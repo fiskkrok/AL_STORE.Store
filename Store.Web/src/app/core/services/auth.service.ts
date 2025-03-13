@@ -11,7 +11,6 @@ import { environment } from '../../../environments/environment';
 import { CustomerService } from './customer.service';
 import { UserService } from './user.service';
 import { CreateProfileRequest } from '../../shared/models/customer.model';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -102,11 +101,6 @@ export class AuthService {
     handleAuthCallback() {
         return this.auth0.handleRedirectCallback().pipe(
             catchError((error: unknown) => {
-                // console.error('Auth0 callback error:', error); // Log the entire error object
-                // if (error instanceof HttpErrorResponse) {
-                //     console.error('Status code:', error.status);
-                //     console.error('Error body:', error.error);
-                // }
                 this.authErrorService.handleError(error as Auth0Error);
                 this.router.navigate(['/']);
                 return throwError(() => error);
