@@ -1,12 +1,9 @@
-﻿using System.Reflection;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using StackExchange.Redis;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Infrastructure.BackgroundJobs;
@@ -26,7 +23,6 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-
         services.AddDbContext<StoreDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
@@ -57,26 +53,24 @@ public static class DependencyInjection
         services.AddSingleton<IConnectionMultiplexer>(provider =>
         {
             var redisConnectionString = configuration.GetConnectionString("Redis")!;
-            int retryCount = 3;
-            int delay = 2000; // 2 seconds
-            for (int i = 0; i < retryCount; i++)
-            {
+            var retryCount = 3;
+            var delay = 2000; // 2 seconds
+            for (var i = 0; i < retryCount; i++)
                 try
                 {
                     return ConnectionMultiplexer.Connect(redisConnectionString);
                 }
                 catch (RedisConnectionException ex)
                 {
-                    Console.WriteLine(ex.ToString(), "Failed to connect to Redis. Attempt {Attempt} of {RetryCount}", i + 1, retryCount);
-                    if (i == retryCount - 1)
-                    {
-                        throw;
-                    }
+                    Console.WriteLine(ex.ToString(), "Failed to connect to Redis. Attempt {Attempt} of {RetryCount}",
+                        i + 1, retryCount);
+                    if (i == retryCount - 1) throw;
                     Thread.Sleep(delay);
                 }
-            }
-            throw new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Failed to connect to Redis after multiple attempts.");
-    });
+
+            throw new RedisConnectionException(ConnectionFailureType.UnableToConnect,
+                "Failed to connect to Redis after multiple attempts.");
+        });
         services.AddScoped<ICacheService, RedisCacheService>();
 
         // HTTP Context and Auth

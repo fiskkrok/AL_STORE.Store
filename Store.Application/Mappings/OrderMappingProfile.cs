@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-
 using Store.Application.Orders.Models;
 using Store.Domain.Entities.Order;
 

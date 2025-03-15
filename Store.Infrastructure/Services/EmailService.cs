@@ -1,12 +1,8 @@
 ﻿using System.Text;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using SendGrid;
 using SendGrid.Helpers.Mail;
-
-using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Domain.Common;
 using Store.Domain.Entities.Order;
@@ -16,8 +12,8 @@ namespace Store.Infrastructure.Services;
 
 public class EmailService : IEmailService
 {
-    private readonly ILogger<EmailService> _logger;
     private readonly ISendGridClient _client;
+    private readonly ILogger<EmailService> _logger;
     private readonly EmailSettings _settings;
 
     public EmailService(
@@ -36,14 +32,17 @@ public class EmailService : IEmailService
         {
             if (string.IsNullOrEmpty(order.CustomerId))
             {
-                _logger.LogWarning("Cannot send order confirmation email: No customer ID specified for order {OrderId}", order.Id);
+                _logger.LogWarning("Cannot send order confirmation email: No customer ID specified for order {OrderId}",
+                    order.Id);
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
             var customerEmail = await GetCustomerEmailAsync(order.CustomerId);
             if (string.IsNullOrEmpty(customerEmail))
             {
-                _logger.LogWarning("Cannot send order confirmation email: Could not find email for customer {CustomerId}", order.CustomerId);
+                _logger.LogWarning(
+                    "Cannot send order confirmation email: Could not find email for customer {CustomerId}",
+                    order.CustomerId);
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
@@ -86,20 +85,23 @@ public class EmailService : IEmailService
         }
     }
 
-    public async Task<Result<bool>> SendOrderShippedAsync(Order order, string trackingNumber, CancellationToken ct = default)
+    public async Task<Result<bool>> SendOrderShippedAsync(Order order, string trackingNumber,
+        CancellationToken ct = default)
     {
         try
         {
             if (string.IsNullOrEmpty(order.CustomerId))
             {
-                _logger.LogWarning("Cannot send order shipped email: No customer ID specified for order {OrderId}", order.Id);
+                _logger.LogWarning("Cannot send order shipped email: No customer ID specified for order {OrderId}",
+                    order.Id);
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
             var customerEmail = await GetCustomerEmailAsync(order.CustomerId);
             if (string.IsNullOrEmpty(customerEmail))
             {
-                _logger.LogWarning("Cannot send order shipped email: Could not find email for customer {CustomerId}", order.CustomerId);
+                _logger.LogWarning("Cannot send order shipped email: Could not find email for customer {CustomerId}",
+                    order.CustomerId);
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
@@ -157,16 +159,16 @@ public class EmailService : IEmailService
         sb.AppendLine("-------------");
 
         foreach (var item in order.OrderLines)
-        {
-            sb.AppendLine($"{item.Quantity}x {item.ProductName} - {item.UnitPrice.Amount} {item.UnitPrice.Currency} each");
-        }
+            sb.AppendLine(
+                $"{item.Quantity}x {item.ProductName} - {item.UnitPrice.Amount} {item.UnitPrice.Currency} each");
 
         sb.AppendLine();
         sb.AppendLine($"Total: {order.TotalAmount.Amount} {order.TotalAmount.Currency}");
         sb.AppendLine();
         sb.AppendLine("Shipping Address:");
         sb.AppendLine($"{order.ShippingAddress.Street}");
-        sb.AppendLine($"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
+        sb.AppendLine(
+            $"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
         sb.AppendLine($"{order.ShippingAddress.Country}");
 
         return sb.ToString();
@@ -180,14 +182,16 @@ public class EmailService : IEmailService
 
         sb.AppendLine("<h2>Order Details:</h2>");
         sb.AppendLine("<table style='width:100%; border-collapse: collapse;'>");
-        sb.AppendLine("<tr><th style='text-align:left;'>Product</th><th style='text-align:center;'>Quantity</th><th style='text-align:right;'>Price</th></tr>");
+        sb.AppendLine(
+            "<tr><th style='text-align:left;'>Product</th><th style='text-align:center;'>Quantity</th><th style='text-align:right;'>Price</th></tr>");
 
         foreach (var item in order.OrderLines)
         {
             sb.AppendLine("<tr>");
             sb.AppendLine($"<td style='padding:8px;'>{item.ProductName}</td>");
             sb.AppendLine($"<td style='padding:8px;text-align:center;'>{item.Quantity}</td>");
-            sb.AppendLine($"<td style='padding:8px;text-align:right;'>{item.UnitPrice.Amount} {item.UnitPrice.Currency}</td>");
+            sb.AppendLine(
+                $"<td style='padding:8px;text-align:right;'>{item.UnitPrice.Amount} {item.UnitPrice.Currency}</td>");
             sb.AppendLine("</tr>");
         }
 
@@ -197,7 +201,8 @@ public class EmailService : IEmailService
         sb.AppendLine("<h2>Shipping Address:</h2>");
         sb.AppendLine("<p>");
         sb.AppendLine($"{order.ShippingAddress.Street}<br>");
-        sb.AppendLine($"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}<br>");
+        sb.AppendLine(
+            $"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}<br>");
         sb.AppendLine($"{order.ShippingAddress.Country}");
         sb.AppendLine("</p>");
 
@@ -214,7 +219,8 @@ public class EmailService : IEmailService
         sb.AppendLine();
         sb.AppendLine("Your order is on its way to:");
         sb.AppendLine($"{order.ShippingAddress.Street}");
-        sb.AppendLine($"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
+        sb.AppendLine(
+            $"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
         sb.AppendLine($"{order.ShippingAddress.Country}");
 
         return sb.ToString();
@@ -231,7 +237,8 @@ public class EmailService : IEmailService
         sb.AppendLine("<h2>Shipping Address:</h2>");
         sb.AppendLine("<p>");
         sb.AppendLine($"{order.ShippingAddress.Street}<br>");
-        sb.AppendLine($"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}<br>");
+        sb.AppendLine(
+            $"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}<br>");
         sb.AppendLine($"{order.ShippingAddress.Country}");
         sb.AppendLine("</p>");
 

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Store.Application.Common.Models;
+﻿using Store.Application.Common.Models;
 using Store.Application.Payments.Models;
 
 namespace Store.Application.Orders.Models;
+
 public class OrderDetailDto : BaseDto
 {
     public string OrderNumber { get; init; } = string.Empty;

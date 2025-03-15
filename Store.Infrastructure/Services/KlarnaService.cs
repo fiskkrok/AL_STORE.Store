@@ -110,9 +110,9 @@ public class KlarnaService : IKlarnaService
     }
 
     public async Task<Result<string>> AuthorizePaymentAsync(
-     string sessionId,
-     string authToken,
-     CancellationToken ct = default)
+        string sessionId,
+        string authToken,
+        CancellationToken ct = default)
     {
         try
         {
@@ -142,7 +142,10 @@ public class KlarnaService : IKlarnaService
                 {
                     errorResponse = JsonSerializer.Deserialize<KlarnaErrorResponse>(error);
                 }
-                catch { /* Ignore deserialization errors */ }
+                catch
+                {
+                    /* Ignore deserialization errors */
+                }
 
                 return Result<string>.Failure(
                     new Error(

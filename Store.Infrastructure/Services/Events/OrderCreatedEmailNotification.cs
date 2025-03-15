@@ -1,7 +1,5 @@
 ﻿using MediatR;
-
 using Microsoft.Extensions.Logging;
-
 using Store.Application.Contracts;
 using Store.Domain.Entities.Order;
 
@@ -20,7 +18,8 @@ public class OrderCreatedEmailNotification : INotificationHandler<DomainEventNot
         _logger = logger;
     }
 
-    public async Task Handle(DomainEventNotification<OrderCreatedEvent> notification, CancellationToken cancellationToken)
+    public async Task Handle(DomainEventNotification<OrderCreatedEvent> notification,
+        CancellationToken cancellationToken)
     {
         var orderEvent = notification.DomainEvent;
         _logger.LogInformation("Handling order created event for order {OrderId}", orderEvent.Order.Id);
@@ -28,10 +27,8 @@ public class OrderCreatedEmailNotification : INotificationHandler<DomainEventNot
         var result = await _emailService.SendOrderConfirmationAsync(orderEvent.Order, cancellationToken);
 
         if (!result.IsSuccess)
-        {
             _logger.LogWarning("Failed to send order confirmation email for order {OrderId}: {ErrorMessage}",
                 orderEvent.Order.Id, string.Join(", ", result.Errors.Select(e => e.Message)));
-        }
     }
 }
 
@@ -48,20 +45,19 @@ public class OrderCompletedEmailNotification : INotificationHandler<DomainEventN
         _logger = logger;
     }
 
-    public async Task Handle(DomainEventNotification<OrderCompletedEvent> notification, CancellationToken cancellationToken)
+    public async Task Handle(DomainEventNotification<OrderCompletedEvent> notification,
+        CancellationToken cancellationToken)
     {
         var orderEvent = notification.DomainEvent;
         _logger.LogInformation("Handling order completed event for order {OrderId}", orderEvent.Order.Id);
 
         // You might want to get the tracking number from somewhere in a real application
-        string trackingNumber = $"TRK{DateTime.Now.ToString("yyyyMMddHHmm")}{new Random().Next(1000, 9999)}";
+        var trackingNumber = $"TRK{DateTime.Now.ToString("yyyyMMddHHmm")}{new Random().Next(1000, 9999)}";
 
         var result = await _emailService.SendOrderShippedAsync(orderEvent.Order, trackingNumber, cancellationToken);
 
         if (!result.IsSuccess)
-        {
             _logger.LogWarning("Failed to send order shipped email for order {OrderId}: {ErrorMessage}",
                 orderEvent.Order.Id, string.Join(", ", result.Errors.Select(e => e.Message)));
-        }
     }
 }

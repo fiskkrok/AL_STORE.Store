@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-
 using MediatR;
-
 using Microsoft.Extensions.Logging;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Payments.Models;
@@ -24,13 +21,14 @@ public class CreatePaymentSessionCommand : IRequest<Result<PaymentSessionDto>>
 public class
     CreatePaymentSessionCommandHandler : IRequestHandler<CreatePaymentSessionCommand, Result<PaymentSessionDto>>
 {
+    private readonly ICurrentUser _currentUser;
     private readonly IKlarnaService _klarnaService;
     private readonly ILogger<CreatePaymentSessionCommandHandler> _logger;
     private readonly IMapper _mapper;
     private readonly IOrderRepository _orderRepository;
     private readonly IPaymentSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUser _currentUser;
+
     public CreatePaymentSessionCommandHandler(
         IOrderRepository orderRepository,
         IPaymentSessionRepository sessionRepository,

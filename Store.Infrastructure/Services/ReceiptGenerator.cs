@@ -1,18 +1,13 @@
-﻿using System.Reflection.Metadata;
-using System.Text;
-
-using QuestPDF.Fluent;
+﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
-
 using Store.Domain.Entities.Order;
 using Document = QuestPDF.Fluent.Document;
 
 namespace Store.Infrastructure.Services;
 
 /// <summary>
-/// Utility class for generating PDF receipts
-/// Uses QuestPDF library (you need to add this NuGet package)
+///     Utility class for generating PDF receipts
+///     Uses QuestPDF library (you need to add this NuGet package)
 /// </summary>
 public static class ReceiptGenerator
 {
@@ -53,7 +48,8 @@ public static class ReceiptGenerator
                     column.Item().Text(text =>
                     {
                         text.Line($"{order.ShippingAddress.Street}");
-                        text.Line($"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
+                        text.Line(
+                            $"{order.ShippingAddress.City}, {order.ShippingAddress.State} {order.ShippingAddress.PostalCode}");
                         text.Line($"{order.ShippingAddress.Country}");
                     });
 
@@ -83,7 +79,7 @@ public static class ReceiptGenerator
                             header.Cell().ColumnSpan(5).BorderBottom(1).BorderColor(Colors.Black);
                         });
 
-                        int index = 1;
+                        var index = 1;
                         foreach (var item in order.OrderLines)
                         {
                             table.Cell().Text(index.ToString());
@@ -97,7 +93,8 @@ public static class ReceiptGenerator
 
                         table.Cell().ColumnSpan(3);
                         table.Cell().Text("Total:").Bold().AlignRight();
-                        table.Cell().Text($"{order.TotalAmount.Amount:C} {order.TotalAmount.Currency}").Bold().AlignRight();
+                        table.Cell().Text($"{order.TotalAmount.Amount:C} {order.TotalAmount.Currency}").Bold()
+                            .AlignRight();
                     });
                 });
 

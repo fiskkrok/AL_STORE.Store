@@ -1,9 +1,5 @@
-﻿using AutoMapper;
-
-using FastEndpoints;
-
+﻿using FastEndpoints;
 using MediatR;
-
 using Store.Application.Orders.Models;
 using Store.Application.Orders.Queries;
 

@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from "./core/components/layout/navbar/navbar.component";
 import { ConnectionMonitorComponent } from './core/components/connection-monitor.component';
 import { FooterComponent } from './core/components/footer.component';
+import { AuthTestComponent } from "./core/components/auth-test.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent, ConnectionMonitorComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, ConnectionMonitorComponent, AuthTestComponent],
   template: `
     <div class="relative min-h-screen bg-background font-sans antialiased">
       <div class="relative flex min-h-screen flex-col">
@@ -16,6 +17,7 @@ import { FooterComponent } from './core/components/footer.component';
         <main class="flex-1">
           <router-outlet />
         </main>
+        <app-auth-test/>
         <app-footer />
       </div>
     </div>

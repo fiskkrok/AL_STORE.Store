@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
-
+﻿using AutoMapper;
 using MediatR;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Orders.Models;
 using Store.Domain.Common;
 
 namespace Store.Application.Orders.Queries;
+
 public record GetCustomerOrdersQuery : IRequest<Result<IReadOnlyList<OrderSummaryDto>>>;
 
-public class GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQuery, Result<IReadOnlyList<OrderSummaryDto>>>
+public class
+    GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQuery, Result<IReadOnlyList<OrderSummaryDto>>>
 {
     private readonly ICurrentUser _currentUser;
-    private readonly IOrderRepository _orderRepository;
     private readonly IMapper _mapper;
+    private readonly IOrderRepository _orderRepository;
 
     public GetCustomerOrdersQueryHandler(
         ICurrentUser currentUser,
@@ -56,7 +50,7 @@ public class GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQu
                 ProductName = o.ProductName,
                 Quantity = o.Quantity,
                 LineTotal = o.LineTotal.Amount,
-                UnitPrice = o.UnitPrice.Amount,
+                UnitPrice = o.UnitPrice.Amount
             }).ToList()
         }).ToList();
 

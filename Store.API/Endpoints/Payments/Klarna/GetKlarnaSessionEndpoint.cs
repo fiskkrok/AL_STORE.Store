@@ -1,12 +1,11 @@
 ﻿using FastEndpoints;
-
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Contracts;
 
 namespace Store.API.Endpoints.Payments.Klarna;
 
 /// <summary>
-/// Endpoint for retrieving a payment session based on its identifier.
+///     Endpoint for retrieving a payment session based on its identifier.
 /// </summary>
 public class GetKlarnaSessionEndpoint : Endpoint<GetPaymentSessionRequest, CreatePaymentSessionResponse>
 {
@@ -14,7 +13,7 @@ public class GetKlarnaSessionEndpoint : Endpoint<GetPaymentSessionRequest, Creat
     private readonly IPaymentSessionRepository _sessionRepository;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GetKlarnaSessionEndpoint"/> class.
+    ///     Initializes a new instance of the <see cref="GetKlarnaSessionEndpoint" /> class.
     /// </summary>
     /// <param name="sessionRepository">The repository for accessing payment sessions.</param>
     /// <param name="logger">The logger instance.</param>
@@ -27,7 +26,7 @@ public class GetKlarnaSessionEndpoint : Endpoint<GetPaymentSessionRequest, Creat
     }
 
     /// <summary>
-    /// Configures the endpoint route and metadata.
+    ///     Configures the endpoint route and metadata.
     /// </summary>
     public override void Configure()
     {
@@ -42,7 +41,7 @@ public class GetKlarnaSessionEndpoint : Endpoint<GetPaymentSessionRequest, Creat
     }
 
     /// <summary>
-    /// Handles the incoming request to retrieve a payment session.
+    ///     Handles the incoming request to retrieve a payment session.
     /// </summary>
     /// <param name="req">The request containing the payment session identifier.</param>
     /// <param name="ct">The cancellation token.</param>

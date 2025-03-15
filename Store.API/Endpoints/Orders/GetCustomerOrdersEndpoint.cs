@@ -1,15 +1,15 @@
 ﻿using FastEndpoints;
 using FastEndpoints.Security;
 using MediatR;
-using Store.Application.Orders.Queries;
 using Store.Application.Orders.Models;
+using Store.Application.Orders.Queries;
 
 namespace Store.API.Endpoints.Orders;
 
 public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersResponse>
 {
-    private readonly IMediator _mediator;
     private readonly ILogger<GetCustomerOrdersEndpoint> _logger;
+    private readonly IMediator _mediator;
 
     public GetCustomerOrdersEndpoint(IMediator mediator, ILogger<GetCustomerOrdersEndpoint> logger)
     {
@@ -41,7 +41,7 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
         else
         {
             foreach (var error in result.Errors) AddError(error.Message);
-            _logger.LogError("Errors: {error}", string.Join(", ", result.Errors.Select(e => e)) );
+            _logger.LogError("Errors: {error}", string.Join(", ", result.Errors.Select(e => e)));
             await SendErrorsAsync(400, ct);
         }
     }

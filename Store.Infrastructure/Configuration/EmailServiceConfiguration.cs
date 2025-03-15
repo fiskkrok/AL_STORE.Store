@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using SendGrid;
-
 using Store.Application.Contracts;
 using Store.Infrastructure.Services;
 using Store.Infrastructure.Services.Models;

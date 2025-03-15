@@ -21,5 +21,4 @@ public class StoreHub : Hub<IStoreHub>
 public interface IStoreHub
 {
     Task Ping(string ping);
-
 }

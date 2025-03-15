@@ -1,7 +1,5 @@
 ﻿using MediatR;
-
 using Microsoft.Extensions.Logging;
-
 using Store.Application.Contracts;
 using Store.Domain.Exceptions;
 
@@ -14,10 +12,10 @@ public class AuthorizePaymentCommand : IRequest<AuthorizePaymentResponse>
 
 public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, AuthorizePaymentResponse>
 {
-    private readonly ILogger<AuthorizePaymentHandler> _logger;
     private readonly IKlarnaService _klarnaService;
-    private readonly IPaymentSessionRepository _sessionRepository;
+    private readonly ILogger<AuthorizePaymentHandler> _logger;
     private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AuthorizePaymentHandler(
@@ -34,7 +32,8 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AuthorizePaymentResponse> Handle(AuthorizePaymentCommand request, CancellationToken cancellationToken)
+    public async Task<AuthorizePaymentResponse> Handle(AuthorizePaymentCommand request,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Authorizing payment with token: {TokenPartial}...",
             request.AuthorizationToken.Substring(0, Math.Min(8, request.AuthorizationToken.Length)));
@@ -74,10 +73,7 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         _sessionRepository.Update(session);
 
         // If Klarna gave us an order reference, store it
-        if (!string.IsNullOrEmpty(result.Value))
-        {
-            order.SetKlarnaReference(result.Value);
-        }
+        if (!string.IsNullOrEmpty(result.Value)) order.SetKlarnaReference(result.Value);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

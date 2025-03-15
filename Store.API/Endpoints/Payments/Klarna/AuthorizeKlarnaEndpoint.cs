@@ -1,9 +1,6 @@
 ﻿using FastEndpoints;
-
 using MediatR;
-
 using Store.Application.Contracts;
-using Store.Application.Payments.Commands;
 
 namespace Store.API.Endpoints.Payments.Klarna;
 
@@ -15,7 +12,6 @@ public class AuthorizeKlarnaRequest
 
 public class AuthorizeKlarnaEndpoint : Endpoint<AuthorizeKlarnaRequest, AuthorizePaymentResponse>
 {
-
     private readonly IIdempotencyService _idempotencyService;
     private readonly ILogger<AuthorizeKlarnaEndpoint> _logger;
     private readonly IMediator _mediator;
@@ -35,7 +31,7 @@ public class AuthorizeKlarnaEndpoint : Endpoint<AuthorizeKlarnaRequest, Authoriz
         Post("/payments/klarna/authorize");
         Description(d => d
             .WithTags("Payments")
-            .Produces<AuthorizePaymentResponse>(200)
+            .Produces<AuthorizePaymentResponse>()
             .ProducesProblem(400)
             .ProducesProblem(409) // Conflict for idempotency
             .WithName("AuthorizePayment")
@@ -88,9 +84,6 @@ public class AuthorizeKlarnaEndpoint : Endpoint<AuthorizeKlarnaRequest, Authoriz
         {
             _logger.LogError(ex, "Error authorizing payment");
             await SendErrorsAsync(500, ct);
-            return;
         }
     }
 }
-
-

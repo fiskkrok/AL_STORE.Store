@@ -1,15 +1,9 @@
 ﻿using FastEndpoints;
 
-using Store.API.Endpoints.Payments.Models;
-
 namespace Store.API.Endpoints.Delivery;
 
 public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDeliveryOptionsResponse>
 {
-    public DeliveryOptionsEndpoint()
-    {
-
-    }
     public override void Configure()
     {
         Get("/delivery/options");
@@ -72,7 +66,6 @@ public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDe
         };
         await SendAsync(response, 200, ct);
     }
-
 }
 
 public class GetDeliveryOptionsRequest
@@ -95,8 +88,6 @@ public class DeliveryOption
     public string Currency { get; set; }
     public decimal Price { get; set; }
 }
-
-
 
 //{
 //id: 'postnord-home',

@@ -1,7 +1,5 @@
 ﻿using FastEndpoints;
-
 using MediatR;
-
 using Store.API.Endpoints.Payments.Mapper;
 using Store.API.Endpoints.Payments.Models;
 using Store.Application.Contracts;
@@ -9,12 +7,13 @@ using Store.Application.Contracts;
 namespace Store.API.Endpoints.Payments.Klarna;
 
 /// <summary>
-/// Endpoint to create a new payment session.
+///     Endpoint to create a new payment session.
 /// </summary>
 /// <remarks>
-/// This endpoint handles the creation of a new payment session. It ensures idempotency by checking the Idempotency-Key header.
-/// If the request is successful, it returns a 201 status code with the created payment session details.
-/// If the Idempotency-Key header is missing or the request is a duplicate, it returns appropriate error responses.
+///     This endpoint handles the creation of a new payment session. It ensures idempotency by checking the Idempotency-Key
+///     header.
+///     If the request is successful, it returns a 201 status code with the created payment session details.
+///     If the Idempotency-Key header is missing or the request is a duplicate, it returns appropriate error responses.
 /// </remarks>
 /// <response code="201">Payment session created successfully.</response>
 /// <response code="400">Bad request, typically due to missing Idempotency-Key header or validation errors.</response>
@@ -28,7 +27,6 @@ public class
     private readonly IMediator _mediator;
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="mediator"></param>
     /// <param name="idempotencyService"></param>
@@ -44,7 +42,6 @@ public class
     }
 
     /// <summary>
-    /// 
     /// </summary>
     public override void Configure()
     {
@@ -60,7 +57,6 @@ public class
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="req"></param>
     /// <param name="ct"></param>

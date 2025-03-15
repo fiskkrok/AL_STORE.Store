@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AutoMapper;
-
+﻿using AutoMapper;
 using MediatR;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Orders.Models;
+using Store.Application.Payments.Models;
 using Store.Domain.Common;
 
 namespace Store.Application.Orders.Queries;
+
 public record GetCustomerOrderByIdQuery(Guid OrderId) : IRequest<Result<OrderDetailDto>>;
 
 public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrderByIdQuery, Result<OrderDetailDto>>
 {
     private readonly ICurrentUser _currentUser;
-    private readonly IOrderRepository _orderRepository;
     private readonly IMapper _mapper;
+    private readonly IOrderRepository _orderRepository;
 
     public GetCustomerOrderByIdQueryHandler(
         ICurrentUser currentUser,
@@ -60,7 +54,7 @@ public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrder
             Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount.Amount,
             Currency = order.TotalAmount.Currency,
-            BillingAddress = new()
+            BillingAddress = new AddressDto
             {
                 Street = order.BillingAddress.Street,
                 City = order.BillingAddress.City,
@@ -68,7 +62,7 @@ public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrder
                 Country = order.BillingAddress.Country,
                 PostalCode = order.BillingAddress.PostalCode
             },
-            ShippingAddress = new()
+            ShippingAddress = new AddressDto
             {
                 Street = order.ShippingAddress.Street,
                 City = order.ShippingAddress.City,

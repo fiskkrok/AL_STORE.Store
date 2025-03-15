@@ -33,10 +33,11 @@ export const appConfig: ApplicationConfig = {
       authorizationParams: {
         redirect_uri: `${window.location.origin}/auth/callback`,
         audience: 'https://localhost:5001',
-        scope: 'openid profile email read:profile offline_access'  // Add offline_access
+        scope: 'openid profile email read:profile offline_access',
+        response_type: 'code'  // Fixed typo from respone_type to response_type
       },
-      // useRefreshTokens: true,  // Add this
-      // cacheLocation: 'localstorage',  // Add this
+      useRefreshTokens: true,
+      cacheLocation: 'localstorage',  // Add this
       httpInterceptor: {
         allowedList: [
           {

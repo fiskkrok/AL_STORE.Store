@@ -10,6 +10,7 @@ using Store.Infrastructure.Configuration;
 using Store.Infrastructure.Persistence.Seeding;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
+
 // Added
 
 var builder = WebApplication.CreateBuilder(args);
