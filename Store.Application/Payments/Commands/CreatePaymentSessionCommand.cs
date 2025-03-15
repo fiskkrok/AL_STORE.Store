@@ -102,7 +102,8 @@ public class
                 billingAddressResult.Value!, // Using separate instance
                 orderTotal,
                 orderLines);
-
+            await _orderRepository.AddAsync(order, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             // Create Klarna session
             var klarnaSession = await _klarnaService.CreateSessionAsync(
                 order,
@@ -120,7 +121,6 @@ public class
                 Money.FromDecimal(orderTotal.Amount, orderTotal.Currency));
 
             // Save everything
-            await _orderRepository.AddAsync(order, cancellationToken);
             await _sessionRepository.AddAsync(paymentSession, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

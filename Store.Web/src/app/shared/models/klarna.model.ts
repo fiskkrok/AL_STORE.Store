@@ -21,6 +21,8 @@ export interface KlarnaSessionRequest {
 export interface KlarnaSessionResponse {
     sessionId: string;
     clientToken: string;
+    expiresAt: string;
+    orderId: string;
     paymentMethods: PaymentMethod[];
 }
 export interface PaymentMethod {

@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Store.Application.Payments.Commands;
 using Store.Domain.Common;
 using Store.Domain.Entities.Order;
 
@@ -12,9 +14,10 @@ public interface IKlarnaService
         string locale,
         CancellationToken ct = default);
 
-    Task<Result<string>> AuthorizePaymentAsync(
+    Task<Result<KlarnaResponse>> AuthorizePaymentAsync(
         string sessionId,
         string authToken,
+        Order order, // Pass the order
         CancellationToken ct = default);
 
     Task<Result<bool>> CapturePaymentAsync(

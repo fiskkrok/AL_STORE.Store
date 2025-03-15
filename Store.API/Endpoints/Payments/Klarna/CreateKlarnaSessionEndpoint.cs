@@ -84,7 +84,7 @@ public class
 
             var result = await _mediator.Send(command, ct);
 
-            if (result.IsSuccess && result.Value != null)
+            if (result is { IsSuccess: true, Value: not null })
             {
                 // Mark request as processed only if successful
                 await _idempotencyService.MarkOperationAsProcessedAsync(idempotencyKey, ct);

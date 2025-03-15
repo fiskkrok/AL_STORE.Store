@@ -62,13 +62,6 @@ export class KlarnaProvider extends BasePaymentProvider {
         }
     }
 
-    // async processPayment(sessionId: string): Promise<PaymentResult> {
-    //     const apiUrl = `${this.apiBaseUrl}/api/payments/klarna`;
-    //     return firstValueFrom(this.http.post<PaymentResult>(
-    //         `${apiUrl}/sessions/${sessionId}/confirm`, {}
-    //     ));
-    // }
-
     createKlarnaSession(cart: CartItem[], customerInfo: any) {
         const idempotencyKey = this.generateIdempotencyKey(cart);
         const apiUrl = `${this.apiBaseUrl}/api/payments/klarna`;
@@ -116,15 +109,14 @@ export class KlarnaProvider extends BasePaymentProvider {
 
             console.log('Calling authorize endpoint...');
 
-
-
             // Use firstValueFrom with proper request body
             const authorizeResponse = await firstValueFrom(
                 this.http.post<AuthorizePaymentResponse>(
-                    `${this.apiBaseUrl}/payments/klarna/authorize`,
+                    `${this.apiBaseUrl}/api/payments/klarna/authorize`,
                     {
                         authorizationToken: authResult.token,
-                        sessionId: sessionId
+                        sessionId: sessionId,
+
                     },
                     {
                         headers: new HttpHeaders({

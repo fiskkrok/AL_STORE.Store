@@ -17,7 +17,7 @@ import { AuthTestComponent } from "./core/components/auth-test.component";
         <main class="flex-1">
           <router-outlet />
         </main>
-        <app-auth-test/>
+        <!-- <app-auth-test/> -->
         <app-footer />
       </div>
     </div>

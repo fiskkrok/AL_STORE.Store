@@ -51,11 +51,23 @@ public class StoreDbContext : DbContext, IStoreDbContext
                     entry.Entity.LastModifiedBy = _currentUser.Id ?? Guid.NewGuid().ToString();
                     entry.Entity.LastModified = _dateTime.UtcNow;
                     break;
+                case EntityState.Detached:
+                case EntityState.Unchanged:
+                case EntityState.Deleted:
+                    break;
+                default:
+                    var exception = new ArgumentOutOfRangeException
+                    {
+                        HelpLink = null,
+                        HResult = 0,
+                        Source = null
+                    };
+                    throw exception;
             }
 
         var events = ChangeTracker.Entries<BaseEntity>()
             .Select(x => x.Entity)
-            .Where(x => x.DomainEvents.Any())
+            .Where(x => x.DomainEvents.Count != 0)
             .SelectMany(x => x.DomainEvents)
             .ToList();
 

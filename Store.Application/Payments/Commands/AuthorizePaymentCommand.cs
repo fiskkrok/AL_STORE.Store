@@ -1,7 +1,12 @@
-﻿using MediatR;
+﻿using System.Text.Json.Serialization;
+using MediatR;
+
 using Microsoft.Extensions.Logging;
+
 using Store.Application.Contracts;
 using Store.Domain.Exceptions;
+
+namespace Store.Application.Payments.Commands;
 
 public class AuthorizePaymentCommand : IRequest<AuthorizePaymentResponse>
 {
@@ -58,6 +63,7 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         var result = await _klarnaService.AuthorizePaymentAsync(
             request.SessionId,
             request.AuthorizationToken,
+            order, 
             cancellationToken);
 
         if (!result.IsSuccess)
@@ -66,24 +72,26 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
                 string.Join(", ", result.Errors.Select(e => e.Message)));
             throw new ApplicationException($"Klarna authorization failed: {result.Errors.First().Message}");
         }
-
         // Update payment session status
         session.Authorize();
         session.IncrementAttempt();
         _sessionRepository.Update(session);
 
         // If Klarna gave us an order reference, store it
-        if (!string.IsNullOrEmpty(result.Value)) order.SetKlarnaReference(result.Value);
+        if (!string.IsNullOrEmpty(result.Value?.OrderId))
+        {
+            order.SetKlarnaReference(result.Value.OrderId);
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Payment authorized successfully. Klarna order ID: {KlarnaOrderId}", result.Value);
+        _logger.LogInformation("Payment authorized successfully. Klarna order ID: {KlarnaOrderId}", result.Value?.OrderId);
 
         return new AuthorizePaymentResponse
         {
             PaymentId = session.Id,
             Status = "Authorized",
-            KlarnaOrderId = result.Value ?? string.Empty
+            OrderId = session.OrderId.ToString()
         };
     }
 }
@@ -92,5 +100,22 @@ public class AuthorizePaymentResponse
 {
     public Guid PaymentId { get; set; }
     public string Status { get; set; } = string.Empty;
-    public string KlarnaOrderId { get; set; } = string.Empty;
+    public string OrderId { get; set; } = string.Empty;
+}
+
+
+public class KlarnaResponse
+{
+    [JsonPropertyName("authorized_payment_method")]
+    public AuthorizedPaymentMethod AuthorizedPaymentMethod { get; set; }
+    [JsonPropertyName("KlarnaResponse")]
+    public string FraudStatus { get; set; }
+    [JsonPropertyName("fraud_status")]
+    public string OrderId { get; set; }
+    [JsonPropertyName("redirect_url")]
+    public string RedirectUrl { get; set; }
+}
+public class AuthorizedPaymentMethod
+{
+    public string Type { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using MediatR;
 using Store.Application.Contracts;
+using Store.Application.Payments.Commands;
 
 namespace Store.API.Endpoints.Payments.Klarna;
 
