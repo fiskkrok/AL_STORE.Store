@@ -114,27 +114,25 @@ export class OrderConfirmationComponent implements OnInit {
   error = signal<string | null>(null);
 
   ngOnInit() {
-    const orderId = this.route.snapshot.queryParams['orderId'];
-    const paymentSessionId = this.route.snapshot.queryParams['sessionId'];
+    const transactionId = this.route.snapshot.queryParams['transactionId'];
 
-    if (orderId) {
-      this.loadOrderDetails(orderId);
-    } else if (paymentSessionId) {
-      this.createOrderFromSession(paymentSessionId);
+    if (transactionId) {
+      this.getOrderDetailsBySessionId(transactionId);
     } else {
       this.loading.set(false);
       this.error.set('No order information provided');
     }
   }
 
-  private loadOrderDetails(orderNumber: string) {
-    this.orderService.getOrderById(orderNumber).subscribe({
+  private getOrderDetailsBySessionId(orderNumber: string) {
+    this.orderService.getOrderByKlarnaId(orderNumber).subscribe({
       next: (order) => {
         if (order) {
           this.orderDetails.set(order);
           // Clear cart and checkout state since order is complete
           this.cartStore.clearCart();
           this.checkoutState.clearCheckoutState();
+          this.sendConfirmationEmail(order);
         } else {
           this.error.set('Order not found');
         }
@@ -147,38 +145,7 @@ export class OrderConfirmationComponent implements OnInit {
     });
   }
 
-  private createOrderFromSession(sessionId: string) {
-    // For our testing flow: create a mock order
-    const cartItems = this.cartStore.cartItems();
-    const paymentMethod = this.checkoutState.getSelectedPaymentMethod() || 'unknown';
 
-    if (environment.useRealApi) {
-      // Use real API for order creation
-      this.orderService.createOrder(sessionId, cartItems).subscribe({
-        next: (order) => {
-          this.orderDetails.set(order);
-          this.sendConfirmationEmail(order);
-          this.cartStore.clearCart();
-          this.checkoutState.clearCheckoutState();
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('Failed to create order');
-          this.loading.set(false);
-        }
-      });
-    } else {
-      // Create a mock order for testing
-      setTimeout(() => {
-        const mockOrder = this.orderService.createMockOrder(cartItems, paymentMethod);
-        this.orderDetails.set(mockOrder);
-        this.sendConfirmationEmail(mockOrder);
-        this.cartStore.clearCart();
-        this.checkoutState.clearCheckoutState();
-        this.loading.set(false);
-      }, 1500); // Simulate API delay
-    }
-  }
 
   private sendConfirmationEmail(order: OrderConfirmation) {
     // In a real app, this would be handled by the backend
@@ -194,10 +161,10 @@ export class OrderConfirmationComponent implements OnInit {
   }
 
   retryLoadOrder() {
-    const orderId = this.route.snapshot.queryParams['orderId'];
-    if (orderId) {
+    const paymentSessionId = this.route.snapshot.queryParams['sessionId'];
+    if (paymentSessionId) {
       this.loading.set(true);
-      this.loadOrderDetails(orderId);
+      this.getOrderDetailsBySessionId(paymentSessionId);
     } else {
       this.router.navigate(['/']);
     }

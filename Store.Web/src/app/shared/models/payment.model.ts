@@ -18,7 +18,10 @@ export type PaymentSessionStatus = 'pending' | 'processing' | 'completed' | 'fai
 export interface PaymentResult {
     success: boolean;
     message: string;
-    transactionId?: string;
+    status?: string;
+    orderId?: string;
+    redirectUrl?: string;
+    paymentMethod?: string;
     error?: {
         code: string;
         details?: any;

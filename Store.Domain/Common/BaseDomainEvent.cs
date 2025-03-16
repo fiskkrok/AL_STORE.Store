@@ -2,7 +2,7 @@
 
 namespace Store.Domain.Common;
 
-public abstract class BaseDomainEvent : INotification
+public abstract class BaseDomainEvent : INotification, IMessage
 {
     protected BaseDomainEvent()
     {
@@ -12,4 +12,11 @@ public abstract class BaseDomainEvent : INotification
 
     public Guid EventId { get; }
     public DateTime OccurredOn { get; }
+}
+
+public interface IMessage
+{
+    Guid EventId { get; }
+    DateTime OccurredOn { get; }
+
 }

@@ -25,7 +25,7 @@ import { Address } from '../../../shared/models';
             [initialData]="formData()"
             [saving]="saving()"
             (save)="onSave($event)"
-            (cancel)="close.emit()"
+            (cancelled)="close.emit()"
           />
         </div>
       </div>

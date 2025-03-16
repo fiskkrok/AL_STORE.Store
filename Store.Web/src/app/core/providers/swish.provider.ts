@@ -65,7 +65,7 @@ export class SwishProvider implements PaymentProvider {
                     if (status.status === 'PAID') {
                         resolve({
                             success: true,
-                            transactionId: status.paymentReference,
+                            orderId: status.paymentReference,
                             message: 'Payment successful'
                         });
                         return;
@@ -161,7 +161,7 @@ export class SwishPaymentComponent implements OnInit {
             this.loading.set(false);
             this.paymentComplete.emit({
                 success: false,
-                message: 'Failed to initialize Swish payment'
+                message: 'Failed to initialize Swish payment',
             });
         }
     }

@@ -103,7 +103,7 @@ public class ProductSyncService
                     await _domainEventService.PublishAsync(
                         new ProductSyncCompletedEvent(
                             syncHistory.BatchId,
-                            new ProductSyncMetrics(bulkResponse.Products.Count)));
+                            new ProductSyncMetrics(bulkResponse.Products.Count)),ct);
                 }
                 catch (Exception ex)
                 {

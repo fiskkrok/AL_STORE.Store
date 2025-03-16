@@ -1,14 +1,19 @@
 ﻿using AutoMapper;
+
 using MediatR;
+
+using Microsoft.AspNetCore.Http;
+
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Orders.Models;
 using Store.Application.Payments.Models;
 using Store.Domain.Common;
+using Store.Domain.Entities.Order;
 
 namespace Store.Application.Orders.Queries;
 
-public record GetCustomerOrderByIdQuery(Guid OrderId) : IRequest<Result<OrderDetailDto>>;
+public record GetCustomerOrderByIdQuery(Guid OrderId, bool ByKlarna = false, string? KlarnaRef = null) : IRequest<Result<OrderDetailDto>>;
 
 public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrderByIdQuery, Result<OrderDetailDto>>
 {
@@ -34,8 +39,15 @@ public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrder
         if (string.IsNullOrEmpty(userId))
             return Result<OrderDetailDto>.Failure(
                 new Error("Auth.Required", "User is not authenticated"));
-
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        Order? order;
+        if (request.ByKlarna)
+        {
+            order = await _orderRepository.GetByKlarnaAsync(request?.KlarnaRef, cancellationToken);
+        }
+        else
+        {
+             order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        }
 
         if (order == null)
             return Result<OrderDetailDto>.Failure(

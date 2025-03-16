@@ -4,9 +4,9 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
 
 @Component({
-    selector: 'app-card',
-    standalone: true,
-    template: `
+  selector: 'app-card',
+  standalone: true,
+  template: `
     <div 
       class="relative rounded-lg border overflow-hidden transition-all duration-200"
       [class.hover:shadow-md]="hover"
@@ -15,7 +15,10 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
       [class.cursor-pointer]="clickable"
       [class.bg-accent]="selected"
       [class.border-primary]="selected"
+      [attr.tabindex]="clickable ? 0 : null"
+      [attr.role]="clickable ? 'button' : null"
       (click)="clickable && handleClick()"
+      (keydown)="clickable && onKeyDown($event)"
     >
       <!-- Image Section (optional) -->
       @if (imageUrl) {
@@ -68,23 +71,30 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
         <ng-content select="[cardFooter]"></ng-content>
       </div>
     </div>
-  `
+  `,
 })
 export class CardComponent {
-    @Input() title?: string;
-    @Input() subtitle?: string;
-    @Input() description?: string;
-    @Input() imageUrl?: string;
-    @Input() imageAlt?: string;
-    @Input() clickable = true;
-    @Input() hover = true;
-    @Input() selected = false;
-    @Input() badgeSlot = true;
-    @Input() overlaySlot = false;
+  @Input() title?: string;
+  @Input() subtitle?: string;
+  @Input() description?: string;
+  @Input() imageUrl?: string;
+  @Input() imageAlt?: string;
+  @Input() clickable = true;
+  @Input() hover = true;
+  @Input() selected = false;
+  @Input() badgeSlot = true;
+  @Input() overlaySlot = false;
 
-    @Output() cardClick = new EventEmitter<void>();
+  @Output() cardClick = new EventEmitter<void>();
 
-    handleClick() {
-        this.cardClick.emit();
+  handleClick() {
+    this.cardClick.emit();
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.handleClick();
     }
+  }
 }

@@ -67,8 +67,13 @@ export class OrderService {
         );
     }
 
-    getOrderById(orderNumber: string): Observable<OrderConfirmation | null> {
-        return this.http.get<OrderConfirmation>(`${this.apiUrl}/${orderNumber}`).pipe(
+    // getOrderById(orderNumber: string): Observable<OrderConfirmation | null> {
+    //     return this.http.get<OrderConfirmation>(`${this.apiUrl}/${orderNumber}`).pipe(
+    //         catchError(() => of(null))
+    //     );
+    // }
+    getOrderByKlarnaId(transactionId: string): Observable<OrderConfirmation | null> {
+        return this.http.get<OrderConfirmation>(`${environment.apiUrl}/api/customers/orders/by-klarna/${transactionId}`).pipe(
             catchError(() => of(null))
         );
     }

@@ -20,6 +20,8 @@ import { Router } from "@angular/router";
       [imageAlt]="product().name"
       [title]="product().name"
       [description]="product().description"
+      [overlaySlot]="true"
+      [badgeSlot]="true"
       [clickable]="!loading()"
       [selected]="selected()"
       (cardClick)="navigateToProduct()"
@@ -129,7 +131,7 @@ export class ProductCardComponent {
       name: this.product().name,
       price: this.product().price,
       quantity: 1,
-      imageUrl: this.imageUrl().arguments(this.product()),
+      imageUrl: this.imageUrl()(this.product()), // Corrected line
       id: ''
     });
   }

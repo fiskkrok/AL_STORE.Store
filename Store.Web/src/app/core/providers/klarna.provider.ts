@@ -135,7 +135,10 @@ export class KlarnaProvider extends BasePaymentProvider {
             return {
                 success: true,
                 message: 'Payment authorized successfully',
-                transactionId: authorizeResponse.paymentId || sessionId
+                orderId: authorizeResponse.orderId,
+                redirectUrl: authorizeResponse.redirectUrl,
+                paymentMethod: authorizeResponse.paymentMethod,
+                status: authorizeResponse.status
             };
         } catch (error) {
             console.error('Full error details:', error);
@@ -157,6 +160,8 @@ export class KlarnaProvider extends BasePaymentProvider {
 
 // Define interface to match your backend response
 interface AuthorizePaymentResponse {
-    paymentId: string;
+    orderId?: string;
+    redirectUrl?: string;
+    paymentMethod?: string;
     status: string;
 }

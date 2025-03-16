@@ -41,7 +41,7 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Authorizing payment with token: {TokenPartial}...",
-            request.AuthorizationToken.Substring(0, Math.Min(8, request.AuthorizationToken.Length)));
+            request.AuthorizationToken[..Math.Min(8, request.AuthorizationToken.Length)]);
 
         // Get the payment session
         var session = await _sessionRepository.GetByIdAsync(Guid.Parse(request.SessionId), cancellationToken);
@@ -70,7 +70,7 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         {
             _logger.LogError("Klarna authorization failed: {ErrorMessage}",
                 string.Join(", ", result.Errors.Select(e => e.Message)));
-            throw new ApplicationException($"Klarna authorization failed: {result.Errors.First().Message}");
+            throw new ApplicationException($"Klarna authorization failed: {result.Errors[0].Message}");
         }
         // Update payment session status
         session.Authorize();
@@ -91,7 +91,9 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         {
             PaymentId = session.Id,
             Status = "Authorized",
-            OrderId = session.OrderId.ToString()
+            OrderId = result.Value?.OrderId,
+            RedirectUrl = result.Value?.RedirectUrl,
+            AuthorizedPaymentMethod = result.Value?.AuthorizedPaymentMethod.Type
         };
     }
 }
@@ -100,7 +102,9 @@ public class AuthorizePaymentResponse
 {
     public Guid PaymentId { get; set; }
     public string Status { get; set; } = string.Empty;
-    public string OrderId { get; set; } = string.Empty;
+    public string? OrderId { get; set; } = string.Empty;
+    public string? RedirectUrl { get; set; } = string.Empty;
+    public string? AuthorizedPaymentMethod { get; set; } = string.Empty;
 }
 
 
@@ -108,9 +112,9 @@ public class KlarnaResponse
 {
     [JsonPropertyName("authorized_payment_method")]
     public AuthorizedPaymentMethod AuthorizedPaymentMethod { get; set; }
-    [JsonPropertyName("KlarnaResponse")]
-    public string FraudStatus { get; set; }
     [JsonPropertyName("fraud_status")]
+    public string FraudStatus { get; set; }
+    [JsonPropertyName("order_id")]
     public string OrderId { get; set; }
     [JsonPropertyName("redirect_url")]
     public string RedirectUrl { get; set; }

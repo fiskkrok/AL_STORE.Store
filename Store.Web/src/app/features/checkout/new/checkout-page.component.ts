@@ -317,7 +317,7 @@ export class CheckoutPageComponent {
     const result = await provider.processPayment(sessionId);
 
     if (result.success) {
-      await this.handleSuccessfulPayment(sessionId);
+      await this.handleSuccessfulPayment(result.orderId!);
     } else {
       throw new Error(result.message || 'Payment failed');
     }
@@ -374,10 +374,10 @@ export class CheckoutPageComponent {
     }
   }
 
-  private async handleSuccessfulPayment(sessionId: string): Promise<void> {
+  private async handleSuccessfulPayment(transactionId: string): Promise<void> {
     // Navigate to confirmation page
     await this.router.navigate(['/checkout/confirmation'], {
-      queryParams: { sessionId }
+      queryParams: { transactionId }
     });
     // Clear localstorage cart items
     localStorage.removeItem('shopping-cart');
