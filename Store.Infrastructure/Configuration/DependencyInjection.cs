@@ -73,10 +73,7 @@ public static class DependencyInjection
                 "Failed to connect to Redis after multiple attempts.");
         });
         services.AddScoped<ICacheService, RedisCacheService>();
-        //services.Configure<RabbitMQSettings>(
-        //    configuration.GetSection("RabbitMQ"));
         services.AddScoped<IEventBus, MassTransitEventBus>();
-
         // HTTP Context and Auth
         services.AddHttpContextAccessor();
 
