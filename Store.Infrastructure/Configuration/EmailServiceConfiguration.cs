@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using QuestPDF.Infrastructure;
 using SendGrid;
 using Store.Application.Contracts;
 using Store.Infrastructure.Services;
@@ -25,7 +26,7 @@ public static class EmailServiceConfiguration
         });
 
         // Configure QuestPDF for receipt generation
-        // QuestPDF.Settings.License = LicenseType.Community;
+        QuestPDF.Settings.License = LicenseType.Community;
 
         // Register email service
         services.AddScoped<IEmailService, EmailService>();

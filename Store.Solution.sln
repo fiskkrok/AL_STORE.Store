@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store.IntegrationTests", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store.Infrastructure", "Store.Infrastructure\Store.Infrastructure.csproj", "{49500570-EF8D-C490-4365-DAE4D764028A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store.Contracts", "Store.Contracts\Store.Contracts.csproj", "{B1C049B1-DE03-4F48-9F2F-D73D9C5575D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{49500570-EF8D-C490-4365-DAE4D764028A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49500570-EF8D-C490-4365-DAE4D764028A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49500570-EF8D-C490-4365-DAE4D764028A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1C049B1-DE03-4F48-9F2F-D73D9C5575D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1C049B1-DE03-4F48-9F2F-D73D9C5575D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1C049B1-DE03-4F48-9F2F-D73D9C5575D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1C049B1-DE03-4F48-9F2F-D73D9C5575D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

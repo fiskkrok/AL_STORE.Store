@@ -22,19 +22,22 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
     private readonly IOrderRepository _orderRepository;
     private readonly IPaymentSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService; // Add email service
+
 
     public AuthorizePaymentHandler(
         ILogger<AuthorizePaymentHandler> logger,
         IKlarnaService klarnaService,
         IPaymentSessionRepository sessionRepository,
         IOrderRepository orderRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork, IEmailService emailService)
     {
         _logger = logger;
         _klarnaService = klarnaService;
         _sessionRepository = sessionRepository;
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _emailService = emailService;
     }
 
     public async Task<AuthorizePaymentResponse> Handle(AuthorizePaymentCommand request,
@@ -86,7 +89,18 @@ public class AuthorizePaymentHandler : IRequestHandler<AuthorizePaymentCommand, 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Payment authorized successfully. Klarna order ID: {KlarnaOrderId}", result.Value?.OrderId);
-
+        // Send order confirmation email
+        var emailResult = await _emailService.SendOrderConfirmationAsync(order, cancellationToken);
+        if (!emailResult.IsSuccess)
+        {
+            // Log the error but don't fail the authorization process
+            _logger.LogWarning("Failed to send order confirmation email: {ErrorMessage}",
+                string.Join(", ", emailResult.Errors.Select(e => e.Message)));
+        }
+        else
+        {
+            _logger.LogInformation("Order confirmation email sent successfully for order {OrderId}", order.Id);
+        }
         return new AuthorizePaymentResponse
         {
             PaymentId = session.Id,

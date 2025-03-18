@@ -125,14 +125,16 @@ export class OrderConfirmationComponent implements OnInit {
   }
 
   private getOrderDetailsBySessionId(orderNumber: string) {
-    this.orderService.getOrderByKlarnaId(orderNumber).subscribe({
-      next: (order) => {
-        if (order) {
-          this.orderDetails.set(order);
+    this.orderService.getConfirmationOrderById(orderNumber).subscribe({
+      next: (response) => {
+        console.log('Order received:', response);
+        if (response && response.confirmation) {
+          // Extract the confirmation object from the response
+          this.orderDetails.set(response.confirmation);
           // Clear cart and checkout state since order is complete
           this.cartStore.clearCart();
           this.checkoutState.clearCheckoutState();
-          this.sendConfirmationEmail(order);
+          this.sendConfirmationEmail(response.confirmation);
         } else {
           this.error.set('Order not found');
         }

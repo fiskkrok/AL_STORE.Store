@@ -70,4 +70,24 @@ internal class OrderRepository : Repository<Order>, IOrderRepository
         // Combine date and sequence (padded to 4 digits)
         return $"{datePart}{sequence:D4}";
     }
+
+    public async Task<Order?> GetByPaymentReferenceAsync(string reference, CancellationToken ct = default)
+    {
+        // First try to find by Klarna reference
+        var order = await _context.Set<Order>()
+            .Include(o => o.OrderLines)
+            .Include(o => o.PaymentAttempts)
+            .FirstOrDefaultAsync(o => o.KlarnaOrderReference == reference, ct);
+        
+        // If not found, try to find by payment attempt reference
+        //if (order == null)
+        //{
+        //    order = await _context.Set<Order>()
+        //        .Include(o => o.OrderLines)
+        //        .Include(o => o.PaymentAttempts)
+        //        .FirstOrDefaultAsync(o => o.PaymentAttempts.Any(p => p.ReferenceId == reference), ct);
+        //}
+        
+        return order;
+    }
 }

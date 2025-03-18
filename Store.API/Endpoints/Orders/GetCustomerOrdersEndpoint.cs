@@ -30,7 +30,7 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var query = new GetCustomerOrdersQuery();
+        var query = new GetOrdersQuery();
         var result = await _mediator.Send(query, ct);
 
         if (result.IsSuccess)

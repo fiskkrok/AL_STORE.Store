@@ -5,7 +5,17 @@ import { CurrencyPipe } from '@angular/common';
 import { fadeAnimation } from '../animations/fade.animation/fade.animation';
 import { CartStore } from '../state';
 
-
+// styles: [`
+//     :host {
+//       position: absolute;
+//       right: 1rem;
+//       left: 1rem;
+//       @media (min-width: 640px) {
+//         left: auto;
+//         width: 28rem;
+//       }
+//     }
+//   `]
 @Component({
   selector: 'app-cart-dropdown',
   standalone: true,
@@ -14,7 +24,7 @@ import { CartStore } from '../state';
   template: `
     @if (isOpen()) {
       <div 
-        class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[28rem] rounded-lg border bg-background shadow-lg text-foreground z-40"
+        class="absolute  sm:right-0 mt-2 sm:w-[28rem]   w-auto rounded-lg border bg-background shadow-lg text-foreground z-40"
         [@fade]
         style="max-width: calc(100vw - 2rem);"
       >
@@ -85,20 +95,10 @@ import { CartStore } from '../state';
       </div>
     }
   `,
-  styles: [`
-    :host {
-      position: absolute;
-      right: 1rem;
-      left: 1rem;
-      @media (min-width: 640px) {
-        left: auto;
-        width: 28rem;
-      }
-    }
-  `]
+
 })
 export class CartDropdownComponent {
-  private cartStore = inject(CartStore);
+  private readonly cartStore = inject(CartStore);
 
   isOpen = input(false);
   cartItems = this.cartStore.cartItems;

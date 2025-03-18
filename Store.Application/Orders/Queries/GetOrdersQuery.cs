@@ -7,16 +7,16 @@ using Store.Domain.Common;
 
 namespace Store.Application.Orders.Queries;
 
-public record GetCustomerOrdersQuery : IRequest<Result<IReadOnlyList<OrderSummaryDto>>>;
+public record GetOrdersQuery : IRequest<Result<IReadOnlyList<OrderSummaryDto>>>;
 
 public class
-    GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQuery, Result<IReadOnlyList<OrderSummaryDto>>>
+    GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, Result<IReadOnlyList<OrderSummaryDto>>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IMapper _mapper;
     private readonly IOrderRepository _orderRepository;
 
-    public GetCustomerOrdersQueryHandler(
+    public GetOrdersQueryHandler(
         ICurrentUser currentUser,
         IOrderRepository orderRepository,
         IMapper mapper)
@@ -27,7 +27,7 @@ public class
     }
 
     public async Task<Result<IReadOnlyList<OrderSummaryDto>>> Handle(
-        GetCustomerOrdersQuery request,
+        GetOrdersQuery request,
         CancellationToken cancellationToken)
     {
         var userId = _currentUser.Id;

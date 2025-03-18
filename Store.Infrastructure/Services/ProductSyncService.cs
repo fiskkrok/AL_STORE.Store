@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
+using Store.Application.Common.Interfaces;
 using Store.Application.Products.Models;
 using Store.Domain.Entities.Product;
 using Store.Domain.Enums;
@@ -16,7 +17,7 @@ public class ProductSyncService
 {
     private readonly IAdminApiClient _adminClient;
     private readonly StoreDbContext _dbContext;
-    private readonly IDomainEventService _domainEventService;
+    private readonly IEventBus _domainEventService;
     private readonly ILogger<ProductSyncService> _logger;
     private readonly IMapper _mapper;
     private readonly AsyncRetryPolicy<BulkProductsResponse> _retryPolicy;
@@ -25,7 +26,7 @@ public class ProductSyncService
         ILogger<ProductSyncService> logger,
         StoreDbContext dbContext,
         IAdminApiClient adminClient,
-        IDomainEventService domainEventService,
+        IEventBus domainEventService,
         IMapper mapper)
     {
         _logger = logger;

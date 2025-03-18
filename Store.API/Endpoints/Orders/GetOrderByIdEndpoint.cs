@@ -5,16 +5,16 @@ using Store.Application.Orders.Queries;
 
 namespace Store.API.Endpoints.Orders;
 
-public class GetCustomerOrderByIdRequest
+public class GetOrderByIdRequest
 {
     public Guid Id { get; init; }
 }
 
-public class GetCustomerOrderByIdEndpoint : Endpoint<GetCustomerOrderByIdRequest, CustomerOrderResponse>
+public class GetOrderByIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
 {
     private readonly IMediator _mediator;
 
-    public GetCustomerOrderByIdEndpoint(IMediator mediator)
+    public GetOrderByIdEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
@@ -24,21 +24,21 @@ public class GetCustomerOrderByIdEndpoint : Endpoint<GetCustomerOrderByIdRequest
         Get("/customers/orders/{Id}");
         Policies("RequireAuth");
         Description(d => d
-            .Produces<CustomerOrderResponse>()
+            .Produces<OrderResponse>()
             .ProducesProblem(401)
             .ProducesProblem(404)
             .WithTags("Customer Orders"));
         Permissions("read:profile");
     }
 
-    public override async Task HandleAsync(GetCustomerOrderByIdRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetOrderByIdRequest req, CancellationToken ct)
     {
-        var query = new GetCustomerOrderByIdQuery(req.Id);
+        var query = new GetOrderByIdQuery(req.Id);
         var result = await _mediator.Send(query, ct);
 
         if (result.IsSuccess)
         {
-            await SendOkAsync(new CustomerOrderResponse { Order = result.Value }, ct);
+            await SendOkAsync(new OrderResponse { Order = result.Value }, ct);
         }
         else if (result.Errors.Any(e => e.Code == "Order.NotFound"))
         {
@@ -52,7 +52,7 @@ public class GetCustomerOrderByIdEndpoint : Endpoint<GetCustomerOrderByIdRequest
     }
 }
 
-public class CustomerOrderResponse
+public class OrderResponse
 {
     public OrderDetailDto Order { get; init; } = new();
 }

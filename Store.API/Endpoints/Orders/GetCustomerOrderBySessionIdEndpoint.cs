@@ -8,7 +8,7 @@ namespace Store.API.Endpoints.Orders;
 
 
 
-public class GetCustomerOrderBySessionIdEndpoint : Endpoint<GetCustomerOrderByIdRequest, CustomerOrderResponse>
+public class GetCustomerOrderBySessionIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
 {
     private readonly IMediator _mediator;
 
@@ -22,21 +22,21 @@ public class GetCustomerOrderBySessionIdEndpoint : Endpoint<GetCustomerOrderById
         Get("/customers/orders/by-klarna/{Id}");
         Policies("RequireAuth");
         Description(d => d
-            .Produces<CustomerOrderResponse>()
+            .Produces<OrderResponse>()
             .ProducesProblem(401)
             .ProducesProblem(404)
             .WithTags("Customer Orders"));
         Permissions("read:profile");
     }
 
-    public override async Task HandleAsync(GetCustomerOrderByIdRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetOrderByIdRequest req, CancellationToken ct)
     {
-        var query = new GetCustomerOrderByIdQuery(req.Id, true);
+        var query = new GetOrderByIdQuery(Guid.Empty, true, req.Id.ToString());
         var result = await _mediator.Send(query, ct);
 
         if (result.IsSuccess)
         {
-            await SendOkAsync(new CustomerOrderResponse { Order = result.Value }, ct);
+            await SendOkAsync(new OrderResponse { Order = result.Value }, ct);
         }
         else if (result.Errors.Any(e => e.Code == "Order.NotFound"))
         {

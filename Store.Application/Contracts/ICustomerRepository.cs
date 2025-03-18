@@ -12,4 +12,5 @@ public interface ICustomerRepository
     Task<IReadOnlyList<CustomerAddress>> GetAddressesAsync(Guid customerId, CancellationToken ct = default);
     Task AddAddressAsync(CustomerAddress address, CancellationToken ct = default);
     void Update(CustomerProfile customer);
+    Task<string> GetEmailAddressByCustomerIdAsync(string customerId, CancellationToken ct = default);
 }

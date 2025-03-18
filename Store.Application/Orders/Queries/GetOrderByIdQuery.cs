@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 
 using MediatR;
-
-using Microsoft.AspNetCore.Http;
-
 using Store.Application.Common.Interfaces;
 using Store.Application.Contracts;
 using Store.Application.Orders.Models;
@@ -13,15 +10,15 @@ using Store.Domain.Entities.Order;
 
 namespace Store.Application.Orders.Queries;
 
-public record GetCustomerOrderByIdQuery(Guid OrderId, bool ByKlarna = false, string? KlarnaRef = null) : IRequest<Result<OrderDetailDto>>;
+public record GetOrderByIdQuery(Guid OrderId, bool ByKlarna = false, string? KlarnaRef = "") : IRequest<Result<OrderDetailDto>>;
 
-public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrderByIdQuery, Result<OrderDetailDto>>
+public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Result<OrderDetailDto>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IMapper _mapper;
     private readonly IOrderRepository _orderRepository;
 
-    public GetCustomerOrderByIdQueryHandler(
+    public GetOrderByIdQueryHandler(
         ICurrentUser currentUser,
         IOrderRepository orderRepository,
         IMapper mapper)
@@ -32,7 +29,7 @@ public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrder
     }
 
     public async Task<Result<OrderDetailDto>> Handle(
-        GetCustomerOrderByIdQuery request,
+        GetOrderByIdQuery request,
         CancellationToken cancellationToken)
     {
         var userId = _currentUser.Id;
@@ -40,9 +37,9 @@ public class GetCustomerOrderByIdQueryHandler : IRequestHandler<GetCustomerOrder
             return Result<OrderDetailDto>.Failure(
                 new Error("Auth.Required", "User is not authenticated"));
         Order? order;
-        if (request.ByKlarna)
+        if (request is { ByKlarna: true, KlarnaRef: not null })
         {
-            order = await _orderRepository.GetByKlarnaAsync(request?.KlarnaRef, cancellationToken);
+                order = await _orderRepository.GetByKlarnaAsync(request.KlarnaRef, cancellationToken);
         }
         else
         {

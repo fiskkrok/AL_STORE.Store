@@ -55,4 +55,13 @@ public class CustomerRepository : Repository<CustomerProfile>, ICustomerReposito
     {
         await _context.Set<CustomerAddress>().AddAsync(address, ct);
     }
+
+    public async Task<string> GetEmailAddressByCustomerIdAsync(string customerId, CancellationToken ct = default)
+    {
+        var customer = await _context.Set<CustomerProfile>()
+            .Where(a => a.UserId == customerId && !a.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+        return customer?.Email.Value ?? string.Empty;
+    }
 }

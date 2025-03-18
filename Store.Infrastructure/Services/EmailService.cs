@@ -15,13 +15,15 @@ public class EmailService : IEmailService
     private readonly ISendGridClient _client;
     private readonly ILogger<EmailService> _logger;
     private readonly EmailSettings _settings;
+    private readonly ICustomerRepository _customerRepository;
 
     public EmailService(
         IOptions<EmailSettings> settings,
         ISendGridClient client,
-        ILogger<EmailService> logger)
+        ILogger<EmailService> logger, ICustomerRepository customerRepository)
     {
         _logger = logger;
+        _customerRepository = customerRepository;
         _settings = settings.Value;
         _client = client;
     }
@@ -37,7 +39,7 @@ public class EmailService : IEmailService
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
-            var customerEmail = await GetCustomerEmailAsync(order.CustomerId);
+            var customerEmail = await GetCustomerEmailAsync(order.CustomerId,ct);
             if (string.IsNullOrEmpty(customerEmail))
             {
                 _logger.LogWarning(
@@ -97,7 +99,7 @@ public class EmailService : IEmailService
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
-            var customerEmail = await GetCustomerEmailAsync(order.CustomerId);
+            var customerEmail = await GetCustomerEmailAsync(order.CustomerId, ct);
             if (string.IsNullOrEmpty(customerEmail))
             {
                 _logger.LogWarning("Cannot send order shipped email: Could not find email for customer {CustomerId}",
@@ -136,21 +138,14 @@ public class EmailService : IEmailService
         }
     }
 
-    private async Task<string> GetCustomerEmailAsync(string customerId)
+    private async Task<string> GetCustomerEmailAsync(string customerId, CancellationToken ct)
     {
-        // This is just a placeholder - in a real implementation, you would:
-        // 1. Look up the customer in your database using the customerId
-        // 2. Return their email address
+        var email = await _customerRepository.GetEmailAddressByCustomerIdAsync(customerId, ct);
 
-        // For now, we'll just return a dummy email for testing
-        return "customer@example.com";
-
-        // In a real implementation with DI:
-        // var customer = await _customerRepository.GetByIdAsync(customerId);
-        // return customer?.Email?.Value;
+        return email;
     }
 
-    private string BuildOrderConfirmationText(Order order)
+    private static string BuildOrderConfirmationText(Order order)
     {
         var sb = new StringBuilder();
         sb.AppendLine($"Thank you for your order #{order.OrderNumber}!");

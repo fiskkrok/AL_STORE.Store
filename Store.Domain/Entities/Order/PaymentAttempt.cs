@@ -22,6 +22,7 @@ public class PaymentAttempt : BaseEntity
     public DateTime AttemptedAt { get; private set; }
     public PaymentStatus Status { get; private set; }
     public string? ErrorMessage { get; private set; }
+    //public PaymentMethod PaymentMethod { get; private set; }
 
     public void SetSuccess()
     {

@@ -1,5 +1,6 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Store.Domain.Entities.Order;
 using Document = QuestPDF.Fluent.Document;
 
@@ -16,7 +17,7 @@ public static class ReceiptGenerator
         // Note: In a real application, you would use QuestPDF or another PDF library
         // This is a simplified example to demonstrate the concept
 
-        // QuestPDF.Settings.License = LicenseType.Community;
+        QuestPDF.Settings.License = LicenseType.Community;
 
         var document = Document.Create(container =>
         {

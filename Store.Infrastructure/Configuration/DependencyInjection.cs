@@ -33,6 +33,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IDateTime, DateTimeService>();
         services.AddScoped<IDomainEventService, DomainEventService>();
+        services.AddMessagingInfrastructure(configuration);
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICategorySeeder, CategorySeeder>();
         services.AddScoped<IStoreSeeder, StoreSeeder>();
@@ -72,10 +73,10 @@ public static class DependencyInjection
                 "Failed to connect to Redis after multiple attempts.");
         });
         services.AddScoped<ICacheService, RedisCacheService>();
-        services.Configure<RabbitMQSettings>(
-            configuration.GetSection("RabbitMQ"));
-        services.AddScoped<IMessageBusService, RabbitMQService>();
-        services.AddMessagingInfrastructure(configuration);
+        //services.Configure<RabbitMQSettings>(
+        //    configuration.GetSection("RabbitMQ"));
+        services.AddScoped<IEventBus, MassTransitEventBus>();
+
         // HTTP Context and Auth
         services.AddHttpContextAccessor();
 

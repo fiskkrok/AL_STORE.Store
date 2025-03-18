@@ -5,7 +5,7 @@ using Store.Application.Common.Interfaces;
 using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
 using Store.Domain.Entities.Product;
-
+using MassTransit;
 namespace Store.Infrastructure.Persistence;
 
 public class StoreDbContext : DbContext, IStoreDbContext
@@ -83,6 +83,8 @@ public class StoreDbContext : DbContext, IStoreDbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.Ignore<BaseDomainEvent>();
+        modelBuilder.AddOutboxStateEntity();
+        modelBuilder.AddInboxStateEntity();
         base.OnModelCreating(modelBuilder);
     }
 }
