@@ -6,14 +6,11 @@ import { Injectable, inject, signal, computed } from "@angular/core";
 import { firstValueFrom, catchError, of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { Address, AddAddressRequest } from "../../shared/models";
-import { ErrorService } from "./error.service";
-import { LoggerService } from "./logger.service";
+import { BaseService } from "./base.service";
 
 @Injectable({ providedIn: 'root' })
-export class AddressService {
+export class AddressService extends BaseService {
     private readonly http = inject(HttpClient);
-    private readonly errorService = inject(ErrorService);
-    private readonly logger = inject(LoggerService);
     private readonly apiUrl = `${environment.apiUrl}/api/customers`;
 
     // State
@@ -54,7 +51,7 @@ export class AddressService {
             this.addresses.set(response || []);
             this.logger.info(`Loaded ${response?.length || 0} addresses`);
         } catch (error) {
-            this.handleError('Failed to load addresses', error);
+            this.handleHttpError('Failed to load addresses', error, 'address');
             throw error;
         }
     }
@@ -80,7 +77,7 @@ export class AddressService {
 
             return response;
         } catch (error) {
-            this.handleError('Failed to add address', error);
+            this.handleHttpError('Failed to add address', error, 'address');
             throw error;
         }
     }
@@ -102,7 +99,7 @@ export class AddressService {
             this.logger.info('Address updated', { addressId: id });
             return response;
         } catch (error) {
-            this.handleError('Failed to update address', error);
+            this.handleHttpError('Failed to update address', error, 'address');
             throw error;
         }
     }
@@ -123,7 +120,7 @@ export class AddressService {
 
             this.logger.info('Address deleted', { addressId: id });
         } catch (error) {
-            this.handleError('Failed to delete address', error);
+            this.handleHttpError('Failed to delete address', error, 'address');
             throw error;
         }
     }
@@ -149,7 +146,7 @@ export class AddressService {
 
             this.logger.info(`Set default ${type} address`, { addressId });
         } catch (error) {
-            this.handleError(`Failed to set default ${type} address`, error);
+            this.handleHttpError(`Failed to set default ${type} address`, error, 'address');
             throw error;
         }
     }
@@ -207,15 +204,5 @@ export class AddressService {
         ];
 
         return lines.filter(Boolean).join('\n');
-    }
-
-    private handleError(message: string, error: unknown): void {
-        this.logger.error(message, error);
-
-        this.errorService.addError(
-            'ADDRESS_ERROR',
-            message,
-            { severity: 'error', context: { error } }
-        );
     }
 }

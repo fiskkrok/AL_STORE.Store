@@ -14,19 +14,22 @@ using Store.Contracts.Events;
 namespace Store.Infrastructure.EventConsumers;
 public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
 {
-    private readonly IEmailService _emailService;
-    private readonly ILogger<PaymentProcessedEvent> _logger;
-    private readonly IOrderRepository _orderRepository;
+    private readonly ILogger<PaymentProcessedConsumer> _logger;
 
-    public PaymentProcessedConsumer(IOrderRepository orderRepository, ILogger<PaymentProcessedEvent> logger, IEmailService emailService)
+    public PaymentProcessedConsumer(ILogger<PaymentProcessedConsumer> logger)
     {
-        _orderRepository = orderRepository;
         _logger = logger;
-        _emailService = emailService;
     }
 
-    public async Task Consume(ConsumeContext<PaymentProcessedEvent> context)
+    public Task Consume(ConsumeContext<PaymentProcessedEvent> context)
     {
-        throw new NotImplementedException();
+        var message = context.Message;
+        _logger.LogInformation(
+            "Payment processed for order {OrderId}: {Success}",
+            message.OrderId, message.Successful ? "Successful" : "Failed");
+
+        // Handle payment processed
+
+        return Task.CompletedTask;
     }
 }

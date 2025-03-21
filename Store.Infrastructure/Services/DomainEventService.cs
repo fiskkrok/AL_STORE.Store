@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿// Store.Infrastructure/Services/DomainEventService.cs
+using MediatR;
 
 using Microsoft.Extensions.Logging;
 
@@ -6,6 +7,7 @@ using Store.Application.Common.Interfaces;
 using Store.Domain.Common;
 using Store.Domain.Entities.Order;
 using Store.Infrastructure.Services.Events;
+
 using OrderCreatedEvent = Store.Contracts.Events.OrderCreatedEvent;
 
 namespace Store.Infrastructure.Services;
@@ -34,21 +36,21 @@ public class DomainEventService : IDomainEventService
         await _mediator.Publish(GetNotificationCorrespondingToDomainEvent(domainEvent), cancellationToken);
 
         // Then, map and publish to MassTransit if it's an event we want to distribute
-        await PublishToEventBusIfNeeded(domainEvent);
+        await PublishToEventBusIfNeeded(domainEvent, cancellationToken);
     }
 
-    private async Task PublishToEventBusIfNeeded(BaseDomainEvent domainEvent)
+    private async Task PublishToEventBusIfNeeded(BaseDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         switch (domainEvent)
         {
             case Store.Domain.Entities.Order.OrderCreatedEvent orderCreated:
-                await _eventBus.PublishAsync(new OrderCreatedEvent(
+                await _eventBus.PublishAsync(new Store.Contracts.Events.OrderCreatedEvent(
                     orderCreated.Order.Id,
                     orderCreated.Order.OrderNumber,
                     orderCreated.Order.CustomerId,
                     orderCreated.Order.TotalAmount.Amount,
                     orderCreated.Order.TotalAmount.Currency,
-                    DateTime.UtcNow));
+                    DateTime.UtcNow), cancellationToken);
                 break;
 
             case Store.Domain.Entities.Order.OrderCompletedEvent orderCompleted:
@@ -57,13 +59,12 @@ public class DomainEventService : IDomainEventService
                     orderCompleted.Order.OrderNumber,
                     "Processing", // Previous status 
                     "Completed",  // Current status
-                    DateTime.UtcNow));
+                    DateTime.UtcNow), cancellationToken);
                 break;
 
-            // Map other relevant domain events
+                // Map other relevant domain events
         }
     }
-
 
     public INotification GetNotificationCorrespondingToDomainEvent(BaseDomainEvent domainEvent)
     {

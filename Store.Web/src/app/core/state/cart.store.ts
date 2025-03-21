@@ -1,4 +1,4 @@
- 
+
 // src/app/core/state/cart.store.ts
 import { Injectable, computed, signal } from '@angular/core';
 import { SignalRService } from '../services/signalr.service';
@@ -34,7 +34,7 @@ export class CartStore {
     );
     private readonly STORAGE_KEY = 'shopping-cart';
     constructor(private signalR: SignalRService) {
-        this.signalR.subscribeToCart(this.handleCartUpdate.bind(this));
+        this.signalR.subscribeToCartUpdates().subscribe(update => this.handleCartUpdate(update));
         this.loadCartFromStorage();
     }
 

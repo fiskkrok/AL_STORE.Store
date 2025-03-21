@@ -4,23 +4,31 @@ using Store.Application.Customers.Commands.Adress;
 using Store.Domain.Entities.Customer;
 
 namespace Store.API.Endpoints.Customers.Adress;
-
+/// <summary>
+/// 
+/// </summary>
 public class SetDefaultAddressRequest
 {
     /// <summary>
     /// </summary>
     public string Type { get; init; } = string.Empty;
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
 {
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public SetDefaultAddressEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Post("/customers/addresses/{id}/default");
@@ -32,7 +40,9 @@ public class SetDefaultAddressEndpoint : Endpoint<SetDefaultAddressRequest>
             .Produces(404)
             .WithTags("Customer Addresses"));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(SetDefaultAddressRequest req, CancellationToken ct)
     {
         var addressId = Route<Guid>("id");

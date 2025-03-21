@@ -12,7 +12,6 @@ using Store.Application.Contracts;
 using Store.Contracts.Events;
 
 namespace Store.Infrastructure.EventConsumers;
-// Store.Infrastructure/EventConsumers/OrderEventConsumers.cs
 public class OrderCreatedConsumer : IConsumer<OrderCreatedEvent>
 {
     private readonly IEmailService _emailService;

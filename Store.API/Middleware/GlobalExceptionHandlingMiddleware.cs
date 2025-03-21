@@ -2,12 +2,16 @@
 using Store.Domain.Exceptions;
 
 namespace Store.API.Middleware;
-
+/// <summary>
+/// 
+/// </summary>
 public class GlobalExceptionHandlingMiddleware : IMiddleware
 {
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GlobalExceptionHandlingMiddleware(
         ILogger<GlobalExceptionHandlingMiddleware> logger,
         IWebHostEnvironment env)
@@ -15,7 +19,9 @@ public class GlobalExceptionHandlingMiddleware : IMiddleware
         _logger = logger;
         _env = env;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try

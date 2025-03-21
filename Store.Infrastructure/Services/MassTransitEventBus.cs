@@ -1,8 +1,8 @@
 ﻿using MassTransit;
+
 using Store.Application.Common.Interfaces;
 
 namespace Store.Infrastructure.Services;
-
 
 public class MassTransitEventBus : IEventBus
 {

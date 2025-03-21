@@ -5,9 +5,13 @@ using Store.API.Endpoints.Customers.Profile;
 using Store.Application.Customers.Models;
 
 namespace Store.API.Validation;
-
+/// <summary>
+/// 
+/// </summary>
 public class CreateProfileValidator : Validator<ProfilePayload>
-{
+{/// <summary>
+    /// 
+    /// </summary>
     public CreateProfileValidator()
     {
         RuleFor(x => x.FirstName)
@@ -35,9 +39,13 @@ public class CreateProfileValidator : Validator<ProfilePayload>
         });
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class UpdateProfileValidator : Validator<UpdateProfileRequest>
-{
+{/// <summary>
+    /// 
+    /// </summary>
     public UpdateProfileValidator()
     {
         RuleFor(x => x.FirstName)
@@ -63,12 +71,16 @@ public class UpdateProfileValidator : Validator<UpdateProfileRequest>
             .SetValidator(new CustomerPreferencesValidator());
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class CustomerPreferencesValidator : Validator<CustomerPreferencesDto>
 {
     private static readonly string[] ValidLanguages = { "en", "sv", "no", "da", "fi" };
     private static readonly string[] ValidCurrencies = { "USD", "EUR", "SEK", "NOK", "DKK" };
-
+    /// <summary>
+    /// 
+    /// </summary>
     public CustomerPreferencesValidator()
     {
         RuleFor(x => x.PreferredLanguage)

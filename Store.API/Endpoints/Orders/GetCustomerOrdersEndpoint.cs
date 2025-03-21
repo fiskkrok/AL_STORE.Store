@@ -5,12 +5,16 @@ using Store.Application.Orders.Models;
 using Store.Application.Orders.Queries;
 
 namespace Store.API.Endpoints.Orders;
-
+/// <summary>
+/// 
+/// </summary>
 public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersResponse>
 {
     private readonly ILogger<GetCustomerOrdersEndpoint> _logger;
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GetCustomerOrdersEndpoint(IMediator mediator, ILogger<GetCustomerOrdersEndpoint> logger)
     {
         _mediator = mediator;
@@ -27,7 +31,9 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
             .WithTags("Customer Orders"));
         Permissions("read:profile");
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var query = new GetOrdersQuery();
@@ -46,7 +52,9 @@ public class GetCustomerOrdersEndpoint : EndpointWithoutRequest<CustomerOrdersRe
         }
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class CustomerOrdersResponse
 {
     public IReadOnlyList<OrderSummaryDto> Orders { get; init; } = Array.Empty<OrderSummaryDto>();

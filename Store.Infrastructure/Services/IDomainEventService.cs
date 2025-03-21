@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿// Store.Infrastructure/Services/IDomainEventService.cs
+using MediatR;
+
 using Store.Domain.Common;
 
 namespace Store.Infrastructure.Services;

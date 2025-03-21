@@ -7,13 +7,12 @@ import { Observable, of, tap, map } from "rxjs";
 import { Product, ProductQueryParams, ProductListResponse } from "../../shared/models";
 import { CartStore } from "../state";
 import { ApiService } from "./api.service";
-import { ErrorService } from "./error.service";
+import { BaseService } from "./base.service";
 
 @Injectable({ providedIn: 'root' })
-export class ProductService {
+export class ProductService extends BaseService {
   private apiService = inject(ApiService);
   private cartStore = inject(CartStore);
-  private errorService = inject(ErrorService);
 
   // Cache for product data
   private productsCache = new Map<string, Product>();
@@ -22,6 +21,7 @@ export class ProductService {
    * Get products with filtering
    */
   getProducts(request: ProductQueryParams = {}): Observable<ProductListResponse> {
+    this.logger.info('Fetching products', { request });
     return this.apiService.get<ProductListResponse>('products/list', {
       page: request.page || 1,
       pageSize: request.pageSize || 20,
@@ -41,9 +41,11 @@ export class ProductService {
     // Check cache first
     const cachedProduct = this.productsCache.get(id);
     if (cachedProduct) {
+      this.logger.debug('Product retrieved from cache', { productId: id });
       return of(cachedProduct);
     }
 
+    this.logger.info('Fetching product from API', { productId: id });
     return this.apiService.get<Product>('products/detail', { id }).pipe(
       tap(product => {
         // Cache the product
@@ -90,17 +92,19 @@ export class ProductService {
         imageUrl: this.getProductImageUrl()(product),
       });
 
+      this.logger.info('Product added to cart', {
+        productId: product.id,
+        name: product.name,
+        quantity
+      });
+
       this.errorService.addError(
         'PRODUCT_ADDED',
         `Added ${quantity} ${product.name} to your cart`,
         { severity: 'info', timeout: 3000 }
       );
     } catch (error) {
-      this.errorService.addError(
-        'CART_ERROR',
-        'Failed to add item to cart. Please try again.',
-        { severity: 'error' }
-      );
+      this.handleServiceError('Failed to add item to cart', error, 'cart');
       throw error;
     }
   }
@@ -136,6 +140,7 @@ export class ProductService {
    * Get related products
    */
   getRelatedProducts(productId: string, categoryId?: string): Observable<Product[]> {
+    this.logger.info('Fetching related products', { productId, categoryId });
     return this.apiService.get<ProductListResponse>('products/list', {
       categories: categoryId ? [categoryId] : undefined,
       excludeProduct: productId,
@@ -143,5 +148,13 @@ export class ProductService {
     }).pipe(
       map(response => response.items)
     );
+  }
+
+  /**
+   * Clear the product cache
+   */
+  clearCache(): void {
+    this.productsCache.clear();
+    this.logger.info('Product cache cleared');
   }
 }

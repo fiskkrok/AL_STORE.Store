@@ -4,15 +4,24 @@ using Store.Application.Customers.Commands.Adress;
 
 namespace Store.API.Endpoints.Customers.Adress;
 
+/// <summary>
+/// 
+/// </summary>
 public class DeleteAddressEndpoint : EndpointWithoutRequest
 {
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mediator"></param>
     public DeleteAddressEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Delete("/customers/addresses/{id}");
@@ -23,7 +32,9 @@ public class DeleteAddressEndpoint : EndpointWithoutRequest
             .Produces(404)
             .WithTags("Customer Addresses"));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var addressId = Route<Guid>("id");

@@ -128,7 +128,7 @@ export class OrderConfirmationComponent implements OnInit {
     this.orderService.getConfirmationOrderById(orderNumber).subscribe({
       next: (response) => {
         console.log('Order received:', response);
-        if (response && response.confirmation) {
+        if (response?.confirmation) {
           // Extract the confirmation object from the response
           this.orderDetails.set(response.confirmation);
           // Clear cart and checkout state since order is complete

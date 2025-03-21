@@ -10,7 +10,9 @@ namespace Store.API.Endpoints.Customers.Profile;
 public class GetProfileEndpoint : EndpointWithoutRequest<CustomerProfileResponse>
 {
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GetProfileEndpoint(IMediator mediator)
     {
         _mediator = mediator;
@@ -27,7 +29,9 @@ public class GetProfileEndpoint : EndpointWithoutRequest<CustomerProfileResponse
             .WithTags("Customer Profile"));
         Permissions("read:profile");
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var isAuthenticated = User.Identity?.IsAuthenticated;

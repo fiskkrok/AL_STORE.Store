@@ -1,9 +1,13 @@
 ﻿using FastEndpoints;
 
 namespace Store.API.Endpoints.Delivery;
-
+/// <summary>
+/// 
+/// </summary>
 public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDeliveryOptionsResponse>
-{
+{/// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/delivery/options");
@@ -15,7 +19,9 @@ public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDe
             .WithName("GetDeliveryOptions")
             .WithOpenApi());
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(GetDeliveryOptionsRequest req, CancellationToken ct)
     {
         var response = new GetDeliveryOptionsResponse
@@ -67,17 +73,23 @@ public class DeliveryOptionsEndpoint : Endpoint<GetDeliveryOptionsRequest, GetDe
         await SendAsync(response, 200, ct);
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class GetDeliveryOptionsRequest
 {
     public string PostalCode { get; set; }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class GetDeliveryOptionsResponse
 {
     public List<DeliveryOption> DeliveryOptions { get; set; }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class DeliveryOption
 {
     public string Id { get; set; }
@@ -89,39 +101,3 @@ public class DeliveryOption
     public decimal Price { get; set; }
 }
 
-//{
-//id: 'postnord-home',
-//name: 'PostNord Hemleverans',
-//description: 'Leverans direkt till din dörr',
-//estimatedDelivery: '1-3 arbetsdagar',
-//price: 49,
-//currency: 'SEK',
-//logo: 'assets/delivery/postnord.svg'
-//},
-//{
-//id: 'postnord-pickup',
-//name: 'PostNord Ombud',
-//description: 'Hämta ditt paket hos ombud',
-//estimatedDelivery: '1-2 arbetsdagar',
-//price: 0,
-//currency: 'SEK',
-//logo: 'assets/delivery/postnord.svg'
-//},
-//{
-//id: 'instabox',
-//name: 'Instabox',
-//description: 'Leverans till Instabox-skåp',
-//estimatedDelivery: 'Inom 24 timmar',
-//price: 29,
-//currency: 'SEK',
-//logo: 'assets/delivery/instabox.svg'
-//},
-//{
-//id: 'dhl',
-//name: 'DHL Express',
-//description: 'Expressleverans direkt till dörren',
-//estimatedDelivery: 'Nästa arbetsdag',
-//price: 99,
-//currency: 'SEK',
-//logo: 'assets/delivery/dhl.svg'
-//}

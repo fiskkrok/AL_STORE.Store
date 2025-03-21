@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { OrderConfirmation, OrderHistory, OrderStatus } from '../../shared/models';
+import { BaseService } from './base.service';
 
 export interface OrderDetailDto {
     id: string;
@@ -51,31 +52,44 @@ export interface OrderDetailDto {
 }
 
 @Injectable({ providedIn: 'root' })
-export class OrderService {
+export class OrderService extends BaseService {
     private readonly http = inject(HttpClient);
     private readonly apiUrl = `${environment.apiUrl}/api/orders`;
 
     createOrder(paymentSessionId: string, cartItems: any[]): Observable<OrderConfirmation> {
+        this.logger.info('Creating order', { paymentSessionId, cartItemCount: cartItems.length });
+
         return this.http.post<OrderConfirmation>(`${this.apiUrl}/create`, {
             paymentSessionId,
             items: cartItems
         }).pipe(
             catchError(error => {
-                console.error('Failed to create order:', error);
+                this.handleHttpError('Failed to create order', error, 'order');
                 throw new Error('Unable to create your order. Please try again.');
             })
         );
     }
 
-
     getConfirmationOrderById(transactionId: string): Observable<{ confirmation: OrderConfirmation } | null> {
+        this.logger.info('Fetching order confirmation', { transactionId });
+
         return this.http.get<{ confirmation: OrderConfirmation }>(`${environment.apiUrl}/api/orders/confirmation/${transactionId}`).pipe(
-            catchError(() => of(null))
+            catchError(error => {
+                this.logger.warn('Order confirmation not found', { transactionId, error });
+                return of(null);
+            })
         );
     }
 
     getOrderStatus(orderNumber: string): Observable<OrderStatus> {
-        return this.http.get<OrderStatus>(`${this.apiUrl}/${orderNumber}/status`);
+        this.logger.info('Checking order status', { orderNumber });
+
+        return this.http.get<OrderStatus>(`${this.apiUrl}/${orderNumber}/status`).pipe(
+            catchError(error => {
+                this.handleHttpError(`Failed to get status for order ${orderNumber}`, error, 'order');
+                throw error;
+            })
+        );
     }
 
     /**
@@ -83,10 +97,12 @@ export class OrderService {
      * Maps to /customers/orders/{id} endpoint
      */
     getCustomerOrderById(orderId: string): Observable<OrderDetailDto | null> {
+        this.logger.info('Fetching customer order details', { orderId });
+
         return this.http.get<{ order: OrderDetailDto }>(`${environment.apiUrl}/api/customers/orders/${orderId}`).pipe(
             map(response => response.order),
             catchError(error => {
-                console.error('Failed to fetch order details:', error);
+                this.logger.error('Failed to fetch order details', { orderId, error });
                 return of(null);
             })
         );
@@ -97,10 +113,12 @@ export class OrderService {
      * Maps to /customers/orders endpoint
      */
     getCustomerOrders(): Observable<OrderHistory[]> {
+        this.logger.info('Fetching customer order history');
+
         return this.http.get<{ orders: OrderHistory[] }>(`${environment.apiUrl}/api/customers/orders`).pipe(
             map(response => response.orders),
             catchError(error => {
-                console.error('Failed to fetch order history:', error);
+                this.logger.error('Failed to fetch order history', { error });
                 return of([]);
             })
         );
@@ -108,6 +126,11 @@ export class OrderService {
 
     // For mocking during testing, we'll have a method that creates orders locally
     createMockOrder(cartItems: any[], paymentMethod: string): OrderConfirmation {
+        this.logger.info('Creating mock order', {
+            itemCount: cartItems.length,
+            paymentMethod
+        });
+
         return {
             orderNumber: `ORD-${Math.floor(Math.random() * 1000000)}`,
             status: 'confirmed',

@@ -1,4 +1,6 @@
-﻿using MassTransit;
+﻿// Store.Infrastructure/Configuration/MessagingConfiguration.cs
+
+using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,12 +10,19 @@ using Store.Infrastructure.Persistence;
 using Store.Infrastructure.Services;
 
 namespace Store.Infrastructure.Configuration;
+
 public static class MessagingConfiguration
 {
     public static IServiceCollection AddMessagingInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Register event bus
+        services.AddScoped<IEventBus, MassTransitEventBus>();
+
+        // Configure RabbitMQ settings
+        services.Configure<RabbitMQSettings>(
+            configuration.GetSection("RabbitMQ"));
 
         // Configure MassTransit
         services.AddMassTransit(x => {
@@ -24,7 +33,6 @@ public static class MessagingConfiguration
 
             // Add EntityFrameworkCore outbox
             x.AddEntityFrameworkOutbox<StoreDbContext>(o => {
-
                 // For SQL Server
                 o.UseSqlServer();
 

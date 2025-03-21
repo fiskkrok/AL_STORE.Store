@@ -1,6 +1,6 @@
 // src/app/core/services/script-loader.service.ts
-import { Injectable, signal } from '@angular/core';
-import { LoggerService } from './logger.service';
+import { Injectable } from '@angular/core';
+import { BaseService } from './base.service';
 
 interface ScriptConfig {
     url: string;
@@ -11,10 +11,8 @@ interface ScriptConfig {
 @Injectable({
     providedIn: 'root'
 })
-export class ScriptLoaderService {
+export class ScriptLoaderService extends BaseService {
     private readonly loadedScripts = new Map<string, boolean>();
-
-    constructor(private readonly logger: LoggerService) { }
 
     /**
      * Load an external script
@@ -26,14 +24,18 @@ export class ScriptLoaderService {
 
         // If we've already loaded this script
         if (this.loadedScripts.get(url)) {
+            this.logger.debug(`Script already loaded: ${url}`);
             return Promise.resolve();
         }
 
         // If there's a custom check to see if the script is already loaded
         if (loadCheck && loadCheck()) {
             this.loadedScripts.set(url, true);
+            this.logger.debug(`Script detected as pre-loaded: ${url}`);
             return Promise.resolve();
         }
+
+        this.logger.info(`Loading script: ${url}`);
 
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -47,12 +49,12 @@ export class ScriptLoaderService {
 
             script.onload = () => {
                 this.loadedScripts.set(url, true);
-                this.logger.info(`Script loaded: ${url}`);
+                this.logger.info(`Script loaded successfully: ${url}`);
                 resolve();
             };
 
             script.onerror = (error) => {
-                this.logger.error(`Failed to load script: ${url}`, error);
+                this.handleServiceError(`Failed to load script: ${url}`, error, 'script-loader');
                 reject(new Error(`Failed to load script: ${url}`));
             };
 

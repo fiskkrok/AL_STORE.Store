@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿// Store.Infrastructure/Persistence/StoreDbContext.cs
+using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Store.Application.Common.Interfaces;
@@ -6,6 +7,7 @@ using Store.Domain.Common;
 using Store.Domain.Entities.Customer;
 using Store.Domain.Entities.Product;
 using MassTransit;
+
 namespace Store.Infrastructure.Persistence;
 
 public class StoreDbContext : DbContext, IStoreDbContext

@@ -1,52 +1,25 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using FluentValidation;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
+
 using Store.API.Configuration;
 using Store.API.Middleware;
-using Store.API.Validation;
 using Store.Application.Configuration;
 using Store.Infrastructure.Configuration;
 using Store.Infrastructure.Persistence.Seeding;
-using ZiggyCreatures.Caching.Fusion;
-using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
-// Added
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-var frontendBaseUrl = builder.Configuration.GetSection("Frontend:BaseUrl").Value;
-builder.Services.AddScoped<GlobalExceptionHandlingMiddleware>();
-builder.Services.AddHttpClient("FrontendClient", client => { client.BaseAddress = new Uri(frontendBaseUrl!); });
-
-builder.Services.AddClientCredentialsTokenManagementConfig(builder);
-builder.Services.AddValidatorsFromAssemblyContaining<CreateProfileValidator>();
-
-// Configure CORS
-builder.Services.AddCorsConfig();
-
-builder.Services.AddSwaggerDocumentation();
-builder.Services.AddFusionCache().WithDefaultEntryOptions(options => options.Duration = TimeSpan.FromMinutes(5))
-    .WithSerializer(new FusionCacheSystemTextJsonSerializer())
-    .WithDistributedCache(
-        new RedisCache(new RedisCacheOptions { Configuration = "localhost:6379" }))
-    .AsHybridCache();
-
-builder.Services.AddResponseCompression();
-
-builder.Services.AddAuth(builder.Configuration);
-builder.Services.AddBackgroundJobs().AddKlarnaService(builder.Configuration);
-builder.Services.AddFastEndpoints(options => { options.IncludeAbstractValidators = true; }).SwaggerDocument()
-    .AddOpenApi();
-builder.Services.AddRealTimeServices(builder.Configuration);
+builder.Services.AddApiServices(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddProductServices(builder.Configuration);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
+
+    // Seed data in development
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<IStoreSeeder>();
     await seeder.SeedAsync();
@@ -78,17 +51,20 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
 app.UseRouting();
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
-app.UseFastEndpoints(o => { o.Endpoints.RoutePrefix = "api"; }).UseSwaggerGen();
-app.MapSignalRHubs();
+app.UseFastEndpoints(o => { o.Endpoints.RoutePrefix = "api"; });
+app.UseSwaggerGen();
 app.UseResponseCompression();
-app.UseHttpsRedirection();
+app.MapSignalRHubs();
 app.UseRealTimeServices();
+
 await app.RunAsync();
+
 
 /// <summary>
 /// </summary>

@@ -2,8 +2,13 @@
 
 namespace Store.API.Endpoints.Customers.Models;
 
-// Response Models
+/// <summary>
+/// 
+/// </summary>
 public class AddressResponse
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public AddressDto Address { get; init; } = new();
 }

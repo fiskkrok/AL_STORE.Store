@@ -11,16 +11,22 @@ namespace Store.API.Endpoints.Customers.Adress;
 public class UpdateAddressRequest : AddAddressRequest
 {
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressResponse>
 {
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public UpdateAddressEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Put("/customers/addresses/{id}");
@@ -32,7 +38,9 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
             .Produces(404)
             .WithTags("Customer Addresses"));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(UpdateAddressRequest req, CancellationToken ct)
     {
         var addressId = Route<Guid>("id");
@@ -53,7 +61,7 @@ public class UpdateAddressEndpoint : Endpoint<UpdateAddressRequest, AddressRespo
 
         var result = await _mediator.Send(command, ct);
 
-        if (result.IsSuccess)
+        if (result is { IsSuccess: true, Value: not null })
         {
             await SendOkAsync(new AddressResponse { Address = result.Value }, ct);
         }

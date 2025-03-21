@@ -13,6 +13,7 @@ export interface AppError {
     code: string;
     message: string;
     severity: ErrorSeverity;
+    persistent: boolean;
     timestamp: Date;
     context?: Record<string, unknown>;
     originalError?: unknown;
@@ -21,5 +22,6 @@ export interface AppError {
 export interface ErrorOptions {
     severity?: ErrorSeverity;
     context?: Record<string, unknown>;
+    persistent?: boolean;
     timeout?: number;
 }

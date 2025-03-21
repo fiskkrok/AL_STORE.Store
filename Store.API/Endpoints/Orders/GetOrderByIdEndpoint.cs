@@ -4,12 +4,19 @@ using Store.Application.Orders.Models;
 using Store.Application.Orders.Queries;
 
 namespace Store.API.Endpoints.Orders;
-
+/// <summary>
+/// 
+/// </summary>
 public class GetOrderByIdRequest
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public Guid Id { get; init; }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class GetOrderByIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
 {
     private readonly IMediator _mediator;
@@ -18,7 +25,9 @@ public class GetOrderByIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/customers/orders/{Id}");
@@ -30,7 +39,9 @@ public class GetOrderByIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
             .WithTags("Customer Orders"));
         Permissions("read:profile");
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(GetOrderByIdRequest req, CancellationToken ct)
     {
         var query = new GetOrderByIdQuery(req.Id);
@@ -51,7 +62,9 @@ public class GetOrderByIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
         }
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class OrderResponse
 {
     public OrderDetailDto Order { get; init; } = new();

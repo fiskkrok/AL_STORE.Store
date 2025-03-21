@@ -4,7 +4,9 @@ using Store.Application.Products.Models;
 using Store.Application.Products.Queries;
 
 namespace Store.API.Endpoints.Products;
-
+/// <summary>
+/// 
+/// </summary>
 public class GetStoreProductsRequest
 {
     public int Page { get; init; } = 1;
@@ -24,13 +26,17 @@ public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListRespon
 {
     private readonly ILogger<GetStoreProductsEndpoint> _logger;
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GetStoreProductsEndpoint(IMediator mediator, ILogger<GetStoreProductsEndpoint> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/store/products"); // Consistent route
@@ -49,7 +55,9 @@ public class GetStoreProductsEndpoint : EndpointWithoutRequest<ProductListRespon
             s.Description = "Retrieves a paginated list of products with optional filtering";
         });
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var query = new GetProductsQuery();

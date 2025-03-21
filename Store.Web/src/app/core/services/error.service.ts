@@ -24,6 +24,7 @@ export class ErrorService {
       code,
       message,
       severity: options.severity ?? 'error',
+      persistent: options.persistent ?? false,
       timestamp: new Date(),
       context: options.context
     };

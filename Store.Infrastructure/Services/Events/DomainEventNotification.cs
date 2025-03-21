@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿// Store.Infrastructure/Services/Events/DomainEventNotification.cs
+using MediatR;
 
 namespace Store.Infrastructure.Services.Events;
 

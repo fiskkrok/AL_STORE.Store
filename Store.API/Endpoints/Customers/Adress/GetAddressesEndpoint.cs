@@ -5,18 +5,24 @@ using Store.Application.Contracts;
 using Store.Application.Payments.Models;
 
 namespace Store.API.Endpoints.Customers.Adress;
-
+/// <summary>
+/// 
+/// </summary>
 public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly ICustomerRepository _customerRepository;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GetAddressesEndpoint(ICustomerRepository customerRepository, ICurrentUser currentUser)
     {
         _customerRepository = customerRepository;
         _currentUser = currentUser;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/customers/addresses");
@@ -31,7 +37,9 @@ public class GetAddressesEndpoint : EndpointWithoutRequest<List<AddressDto>>
                 Description = "Retrieves all addresses for the authenticated user"
             }));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var userId = _currentUser.Id;

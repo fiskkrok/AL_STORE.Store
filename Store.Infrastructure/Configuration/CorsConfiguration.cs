@@ -1,4 +1,6 @@
-﻿namespace Store.API.Configuration;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Store.API.Configuration;
 
 public static class CorsConfiguration
 {

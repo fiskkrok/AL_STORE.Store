@@ -7,16 +7,22 @@ using Store.Application.Orders.Queries;
 namespace Store.API.Endpoints.Orders;
 
 
-
+/// <summary>
+/// 
+/// </summary>
 public class GetCustomerOrderBySessionIdEndpoint : Endpoint<GetOrderByIdRequest, OrderResponse>
 {
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public GetCustomerOrderBySessionIdEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/customers/orders/by-klarna/{Id}");
@@ -28,7 +34,9 @@ public class GetCustomerOrderBySessionIdEndpoint : Endpoint<GetOrderByIdRequest,
             .WithTags("Customer Orders"));
         Permissions("read:profile");
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(GetOrderByIdRequest req, CancellationToken ct)
     {
         var query = new GetOrderByIdQuery(Guid.Empty, true, req.Id.ToString());

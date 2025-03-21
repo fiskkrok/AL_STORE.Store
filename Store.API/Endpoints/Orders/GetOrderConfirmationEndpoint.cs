@@ -9,7 +9,9 @@ public class GetOrderConfirmationRequest
 {
     public string PaymentReference { get; init; } = string.Empty;
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class GetOrderConfirmationEndpoint : Endpoint<GetOrderConfirmationRequest, OrderConfirmationResponse>
 {
     private readonly IMediator _mediator;
@@ -18,7 +20,9 @@ public class GetOrderConfirmationEndpoint : Endpoint<GetOrderConfirmationRequest
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/orders/confirmation/{PaymentReference}");
@@ -28,7 +32,9 @@ public class GetOrderConfirmationEndpoint : Endpoint<GetOrderConfirmationRequest
             .ProducesProblem(404)
             .WithTags("Orders"));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(GetOrderConfirmationRequest req, CancellationToken ct)
     {
         var query = new GetOrderConfirmationQuery(req.PaymentReference);
@@ -49,8 +55,12 @@ public class GetOrderConfirmationEndpoint : Endpoint<GetOrderConfirmationRequest
         }
     }
 }
-
+/// <summary>
+/// 
+/// </summary>
 public class OrderConfirmationResponse
-{
+{/// <summary>
+    /// 
+    /// </summary>
     public OrderConfirmationDto Confirmation { get; init; } = new();
 }

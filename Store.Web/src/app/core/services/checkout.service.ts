@@ -3,21 +3,18 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Address } from '../../shared/models/address.model';
-import { LoggerService } from './logger.service';
 import { DeliveryOption } from './delivery.service';
 import { CustomerService } from './customer.service';
-import { ErrorService } from './error.service';
 import { CheckoutSessionRequest, KlarnaSessionResponse } from '../../shared/models';
 import { CartItem } from '../state/cart.store';
 import { environment } from '../../../environments/environment';
 import { AddAddressRequest, AddressFormData } from '../../shared/models';
+import { BaseService } from './base.service';
 
 @Injectable({ providedIn: 'root' })
-export class CheckoutService {
-    private readonly logger = inject(LoggerService);
+export class CheckoutService extends BaseService {
     private readonly router = inject(Router);
     private readonly http = inject(HttpClient);
-    private readonly errorService = inject(ErrorService);
     private readonly customerService = inject(CustomerService);
     private readonly storeApiUrl = `${environment.apiUrl}/api/checkout`;
 
@@ -60,6 +57,8 @@ export class CheckoutService {
     });
 
     constructor() {
+        super();
+
         // Initialize checkout session
         this.initializeSession();
 
@@ -128,12 +127,12 @@ export class CheckoutService {
     // Setters
     setShippingAddress(address: Address): void {
         this.shippingAddress.set(address);
-        this.logger.info('Shipping address set', { address });
+        this.logger.info('Shipping address set', { addressId: address.id });
     }
 
     setDeliveryMethod(method: DeliveryOption): void {
         this.deliveryMethod.set(method);
-        this.logger.info('Delivery method set', { method });
+        this.logger.info('Delivery method set', { method: method.id });
     }
 
     setSelectedPaymentMethod(method: string): void {
@@ -153,70 +152,100 @@ export class CheckoutService {
 
     // Address management
     async saveNewShippingAddress(data: AddressFormData): Promise<Address> {
-        const request: AddAddressRequest = {
-            ...data,
-            type: 'shipping',
-            isDefault: !this.customerService.defaultShippingAddress()
-        };
+        try {
+            const request: AddAddressRequest = {
+                ...data,
+                type: 'shipping',
+                isDefault: !this.customerService.defaultShippingAddress()
+            };
 
-        const address = await this.customerService.addAddress(request);
+            const address = await this.customerService.addAddress(request);
 
-        // If it's the first address, set it as default
-        if (request.isDefault) {
-            await this.customerService.setDefaultAddress(address.id, 'shipping');
+            // If it's the first address, set it as default
+            if (request.isDefault) {
+                await this.customerService.setDefaultAddress(address.id, 'shipping');
+            }
+
+            // Update checkout state
+            this.setShippingAddress(address);
+            this.logger.info('New shipping address saved and selected', { addressId: address.id });
+
+            return address;
+        } catch (error) {
+            this.handleServiceError('Failed to save shipping address', error, 'checkout');
+            throw error;
         }
-
-        // Update checkout state
-        this.setShippingAddress(address);
-
-        return address;
     }
 
     async selectShippingAddress(addressId: string): Promise<Address> {
-        const address = this.customerService.customerAddresses().find(a => a.id === addressId);
+        try {
+            const address = this.customerService.customerAddresses().find(a => a.id === addressId);
 
-        if (!address) {
-            this.errorService.addError('ADDRESS_NOT_FOUND', 'Address not found', { severity: 'error' });
-            throw new Error('Address not found');
+            if (!address) {
+                const errorMessage = 'Address not found';
+                this.errorService.addError('ADDRESS_NOT_FOUND', errorMessage, { severity: 'error' });
+                this.logger.error(errorMessage, { addressId });
+                throw new Error(errorMessage);
+            }
+
+            // Update checkout state with full address object
+            this.setShippingAddress(address);
+            this.logger.info('Shipping address selected', { addressId });
+
+            return address;
+        } catch (error) {
+            this.handleServiceError('Failed to select shipping address', error, 'checkout');
+            throw error;
         }
-
-        // Update checkout state with full address object
-        this.setShippingAddress(address);
-
-        return address;
     }
 
     async deleteShippingAddress(addressId: string): Promise<void> {
-        await this.customerService.deleteAddress(addressId);
+        try {
+            await this.customerService.deleteAddress(addressId);
 
-        const currentShipping = this.getShippingAddress();
-        if (currentShipping?.id === addressId) {
-            this.clearCheckoutState();
+            const currentShipping = this.getShippingAddress();
+            if (currentShipping?.id === addressId) {
+                this.clearCheckoutState();
+                this.logger.info('Checkout state cleared after selected address was deleted', { addressId });
+            }
+        } catch (error) {
+            this.handleServiceError('Failed to delete shipping address', error, 'checkout');
+            throw error;
         }
     }
 
     // Klarna session management
     createKlarnaSession(cart: CartItem[], customerInfo: Omit<CheckoutSessionRequest['customer'], 'shippingAddress'> & { shippingAddress: CheckoutSessionRequest['customer']['shippingAddress'] }) {
-        const idempotencyKey = this.generateIdempotencyKey(cart);
+        try {
+            const idempotencyKey = this.generateIdempotencyKey(cart);
+            this.logger.info('Creating Klarna session', {
+                cartItems: cart.length,
+                idempotencyKey,
+                customerEmail: customerInfo.email
+            });
 
-        const request: CheckoutSessionRequest = {
-            items: cart.map(item => ({
-                productId: item.productId,
-                productName: item.name,
-                sku: item.id,
-                quantity: item.quantity,
-                unitPrice: item.price
-            })),
-            currency: 'SEK',
-            locale: 'sv-SE',
-            customer: customerInfo
-        };
+            const request: CheckoutSessionRequest = {
+                items: cart.map(item => ({
+                    productId: item.productId,
+                    productName: item.name,
+                    sku: item.id,
+                    quantity: item.quantity,
+                    unitPrice: item.price
+                })),
+                currency: 'SEK',
+                locale: 'sv-SE',
+                customer: customerInfo
+            };
 
-        return this.http.post<KlarnaSessionResponse>(`${this.storeApiUrl}/sessions`, request, {
-            headers: {
-                'Idempotency-Key': idempotencyKey
-            }
-        });
+            return this.http.post<KlarnaSessionResponse>(`${this.storeApiUrl}/sessions`, request, {
+                headers: {
+                    'Idempotency-Key': idempotencyKey
+                }
+            });
+        } catch (error) {
+            this.handleHttpError('Failed to create Klarna session', error, 'klarna');
+            throw error;
+        }
     }
 
     private generateIdempotencyKey(cart: CartItem[]): string {
@@ -233,6 +262,7 @@ export class CheckoutService {
         // Generate a unique transaction ID
         const newId = 'txn_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
         this.transactionId.set(newId);
+        this.logger.info('New transaction started', { transactionId: newId });
         return newId;
     }
 

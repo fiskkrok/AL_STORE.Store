@@ -20,16 +20,22 @@ public record ProfilePayload(
     string? LastName,
     string? Phone
 );
-
+/// <summary>
+/// 
+/// </summary>
 public class CreateProfileEndpoint : Endpoint<ProfilePayload, CustomerProfileResponse> // No Request DTO needed
 {
     private readonly IMediator _mediator;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public CreateProfileEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Post("/customers/profile");
@@ -39,7 +45,9 @@ public class CreateProfileEndpoint : Endpoint<ProfilePayload, CustomerProfileRes
             .ProducesProblem(400)
             .WithTags("Customer Profile"));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(ProfilePayload payload, CancellationToken ct)
     {
         var sub = payload.Auth0Id;

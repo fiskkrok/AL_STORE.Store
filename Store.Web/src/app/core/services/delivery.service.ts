@@ -2,6 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { catchError, Observable, of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
+import { BaseService } from "./base.service";
 
 // services/delivery.service.ts
 export interface DeliveryOption {
@@ -19,20 +20,27 @@ export interface DeliveryOptionsResponse {
 
 
 @Injectable({ providedIn: 'root' })
-export class DeliveryService {
+export class DeliveryService extends BaseService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/api/delivery`;
 
   getDeliveryOptions(postalCode: string): Observable<DeliveryOptionsResponse> {
+    this.logger.info('Fetching delivery options', { postalCode });
+
     return this.http.get<DeliveryOptionsResponse>(`${this.apiUrl}/options`, {
       params: { postalCode }
     }).pipe(
-      catchError(() => of({ deliveryOptions: this.getFallbackOptions() }))
+      catchError(error => {
+        this.logger.warn('Failed to fetch delivery options, using fallback', { error });
+        return of({ deliveryOptions: this.getFallbackOptions() });
+      })
     );
   }
 
   // Fallback delivery options if API call fails
   private getFallbackOptions(): DeliveryOption[] {
+    this.logger.info('Using fallback delivery options');
+
     return [
       {
         id: 'postnord-home',

@@ -3,22 +3,30 @@ using FastEndpoints;
 
 namespace Store.API.Endpoints.Customers.Profile;
 // Or your correct namespace
-
+/// <summary>
+/// 
+/// </summary>
 public class AuthTestEndpoint : EndpointWithoutRequest
 {
     private readonly ILogger<AuthTestEndpoint> _logger;
-
+    /// <summary>
+    /// 
+    /// </summary>
     public AuthTestEndpoint(ILogger<AuthTestEndpoint> logger)
     {
         _logger = logger;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Configure()
     {
         Get("/auth/test");
         Policies("RequireAuth"); // Use policy instead of Claims
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public override async Task HandleAsync(CancellationToken ct)
     {
         // Log all claims for debugging
