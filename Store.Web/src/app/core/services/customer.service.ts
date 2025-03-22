@@ -97,7 +97,7 @@ export class CustomerService {
     }
 
     testAuth() {
-        this.http.get('https://localhost:5001/api/auth/test').subscribe({
+        this.http.get('https://localhost:7002/api/auth/test').subscribe({
             next: () => console.log('Auth test succeeded'),
             error: (err) => console.error('Auth test failed:', err)
         });

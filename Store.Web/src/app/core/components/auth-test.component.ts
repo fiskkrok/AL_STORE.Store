@@ -25,7 +25,7 @@ export class AuthTestComponent {
   http = inject(HttpClient);
 
   testAuth() {
-    this.http.get('https://localhost:5001/api/auth/test').subscribe({
+    this.http.get('https://localhost:7002/api/auth/test').subscribe({
       next: (res: any) => console.log('Auth test success:', res),
       error: (err: any) => console.error('Auth test failed:', err)
     });

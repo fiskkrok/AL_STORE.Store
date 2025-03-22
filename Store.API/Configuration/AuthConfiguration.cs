@@ -26,7 +26,7 @@ public static class AuthConfiguration
             }).AddJwtBearer(options =>
             {
                 options.Authority = "https://dev-3on2otf3kmyxv53z.us.auth0.com/";
-                options.Audience = "https://localhost:5001";
+                options.Audience = "https://localhost:7002";
                 options.RefreshOnIssuerKeyNotFound = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

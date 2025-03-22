@@ -63,7 +63,7 @@ public static class DependencyInjection
         services.AddProductServices(configuration);         // Product sync
         services.AddCacheInfrastructure(configuration);     // Redis caching
         services.AddBackgroundJobs();                       // Background services
-
+        services.AddKlarnaService(configuration);
         // Add HTTP context accessor
         services.AddHttpContextAccessor();
 

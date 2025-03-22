@@ -32,8 +32,8 @@ export const appConfig: ApplicationConfig = {
       clientId: 'hwsquizkgecZPiyytTWSdGkhbjt0AeS4',
       authorizationParams: {
         redirect_uri: `${window.location.origin}/auth/callback`,
-        audience: 'https://localhost:5001',
-        scope: 'openid profile email read:profile offline_access',
+        audience: 'https://localhost:7002',
+        scope: 'openid profile email read:profile write:profile offline_access',
         response_type: 'code'  // Fixed typo from respone_type to response_type
       },
       useRefreshTokens: true,
@@ -41,11 +41,11 @@ export const appConfig: ApplicationConfig = {
       httpInterceptor: {
         allowedList: [
           {
-            uri: 'https://localhost:5001/api/*',  // More specific URI
+            uri: 'https://localhost:7002/api/*',  // More specific URI
             allowAnonymous: false,  // Add this
             tokenOptions: {
               authorizationParams: {
-                audience: 'https://localhost:5001'
+                audience: 'https://localhost:7002'
               }
             }
           }

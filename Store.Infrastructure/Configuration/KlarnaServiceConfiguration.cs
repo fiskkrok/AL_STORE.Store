@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
+using Polly.CircuitBreaker;
 using Polly.Extensions.Http;
+using Polly.Retry;
 using Store.Infrastructure.Services;
 using Store.Infrastructure.Services.Models;
 
@@ -31,7 +33,7 @@ public static class KlarnaServiceConfiguration
         return services;
     }
 
-    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+    private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
     {
         return HttpPolicyExtensions
             .HandleTransientHttpError()
@@ -40,7 +42,7 @@ public static class KlarnaServiceConfiguration
                 TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
 
-    private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+    private static AsyncCircuitBreakerPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
     {
         return HttpPolicyExtensions
             .HandleTransientHttpError()

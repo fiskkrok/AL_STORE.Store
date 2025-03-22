@@ -23,7 +23,6 @@ public class CheckProfileExistsEndpoint : EndpointWithoutRequest
     {
         AllowAnonymous();
         Get("/customers/profile/exists");
-        Policies("RequireAuth"); // Use policy instead of Claims
         Description(d => d
             .Produces(200) // Profile Exists
             .Produces(404) // Profile Not Found
