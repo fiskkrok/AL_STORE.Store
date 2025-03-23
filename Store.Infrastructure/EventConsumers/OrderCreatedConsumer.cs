@@ -30,7 +30,9 @@ public class OrderCreatedConsumer : IConsumer<OrderCreatedEvent>
     public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
     {
         var orderId = context.Message.OrderId;
-        _logger.LogInformation("Consuming OrderCreatedEvent for order {OrderId}", orderId);
+        var customerName = context.Message.CustomerName;
+        var customerEmail = context.Message.CustomerEmail;
+        _logger.LogInformation("Consuming OrderCreatedEvent for order {OrderId}, customer {CustomerName}, email {CustomerEmail}", orderId, customerName, customerEmail);
 
         try
         {
