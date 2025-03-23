@@ -1,10 +1,11 @@
-﻿
 namespace Store.Contracts.Events;
 
 public record OrderCreatedEvent(
     Guid OrderId,
     string OrderNumber,
     string CustomerId,
+    string CustomerName,
+    string CustomerEmail,
     decimal TotalAmount,
     string Currency,
     DateTime CreatedAt);

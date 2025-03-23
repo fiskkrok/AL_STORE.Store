@@ -28,7 +28,7 @@ public class EmailService : IEmailService
         _client = client;
     }
 
-    public async Task<Result<bool>> SendOrderConfirmationAsync(Order order, CancellationToken ct = default)
+    public async Task<Result<bool>> SendOrderConfirmationAsync(Order order, string customerName, string customerEmail, CancellationToken ct = default)
     {
         try
         {
@@ -39,11 +39,10 @@ public class EmailService : IEmailService
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
 
-            var customerEmail = await GetCustomerEmailAsync(order.CustomerId,ct);
             if (string.IsNullOrEmpty(customerEmail))
             {
                 _logger.LogWarning(
-                    "Cannot send order confirmation email: Could not find email for customer {CustomerId}",
+                    "Cannot send order confirmation email: No email specified for customer {CustomerId}",
                     order.CustomerId);
                 return Result<bool>.Failure(new Error("Email.NoRecipient", "No recipient specified for email"));
             }
@@ -52,8 +51,8 @@ public class EmailService : IEmailService
             {
                 From = new EmailAddress(_settings.FromEmail, _settings.FromName),
                 Subject = $"Order Confirmation #{order.OrderNumber}",
-                PlainTextContent = BuildOrderConfirmationText(order),
-                HtmlContent = BuildOrderConfirmationHtml(order)
+                PlainTextContent = BuildOrderConfirmationText(order, customerName),
+                HtmlContent = BuildOrderConfirmationHtml(order, customerName)
             };
 
             msg.AddTo(customerEmail);
@@ -145,9 +144,11 @@ public class EmailService : IEmailService
         return email;
     }
 
-    private static string BuildOrderConfirmationText(Order order)
+    private static string BuildOrderConfirmationText(Order order, string customerName)
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"Dear {customerName},");
+        sb.AppendLine();
         sb.AppendLine($"Thank you for your order #{order.OrderNumber}!");
         sb.AppendLine();
         sb.AppendLine("Order Details:");
@@ -169,11 +170,12 @@ public class EmailService : IEmailService
         return sb.ToString();
     }
 
-    private string BuildOrderConfirmationHtml(Order order)
+    private string BuildOrderConfirmationHtml(Order order, string customerName)
     {
         var sb = new StringBuilder();
         sb.AppendLine("<html><body>");
         sb.AppendLine($"<h1>Thank you for your order #{order.OrderNumber}!</h1>");
+        sb.AppendLine($"<p>Dear {customerName},</p>");
 
         sb.AppendLine("<h2>Order Details:</h2>");
         sb.AppendLine("<table style='width:100%; border-collapse: collapse;'>");

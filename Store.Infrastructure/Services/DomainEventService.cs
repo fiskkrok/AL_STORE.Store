@@ -48,6 +48,8 @@ public class DomainEventService : IDomainEventService
                     orderCreated.Order.Id,
                     orderCreated.Order.OrderNumber,
                     orderCreated.Order.CustomerId,
+                    orderCreated.CustomerName,
+                    orderCreated.CustomerEmail,
                     orderCreated.Order.TotalAmount.Amount,
                     orderCreated.Order.TotalAmount.Currency,
                     DateTime.UtcNow), cancellationToken);
