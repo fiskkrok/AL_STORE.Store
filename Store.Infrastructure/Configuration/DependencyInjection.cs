@@ -3,9 +3,10 @@ using MediatR;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 
 using Store.Application.Common.Interfaces;
@@ -24,50 +25,55 @@ namespace Store.Infrastructure.Configuration;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services,
+    public static void AddInfrastructure(
+        this WebApplicationBuilder builder,
         IConfiguration configuration)
     {
         // Database setup
-        services.AddDbContext<StoreDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(StoreDbContext).Assembly.FullName)));
+        builder.AddSqlServerDbContext<StoreDbContext>("StoreConnection", null,
+            sqlOptions =>
+            {
+                var options = new SqlServerDbContextOptionsBuilder(sqlOptions);
+                options.MigrationsAssembly(typeof(StoreDbContext).Assembly.FullName);
+            });
+        //builder.Services.AddDbContext<StoreDbContext>(options =>
+        //    options.UseSqlServer(
+        //        configuration.GetConnectionString("DefaultConnection"),
+        //        b => b.MigrationsAssembly(typeof(StoreDbContext).Assembly.FullName)));
 
         // Register repositories and core services
-        services.AddScoped<IStoreDbContext>(provider => provider.GetService<StoreDbContext>()!);
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IDomainEventService, DomainEventService>();
-        services.AddSingleton<IDateTime, DateTimeService>();
+        builder.Services.AddScoped<IStoreDbContext>(provider => provider.GetService<StoreDbContext>()!);
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IDomainEventService, DomainEventService>();
+        builder.Services.AddSingleton<IDateTime, DateTimeService>();
 
         // Register repositories
-        services.AddScoped<IOrderRepository, OrderRepository>();
-        services.AddScoped<IPaymentSessionRepository, PaymentSessionRepository>();
-        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+        builder.Services.AddScoped<IPaymentSessionRepository, PaymentSessionRepository>();
+        builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
         // Register business services
-        services.AddScoped<IKlarnaService, KlarnaService>();
-        services.AddScoped<IIdempotencyService, IdempotencyService>();
+        builder.Services.AddScoped<IKlarnaService, KlarnaService>();
+        builder.Services.AddScoped<IIdempotencyService, IdempotencyService>();
 
-        services.AddScoped<ICurrentUser, CurrentUserService>();
-        services.AddScoped<ICategorySeeder, CategorySeeder>();
-        services.AddScoped<IStoreSeeder, StoreSeeder>();
+        builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
+        builder.Services.AddScoped<ICategorySeeder, CategorySeeder>();
+        builder.Services.AddScoped<IStoreSeeder, StoreSeeder>();
 
         // Add MediatR behavior for domain event publishing
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventPublishingBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventPublishingBehavior<,>));
 
         // Add feature-specific configurations
-        services.AddMessagingInfrastructure(configuration);  // MassTransit & RabbitMQ
-        services.AddEmailService(configuration);            // Email service
-        services.AddRealTimeInfrastructure(configuration);  // SignalR backend
-        services.AddProductServices(configuration);         // Product sync
-        services.AddCacheInfrastructure(configuration);     // Redis caching
-        services.AddBackgroundJobs();                       // Background services
-        services.AddKlarnaService(configuration);
+        builder.Services.AddMessagingInfrastructure(configuration);  // MassTransit & RabbitMQ
+        builder.Services.AddEmailService(configuration);            // Email service
+        builder.Services.AddRealTimeInfrastructure(configuration);  // SignalR backend
+        builder.Services.AddProductServices(configuration);         // Product sync
+        builder.Services.AddCacheInfrastructure(configuration);     // Redis caching
+        builder.Services.AddBackgroundJobs();                       // Background services
+        builder.Services.AddKlarnaService(configuration);
         // Add HTTP context accessor
-        services.AddHttpContextAccessor();
+        builder.Services.AddHttpContextAccessor();
 
-        return services;
     }
 
     // Private helper methods for specialized configurations

@@ -5,15 +5,20 @@ using Store.API.Configuration;
 using Store.API.Middleware;
 using Store.Application.Configuration;
 using Store.Infrastructure.Configuration;
+using Store.Infrastructure.Persistence;
 using Store.Infrastructure.Persistence.Seeding;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 builder.Services.AddApiServices(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

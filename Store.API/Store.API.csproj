@@ -18,31 +18,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.Data.SqlClient" Version="9.2.0" />
     <PackageReference Include="Duende.AccessTokenManagement" Version="3.2.0" />
-    <PackageReference Include="FastEndpoints" Version="5.34.0" />
-    <PackageReference Include="FastEndpoints.Security" Version="5.34.0" />
-    <PackageReference Include="FastEndpoints.Swagger" Version="5.34.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.2.0" />
+    <PackageReference Include="FastEndpoints" Version="6.0.0" />
+    <PackageReference Include="FastEndpoints.Security" Version="6.0.0" />
+    <PackageReference Include="FastEndpoints.Swagger" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
     <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Endpoints\Payments\Swish\" />
-    <Folder Include="Filters\" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\AL_STORE.ServiceDefaults\AL_STORE.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Store.Infrastructure\Store.Infrastructure.csproj" />
   </ItemGroup>
 
